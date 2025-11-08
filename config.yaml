@@ -1,0 +1,131 @@
+# ============================================================================
+# CRYPTO TRADING GA - CONFIGURATION
+# ============================================================================
+
+# DATA CONFIGURATION (Binance)
+data:
+  exchange: "binance"
+  symbol: "BTC/USDT"      # Formato ccxt: BASE/QUOTE
+  market_type: "future"   # "spot" o "future"
+  timeframe: "15m"        # Ver TIME_MAP abajo
+  start: "2020-01-01 00:00:00"
+  end: "2025-10-25 23:59:59"
+
+  # Paginación (Binance limit: 1000 candles/request)
+  pagination:
+    max_candles_per_request: 1000
+    rate_limit_delay_ms: 100  # Delay entre requests (evitar rate limits)
+    max_retries: 3
+
+  # Validación
+  enforce_real_data: true
+
+  # TIME_MAP: Conversión timeframe -> minutos y barras/año
+  # Para cambiar timeframe, solo modificar "timeframe" arriba
+  time_map:
+    "1m":  {minutes: 1,   bars_per_year: 525600}
+    "5m":  {minutes: 5,   bars_per_year: 105120}
+    "15m": {minutes: 15,  bars_per_year: 35040}
+    "1h":  {minutes: 60,  bars_per_year: 8760}
+    "4h":  {minutes: 240, bars_per_year: 2190}
+    "1d":  {minutes: 1440, bars_per_year: 365}
+
+# TRANSACTION COSTS (Binance Futures)
+costs:
+  # Binance Futures fees (USDT-M)
+  fees_bps_long: 4.0    # 0.04% taker fee (market orders)
+  fees_bps_short: 4.0   # 0.04% taker fee
+
+  # Slippage (cripto es más líquido que acciones)
+  slippage_bps_long: 2.0   # 0.02% (BTC muy líquido)
+  slippage_bps_short: 2.0  # 0.02%
+
+  # Funding rate (futuros perpetuos): IGNORAR en este proyecto
+  # En producción real, considerar funding cada 8h (~0.01% promedio)
+
+# WALK-FORWARD CONFIGURATION
+walkforward:
+  train_months: 6      # 6 meses train (cripto más volátil)
+  test_months: 2       # 2 meses test
+  step_months: 1       # Rolling de 1 mes
+
+# GENETIC ALGORITHM
+ga:
+  population: 100
+  generations_max: 150
+  patience_no_improve: 20
+  elitism: 2
+  mutation_rate: 0.15
+  crossover_rate: 0.70
+  window_min: 2
+  window_max: 8
+  allow_indicators: false
+  seed: 42  # CRÍTICO: Reproducibilidad
+
+  fitness:
+    weight_upi: 0.5
+    weight_sharpe: 0.3
+    weight_cagr: 0.2
+    cagr_min_threshold: 0.15   # 15% anual (cripto más volátil)
+    sharpe_cap: 3.0
+    cagr_cap: 0.30             # 30% cap para normalización
+
+  fast_mode:
+    enabled: true
+    n_windows: 5
+    strategy: "stratified"
+
+  # NUEVO: Evolution tracking
+  evolution_tracking:
+    enabled: true
+    sample_size_per_generation: 5   # Guardar 5 patrones random/gen
+    save_every_n_generations: 10    # Snapshot cada 10 gens
+    output_dir: "./evolution_snapshots"
+
+# EXIT RULES (Cripto 24/7, no gaps)
+exits:
+  use_time_exit: false
+  bars_hold: 96        # 96 bars de 15m = 24 horas
+
+  use_atr_exits: true
+  atr_period: 14
+  atr_stop: 1.5        # 1.5 ATR stop loss
+  atr_take: 3.0        # 3.0 ATR take profit (R:R = 2:1)
+
+# SELECTION & FILTERING
+selection:
+  topk: 20
+  corr_threshold: 0.35
+
+  filters:
+    upi_min: 0.15           # Más exigente para cripto
+    sharpe_min: 1.5
+    cagr_min: 0.15          # 15% anual
+    max_drawdown_max: 0.25  # 25% max DD
+    profit_factor_min: 1.5
+    win_rate_min: 0.45      # Menos exigente (cripto más volátil)
+    min_trades_per_window: 15
+
+# ROBUSTNESS TESTS
+robustness:
+  seed: 42
+  bootstrap:
+    n_iterations: 1000
+    block_size: 20        # Bloques más grandes (autocorrelación en cripto)
+    confidence_level: 0.95
+  hansen_spa:
+    enabled: true
+    alpha: 0.05
+  white_rc:
+    enabled: true
+    alpha: 0.05
+
+# OUTPUT
+output:
+  reports_dir: "./output_reports"
+  logs_dir: "./logs"
+  evolution_dir: "./evolution_snapshots"
+  save_equity_curves: true
+  save_correlation_matrix: true
+  save_pattern_details: true
+  verbose_logging: true

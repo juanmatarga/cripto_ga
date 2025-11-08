@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+*.egg-info/
+
+# Logs
+logs/*.log
+
+# Outputs (ignorar CSVs y PNGs pero no directorios)
+output_reports/*.csv
+output_reports/*.png
+output_reports/*.html
+evolution_snapshots/*.json
+evolution_snapshots/*.yaml
+
+# IDEs
+.DS_Store
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment
+.env
+venv/
+env/
