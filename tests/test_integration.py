@@ -55,17 +55,35 @@ def test_config():
             'allow_indicators': False,
             'max_expression_depth': 2,
             'max_children': 2,
+            'fitness': {
+                'cagr_min_threshold': 0.0,
+                'weight_upi': 0.4,
+                'weight_sharpe': 0.3,
+                'weight_cagr': 0.3,
+                'sharpe_cap': 3.0,
+                'cagr_cap': 1.0
+            },
             'fitness_weights': {
                 'combined': 0.5,
                 'long': 0.25,
                 'short': 0.25
+            },
+            'evolution_tracking': {
+                'save_best_per_gen': True,
+                'save_diversity': True
+            },
+            'fast_mode': {
+                'enabled': False,
+                'n_windows': 5
             }
         },
         'exits': {
             'use_atr_exits': False,
+            'use_time_exit': True,
             'stop_loss': 0.02,
             'take_profit': 0.03,
             'max_hold_bars': 100,
+            'bars_hold': 50,
             'atr_period': 14,
             'atr_stop': 1.5,
             'atr_take': 3.0
@@ -93,13 +111,17 @@ def test_config():
             'bootstrap_ci': {'n_bootstrap': 50, 'confidence_level': 0.95}
         },
         'output': {
+            'output_dir': 'test_output',
             'reports_dir': 'test_output',
             'evolution_dir': 'test_evolution',
             'logs_dir': 'test_logs',
             'verbose_logging': False
         },
         'walkforward': {
-            'enabled': False
+            'enabled': True,
+            'train_months': 2,
+            'test_months': 1,
+            'step_months': 1
         }
     }
 

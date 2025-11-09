@@ -31,25 +31,28 @@ def test_walkforward_no_overlap(config_fixture):
         'Volume': np.random.randint(1000, 2000, 1000)
     }, index=dates)
 
-    # Create windows
-    windows = create_walkforward_windows(data, config_fixture, fast_mode=False)
+    # Create windows (new signature)
+    windows = create_walkforward_windows(data, train_months=1, test_months=1, step_months=1)
 
     # Validate all windows
-    for window in windows:
+    for train_df, test_df in windows:
         # Critical assertion: test starts AFTER train ends
-        assert window.test_start > window.train_end, \
-            f"LOOKAHEAD DETECTED in window {window.window_id}"
+        train_end = train_df.index.max()
+        test_start = test_df.index.min()
+
+        assert test_start > train_end, \
+            f"LOOKAHEAD DETECTED: test_start ({test_start}) <= train_end ({train_end})"
 
         # Additional check: no date overlap
-        train_dates = set(window.train_data.index)
-        test_dates = set(window.test_data.index)
+        train_dates = set(train_df.index)
+        test_dates = set(test_df.index)
         overlap = train_dates & test_dates
 
         assert len(overlap) == 0, \
-            f"Date overlap detected in window {window.window_id}: {len(overlap)} dates"
+            f"Date overlap detected: {len(overlap)} dates"
 
         # Validate using explicit function
-        validate_no_lookahead(window.train_data, window.test_data)
+        validate_no_lookahead(train_df, test_df)
 
 def test_walkforward_chronological_order(config_fixture):
     """
@@ -66,15 +69,15 @@ def test_walkforward_chronological_order(config_fixture):
         'Volume': np.random.randint(1000, 2000, 1000)
     }, index=dates)
 
-    windows = create_walkforward_windows(data, config_fixture, fast_mode=False)
+    windows = create_walkforward_windows(data, train_months=1, test_months=1, step_months=1)
 
     # Check chronological order
     for i in range(len(windows) - 1):
-        current_window = windows[i]
-        next_window = windows[i + 1]
+        current_train, _ = windows[i]
+        next_train, _ = windows[i + 1]
 
-        # Next window's train should start after current window's train
-        assert next_window.train_start >= current_window.train_start, \
+        # Next window's train should start after or at same time as current window's train
+        assert next_train.index.min() >= current_train.index.min(), \
             f"Windows out of order: {i} vs {i+1}"
 
 def test_signal_generation_no_lookahead(config_fixture):
@@ -194,6 +197,8 @@ def test_stratified_sampling_preserves_no_lookahead(config_fixture):
     """
     Stratified sampling must preserve anti-lookahead guarantees.
     """
+    from backtest.walkforward import stratified_sampling_windows
+
     # Create sample data
     start_date = pd.Timestamp('2023-01-01')
     dates = pd.date_range(start_date, periods=2000, freq='15min')
@@ -205,15 +210,21 @@ def test_stratified_sampling_preserves_no_lookahead(config_fixture):
         'Volume': np.random.randint(1000, 2000, 2000)
     }, index=dates)
 
-    # Create windows with stratified sampling
-    windows = create_walkforward_windows(data, config_fixture, fast_mode=True)
+    # Create all windows
+    all_windows = create_walkforward_windows(data, train_months=1, test_months=1, step_months=1)
+
+    # Apply stratified sampling
+    sampled_windows = stratified_sampling_windows(all_windows, n_sample=5, seed=42)
 
     # Every sampled window must have no lookahead
-    for window in windows:
-        assert window.test_start > window.train_end, \
-            f"Stratified sampling violated anti-lookahead in window {window.window_id}"
+    for train_df, test_df in sampled_windows:
+        train_end = train_df.index.max()
+        test_start = test_df.index.min()
 
-        validate_no_lookahead(window.train_data, window.test_data)
+        assert test_start > train_end, \
+            f"Stratified sampling violated anti-lookahead"
+
+        validate_no_lookahead(train_df, test_df)
 
 def test_atr_calculation_no_lookahead():
     """

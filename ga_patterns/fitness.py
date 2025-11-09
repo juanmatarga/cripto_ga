@@ -14,58 +14,95 @@ from backtest.runner import run_backtest
 logger = logging.getLogger(__name__)
 
 def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
-                                   config: dict) -> Tuple[float, str]:
+                                   config: dict, fast_mode: bool = True) -> Tuple[float, str]:
     """
-    Evalúa patrón en LONG y SHORT con BACKTESTING REAL, retorna mejor fitness + dirección.
+    Evalúa patrón en LONG y SHORT con WALK-FORWARD REAL.
+
+    CRÍTICO: Esta versión SÍ usa walk-forward correctamente.
 
     Args:
         pattern: Pattern a evaluar
-        data: DataFrame OHLCV
-        config: config dict
+        data: DataFrame OHLCV completo
+        config: Config dict
+        fast_mode: Si True, usa stratified sampling de ventanas
 
     Returns:
         (best_fitness, best_direction)
-
-    REAL BACKTESTING VERSION: Usa backtest.runner con ATR exits y costos reales.
     """
     from backtest.metrics import calculate_all_metrics
+    from backtest.walkforward import create_walkforward_windows, stratified_sampling_windows
 
     timeframe = config['data']['timeframe']
     periods_per_year = config['data']['time_map'][timeframe]['bars_per_year']
 
-    # Evaluar LONG
-    logger.debug(f"Evaluating pattern as LONG...")
-
-    # Crear copia del patrón para LONG
-    pattern_long = pattern.__class__(
-        direction='LONG',
-        window=pattern.window,
-        expression=pattern.expression,
-        fitness=pattern.fitness,
-        fitness_long=pattern.fitness_long,
-        fitness_short=pattern.fitness_short,
-        generation_created=pattern.generation_created
+    # ========================================================================
+    # CREAR VENTANAS WALK-FORWARD
+    # ========================================================================
+    windows = create_walkforward_windows(
+        data,
+        train_months=config['walkforward']['train_months'],
+        test_months=config['walkforward']['test_months'],
+        step_months=config['walkforward']['step_months']
     )
 
-    try:
-        # Run backtest LONG
-        equity_long, trades_long = run_backtest(pattern_long, data, config)
+    if len(windows) == 0:
+        logger.warning("No valid windows created")
+        pattern.fitness_long = -999.0
+        pattern.fitness_short = -999.0
+        pattern.fitness = -999.0
+        pattern.direction = 'LONG'
+        return -999.0, 'LONG'
 
-        # Filtrar trades inválidos
-        if len(trades_long) < 5:  # Mínimo 5 trades para ser válido
-            logger.debug(f"LONG: Insufficient trades ({len(trades_long)})")
-            fitness_long = -999.0
-        else:
-            metrics_long = calculate_all_metrics(equity_long, periods_per_year)
+    # Stratified sampling si fast_mode
+    if fast_mode and config['ga'].get('fast_mode', {}).get('enabled', False):
+        windows_to_eval = stratified_sampling_windows(
+            windows,
+            n_sample=config['ga']['fast_mode']['n_windows'],
+            seed=config['ga']['seed']
+        )
+    else:
+        windows_to_eval = windows
 
-            # Calcular fitness LONG
-            if metrics_long['cagr'] < config['ga']['fitness']['cagr_min_threshold']:
+    logger.debug(f"Evaluating on {len(windows_to_eval)} windows (fast_mode={fast_mode})")
+
+    # ========================================================================
+    # EVALUAR LONG
+    # ========================================================================
+    pattern.direction = 'LONG'
+
+    # Combinar equity curves de SOLO test sets (OOS)
+    all_equity_long = []
+    all_trades_long = []
+
+    for i, (train_df, test_df) in enumerate(windows_to_eval):
+        # CRÍTICO: Backtest SOLO en test_df (OOS)
+        equity_curve, trades = run_backtest(pattern, test_df, config)
+
+        if len(trades) > 0:
+            all_equity_long.append(equity_curve)
+            all_trades_long.extend(trades)
+
+    # Calcular fitness LONG
+    if len(all_equity_long) == 0 or len(all_trades_long) == 0:
+        fitness_long = -999.0
+    else:
+        # Concatenar equity curves
+        combined_equity_long = pd.concat(all_equity_long)
+
+        try:
+            metrics = calculate_all_metrics(combined_equity_long, periods_per_year)
+
+            # Hard constraints
+            min_trades_total = config['selection']['filters']['min_trades_per_window'] * len(windows_to_eval)
+            if metrics['cagr'] < config['ga']['fitness']['cagr_min_threshold']:
+                fitness_long = -999.0
+            elif len(all_trades_long) < min_trades_total:
                 fitness_long = -999.0
             else:
-                # Safeguards para valores infinitos o muy grandes
-                upi_norm = min(metrics_long['upi'], 100.0)  # Cap UPI
-                sharpe_norm = min(metrics_long['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
-                cagr_norm = min(metrics_long['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
+                # Fitness combinado con caps
+                upi_norm = min(metrics['upi'], 100.0)
+                sharpe_norm = min(metrics['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
+                cagr_norm = min(metrics['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
 
                 fitness_long = (
                     config['ga']['fitness']['weight_upi'] * upi_norm +
@@ -73,49 +110,50 @@ def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
                     config['ga']['fitness']['weight_cagr'] * cagr_norm
                 )
 
-                # Final safeguard: cap total fitness
+                # Final safeguards
                 if np.isinf(fitness_long) or np.isnan(fitness_long) or fitness_long > 1000:
                     fitness_long = -999.0
 
-            logger.debug(f"LONG: {len(trades_long)} trades, UPI={metrics_long['upi']:.2f}, fitness={fitness_long:.4f}")
+        except Exception as e:
+            logger.error(f"Error calculating LONG fitness: {e}")
+            fitness_long = -999.0
 
-    except Exception as e:
-        logger.error(f"Error calculating LONG fitness: {e}")
-        fitness_long = -999.0
+    pattern.fitness_long = fitness_long
+    logger.debug(f"LONG: {len(all_trades_long)} trades, fitness={fitness_long:.4f}")
 
-    # Evaluar SHORT
-    logger.debug(f"Evaluating pattern as SHORT...")
+    # ========================================================================
+    # EVALUAR SHORT
+    # ========================================================================
+    pattern.direction = 'SHORT'
 
-    # Crear copia del patrón para SHORT
-    pattern_short = pattern.__class__(
-        direction='SHORT',
-        window=pattern.window,
-        expression=pattern.expression,
-        fitness=pattern.fitness,
-        fitness_long=pattern.fitness_long,
-        fitness_short=pattern.fitness_short,
-        generation_created=pattern.generation_created
-    )
+    all_equity_short = []
+    all_trades_short = []
 
-    try:
-        # Run backtest SHORT
-        equity_short, trades_short = run_backtest(pattern_short, data, config)
+    for i, (train_df, test_df) in enumerate(windows_to_eval):
+        equity_curve, trades = run_backtest(pattern, test_df, config)
 
-        # Filtrar trades inválidos
-        if len(trades_short) < 5:  # Mínimo 5 trades para ser válido
-            logger.debug(f"SHORT: Insufficient trades ({len(trades_short)})")
-            fitness_short = -999.0
-        else:
-            metrics_short = calculate_all_metrics(equity_short, periods_per_year)
+        if len(trades) > 0:
+            all_equity_short.append(equity_curve)
+            all_trades_short.extend(trades)
 
-            # Calcular fitness SHORT
-            if metrics_short['cagr'] < config['ga']['fitness']['cagr_min_threshold']:
+    # Calcular fitness SHORT
+    if len(all_equity_short) == 0 or len(all_trades_short) == 0:
+        fitness_short = -999.0
+    else:
+        combined_equity_short = pd.concat(all_equity_short)
+
+        try:
+            metrics = calculate_all_metrics(combined_equity_short, periods_per_year)
+
+            min_trades_total = config['selection']['filters']['min_trades_per_window'] * len(windows_to_eval)
+            if metrics['cagr'] < config['ga']['fitness']['cagr_min_threshold']:
+                fitness_short = -999.0
+            elif len(all_trades_short) < min_trades_total:
                 fitness_short = -999.0
             else:
-                # Safeguards para valores infinitos o muy grandes
-                upi_norm = min(metrics_short['upi'], 100.0)  # Cap UPI
-                sharpe_norm = min(metrics_short['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
-                cagr_norm = min(metrics_short['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
+                upi_norm = min(metrics['upi'], 100.0)
+                sharpe_norm = min(metrics['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
+                cagr_norm = min(metrics['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
 
                 fitness_short = (
                     config['ga']['fitness']['weight_upi'] * upi_norm +
@@ -123,34 +161,29 @@ def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
                     config['ga']['fitness']['weight_cagr'] * cagr_norm
                 )
 
-                # Final safeguard: cap total fitness
                 if np.isinf(fitness_short) or np.isnan(fitness_short) or fitness_short > 1000:
                     fitness_short = -999.0
 
-            logger.debug(f"SHORT: {len(trades_short)} trades, UPI={metrics_short['upi']:.2f}, fitness={fitness_short:.4f}")
+        except Exception as e:
+            logger.error(f"Error calculating SHORT fitness: {e}")
+            fitness_short = -999.0
 
-    except Exception as e:
-        logger.error(f"Error calculating SHORT fitness: {e}")
-        fitness_short = -999.0
-
-    # Guardar ambos fitness
-    pattern.fitness_long = fitness_long
     pattern.fitness_short = fitness_short
+    logger.debug(f"SHORT: {len(all_trades_short)} trades, fitness={fitness_short:.4f}")
 
-    # Determinar mejor dirección
+    # ========================================================================
+    # MEJOR DIRECCIÓN
+    # ========================================================================
     if fitness_long >= fitness_short:
-        best_fitness = fitness_long
-        best_direction = 'LONG'
+        pattern.direction = 'LONG'
+        pattern.fitness = fitness_long
         logger.debug(f"Pattern chose LONG (L:{fitness_long:.4f} vs S:{fitness_short:.4f})")
+        return fitness_long, 'LONG'
     else:
-        best_fitness = fitness_short
-        best_direction = 'SHORT'
+        pattern.direction = 'SHORT'
+        pattern.fitness = fitness_short
         logger.debug(f"Pattern chose SHORT (S:{fitness_short:.4f} vs L:{fitness_long:.4f})")
-
-    pattern.direction = best_direction
-    pattern.fitness = best_fitness
-
-    return best_fitness, best_direction
+        return fitness_short, 'SHORT'
 
 def evaluate_population(population: List[Pattern], data: pd.DataFrame,
                        config: dict) -> List[float]:

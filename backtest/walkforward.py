@@ -40,23 +40,23 @@ class WalkForwardWindow:
                f"train={self.train_start.date()} to {self.train_end.date()}, "
                f"test={self.test_start.date()} to {self.test_end.date()})")
 
-def create_walkforward_windows(data: pd.DataFrame, config: dict,
-                               fast_mode: bool = False) -> List[WalkForwardWindow]:
+def create_walkforward_windows(data: pd.DataFrame, train_months: int,
+                               test_months: int, step_months: int) -> List[Tuple[pd.DataFrame, pd.DataFrame]]:
     """
     Create walk-forward windows with anti-lookahead guarantees.
 
     Args:
         data: Full OHLCV DataFrame with DatetimeIndex
-        config: Config dict with walkforward section
-        fast_mode: If True, use stratified sampling
+        train_months: Training window size in months
+        test_months: Testing window size in months
+        step_months: Step size in months
 
     Returns:
-        List of WalkForwardWindow objects
+        List of (train_df, test_df) tuples
 
     Algorithm:
         1. Generate all possible windows based on train/test/step months
-        2. If fast_mode: Select representative windows via stratified sampling
-        3. For each window: Assert test_start > train_end
+        2. For each window: Assert test_start > train_end
 
     Example:
         Data: 2020-01-01 to 2025-01-01
@@ -64,17 +64,12 @@ def create_walkforward_windows(data: pd.DataFrame, config: dict,
         - Window 1: Train 2020-01 to 2020-06, Test 2020-07 to 2020-08
         - Window 2: Train 2020-02 to 2020-07, Test 2020-08 to 2020-09
         - ...
-        If fast_mode with n_windows=5: Select 5 representative windows
 
     Notes:
         - ALWAYS asserts test_start > train_end
-        - Stratified sampling ensures coverage across market regimes
+        - Returns simple (train_df, test_df) tuples for easy iteration
     """
     logger.info("Creating walk-forward windows...")
-
-    train_months = config['walkforward']['train_months']
-    test_months = config['walkforward']['test_months']
-    step_months = config['walkforward']['step_months']
 
     data_start = data.index.min()
     data_end = data.index.max()
@@ -113,105 +108,157 @@ def create_walkforward_windows(data: pd.DataFrame, config: dict,
             current_start = current_start + pd.DateOffset(months=step_months)
             continue
 
-        # Create window (with anti-lookahead assertion)
-        window = WalkForwardWindow(
-            window_id=window_id,
-            train_start=train_start,
-            train_end=train_end,
-            test_start=test_start,
-            test_end=test_end,
-            train_data=train_data,
-            test_data=test_data
-        )
+        # Anti-lookahead assertion
+        assert test_start > train_end, \
+            f"LOOKAHEAD DETECTED: test_start ({test_start}) <= train_end ({train_end})"
 
-        all_windows.append(window)
+        all_windows.append((train_data, test_data))
         window_id += 1
+
+        logger.debug(f"Window {window_id}: Train [{train_start.date()} to {train_end.date()}], "
+                    f"Test [{test_start.date()} to {test_end.date()}]")
 
         # Move to next window
         current_start = current_start + pd.DateOffset(months=step_months)
 
-    logger.info(f"Generated {len(all_windows)} total windows")
+    logger.info(f"[OK] Generated {len(all_windows)} total windows")
 
-    # Fast mode: Stratified sampling
-    if fast_mode and config['ga']['fast_mode']['enabled']:
-        n_windows = config['ga']['fast_mode']['n_windows']
-        strategy = config['ga']['fast_mode']['strategy']
+    return all_windows
 
-        if len(all_windows) <= n_windows:
-            logger.info(f"Fast mode: Using all {len(all_windows)} windows (less than target {n_windows})")
-            selected_windows = all_windows
-        else:
-            logger.info(f"Fast mode: Selecting {n_windows} windows via {strategy} sampling")
-            selected_windows = _stratified_sampling(all_windows, n_windows, strategy)
-    else:
-        selected_windows = all_windows
-
-    logger.info(f"[OK] Final windows: {len(selected_windows)}")
-    for window in selected_windows:
-        logger.info(f"  {window}")
-
-    return selected_windows
-
-def _stratified_sampling(windows: List[WalkForwardWindow], n_windows: int,
-                        strategy: str) -> List[WalkForwardWindow]:
+def stratified_sampling_windows(windows: List[Tuple[pd.DataFrame, pd.DataFrame]],
+                                n_sample: int, seed: int = 42) -> List[Tuple[pd.DataFrame, pd.DataFrame]]:
     """
-    Select representative windows via stratified sampling.
+    Selecciona ventanas representativas por régimen de mercado.
+
+    Estrategia INTELIGENTE:
+    1. Calcula volatilidad, dirección, año para cada ventana
+    2. Divide en bins por régimen
+    3. Sample proporcional de cada bin
 
     Args:
-        windows: All available windows
-        n_windows: Number of windows to select
-        strategy: Sampling strategy ('stratified', 'uniform', 'recent')
+        windows: Lista de (train_df, test_df) tuples
+        n_sample: Número de ventanas a seleccionar
+        seed: Random seed
 
     Returns:
-        Selected windows
+        Lista de ventanas seleccionadas
 
-    Strategies:
-        - 'stratified': Evenly spaced across time periods
-        - 'uniform': Random uniform sampling
-        - 'recent': Bias towards recent data
-
-    Notes:
-        - Ensures coverage of different market regimes
-        - Stratified is recommended for crypto (high regime changes)
+    Example:
+        Si tenemos 40 ventanas y queremos 5:
+        - Calcular volatility bins: low, medium, high
+        - Calcular direction bins: bear, sideways, bull
+        - Calcular year bins: 2020, 2021, 2022, ...
+        - Seleccionar 1-2 ventanas de cada combinación
     """
-    if strategy == 'stratified':
-        # Evenly spaced indices
-        indices = np.linspace(0, len(windows) - 1, n_windows, dtype=int)
-        selected = [windows[i] for i in indices]
+    np.random.seed(seed)
 
-        logger.debug(f"Stratified sampling: Selected indices {indices}")
+    if len(windows) <= n_sample:
+        logger.info(f"Stratified sampling: Using all {len(windows)} windows (less than target {n_sample})")
+        return windows
 
-    elif strategy == 'uniform':
-        # Random uniform
-        np.random.seed(42)  # Reproducibility
-        indices = np.random.choice(len(windows), size=n_windows, replace=False)
-        indices = sorted(indices)
-        selected = [windows[i] for i in indices]
+    logger.info(f"Stratified sampling: Selecting {n_sample}/{len(windows)} windows by market regime")
 
-        logger.debug(f"Uniform sampling: Selected indices {indices}")
+    # ========================================================================
+    # 1. CARACTERIZAR RÉGIMEN DE CADA VENTANA
+    # ========================================================================
+    regime_data = []
 
-    elif strategy == 'recent':
-        # Bias towards recent (last 60% of windows)
-        recent_cutoff = int(len(windows) * 0.4)
-        recent_windows = windows[recent_cutoff:]
+    for i, (train_df, test_df) in enumerate(windows):
+        # Volatilidad (std de returns)
+        returns = train_df['Close'].pct_change().dropna()
+        volatility = returns.std() * np.sqrt(365 * 24)  # Annualizado
 
-        if len(recent_windows) >= n_windows:
-            # Stratify within recent windows
-            indices = np.linspace(0, len(recent_windows) - 1, n_windows, dtype=int)
-            selected = [recent_windows[i] for i in indices]
+        # Dirección (total return)
+        total_return = (train_df['Close'].iloc[-1] / train_df['Close'].iloc[0]) - 1
+
+        # Año
+        year = train_df.index[0].year
+
+        regime_data.append({
+            'index': i,
+            'volatility': volatility,
+            'total_return': total_return,
+            'year': year
+        })
+
+    regime_df = pd.DataFrame(regime_data)
+
+    # ========================================================================
+    # 2. BINNING POR RÉGIMEN
+    # ========================================================================
+    # Volatility bins: terciles
+    regime_df['vol_bin'] = pd.qcut(regime_df['volatility'], q=3, labels=['low_vol', 'med_vol', 'high_vol'], duplicates='drop')
+
+    # Direction bins: terciles
+    regime_df['dir_bin'] = pd.qcut(regime_df['total_return'], q=3, labels=['bear', 'sideways', 'bull'], duplicates='drop')
+
+    # Year bins
+    regime_df['year_bin'] = regime_df['year']
+
+    # Combinar en un solo régimen
+    regime_df['regime'] = (regime_df['vol_bin'].astype(str) + '_' +
+                           regime_df['dir_bin'].astype(str) + '_' +
+                           regime_df['year_bin'].astype(str))
+
+    logger.debug(f"Identified {regime_df['regime'].nunique()} unique regimes")
+
+    # ========================================================================
+    # 3. STRATIFIED SAMPLING
+    # ========================================================================
+    regime_counts = regime_df['regime'].value_counts()
+
+    # Calcular cuántas ventanas tomar de cada régimen (proporcional)
+    samples_per_regime = {}
+    for regime, count in regime_counts.items():
+        proportion = count / len(regime_df)
+        n_from_regime = max(1, int(np.ceil(proportion * n_sample)))
+        samples_per_regime[regime] = min(n_from_regime, count)
+
+    # Ajustar si nos pasamos
+    total_samples = sum(samples_per_regime.values())
+    if total_samples > n_sample:
+        # Reducir regímenes más grandes
+        regimes_sorted = sorted(samples_per_regime.items(), key=lambda x: x[1], reverse=True)
+        excess = total_samples - n_sample
+
+        for regime, n in regimes_sorted:
+            if excess == 0:
+                break
+            reduction = min(excess, samples_per_regime[regime] - 1)
+            if reduction > 0:
+                samples_per_regime[regime] -= reduction
+                excess -= reduction
+
+    # Seleccionar ventanas
+    selected_indices = []
+
+    for regime, n_to_select in samples_per_regime.items():
+        regime_indices = regime_df[regime_df['regime'] == regime]['index'].values
+
+        if len(regime_indices) <= n_to_select:
+            selected_indices.extend(regime_indices)
         else:
-            # Not enough recent windows, use all recent + some old
-            n_old_needed = n_windows - len(recent_windows)
-            old_windows = windows[:recent_cutoff]
-            old_indices = np.linspace(0, len(old_windows) - 1, n_old_needed, dtype=int)
-            selected = [old_windows[i] for i in old_indices] + recent_windows
+            # Sample random de este régimen
+            sampled = np.random.choice(regime_indices, size=n_to_select, replace=False)
+            selected_indices.extend(sampled)
 
-        logger.debug(f"Recent sampling: {len(selected)} windows (bias towards recent)")
+    # Ordenar para mantener orden temporal
+    selected_indices = sorted(selected_indices)
 
-    else:
-        raise ValueError(f"Unknown sampling strategy: {strategy}")
+    # Limitar a n_sample exacto
+    if len(selected_indices) > n_sample:
+        selected_indices = selected_indices[:n_sample]
 
-    return selected
+    selected_windows = [windows[i] for i in selected_indices]
+
+    logger.info(f"[OK] Selected {len(selected_windows)} windows covering {len(set(regime_df.loc[selected_indices, 'regime']))} regimes")
+
+    # Log régimen distribution
+    selected_regimes = regime_df.loc[selected_indices, 'regime'].value_counts()
+    for regime, count in selected_regimes.items():
+        logger.debug(f"  Regime {regime}: {count} windows")
+
+    return selected_windows
 
 def validate_no_lookahead(train_data: pd.DataFrame, test_data: pd.DataFrame):
     """

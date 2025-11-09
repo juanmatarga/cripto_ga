@@ -258,8 +258,11 @@ def run_backtest(pattern: Pattern, data: pd.DataFrame,
                         i, config['exits']['bars_hold']
                     )
 
+                # Log entry (handle None for stop/target)
+                stop_str = f"{stop_loss:.2f}" if stop_loss is not None else "None"
+                target_str = f"{take_profit:.2f}" if take_profit is not None else "None"
                 logger.debug(f"ENTRY: Bar {i}, Price {entry_price:.2f}, "
-                           f"Stop {stop_loss:.2f}, Target {take_profit:.2f}")
+                           f"Stop {stop_str}, Target {target_str}")
 
         # Update equity curve
         equity_curve.iloc[i] = equity
