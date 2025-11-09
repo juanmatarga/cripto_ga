@@ -1,6 +1,31 @@
 """
-BTC/USDT Pattern Discovery - Main Orchestrator
-Genetic Algorithm + Walk-Forward + Statistical Validation
+Genetic Algorithm Pattern Discovery for Crypto Trading
+======================================================
+
+Main execution script for end-to-end experiment.
+
+Author: Juan Manuel [Last Name]
+Institution: Universidad del CEMA (UCEMA)
+Course: Advanced Business Analytics
+Date: January 2025
+
+Description:
+    This script implements a complete genetic algorithm system for discovering
+    profitable trading patterns in cryptocurrency time series data. The system
+    includes walk-forward validation, statistical testing, and publication-ready
+    reporting.
+
+Usage:
+    python main.py
+
+Expected Runtime:
+    2-4 hours depending on hardware and configuration
+
+Outputs:
+    All results saved to output_reports/ directory
+
+For more information:
+    See README.md and docs/USER_GUIDE.md
 """
 
 import logging
@@ -10,6 +35,24 @@ from datetime import datetime
 import sys
 import numpy as np
 import pandas as pd
+import warnings
+
+# Suppress warnings
+warnings.filterwarnings('ignore')
+
+# ASCII art banner
+BANNER = """
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║     🧬  GENETIC ALGORITHM PATTERN DISCOVERY  🧬               ║
+║                                                              ║
+║     Cryptocurrency Trading Pattern Evolution                ║
+║     with Statistical Validation                             ║
+║                                                              ║
+║     UCEMA - Advanced Business Analytics                     ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+"""
 
 # Setup logging antes de cualquier import
 def setup_logging(config: dict):
@@ -66,6 +109,11 @@ def main():
         config_path = sys.argv[1]
 
     # FASE 0: Setup
+    print(BANNER)
+    print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+
+    start_time = datetime.now()  # Track total runtime
+
     print("="*80)
     print("BTC/USDT PATTERN DISCOVERY - GENETIC ALGORITHM")
     print("="*80)
@@ -352,11 +400,201 @@ def main():
     logger.info("FASE 5: REPORT GENERATION")
     logger.info("="*80)
 
-    # TODO: Implementar en Sprint 5
+    if len(portfolio) > 0 and robustness_results:
+        from reports import visualizations, report_generator, latex_exporter
 
-    logger.info("\n" + "="*80)
-    logger.info("EXPERIMENT COMPLETED")
-    logger.info("="*80)
+        output_dir = Path(config['output']['reports_dir'])
+
+        # Load evolution tracker data
+        evolution_dir = Path(config['output']['evolution_dir'])
+        evolution_file = evolution_dir / 'evolution_summary.json'
+
+        evolution_data = {}
+        if evolution_file.exists():
+            with open(evolution_file, 'r') as f:
+                evolution_data = json.load(f)
+            logger.info(f"[OK] Loaded evolution data from {evolution_file}")
+        else:
+            logger.warning("Evolution summary not found, skipping evolution plot")
+
+        # 1. Generate visualizations
+        logger.info("\n--- Generating Visualizations ---")
+
+        try:
+            # Equity curves
+            visualizations.plot_equity_curves(
+                portfolio_equity=portfolio_equity,
+                benchmark_equity=benchmark_equity,
+                output_path=output_dir / 'equity_performance.png'
+            )
+
+            # Drawdown analysis
+            visualizations.plot_drawdown_analysis(
+                equity=portfolio_equity,
+                output_path=output_dir / 'drawdown_analysis.png'
+            )
+
+            # Evolution fitness (if data available)
+            if evolution_data:
+                visualizations.plot_evolution_fitness(
+                    evolution_tracker_data=evolution_data,
+                    output_path=output_dir / 'evolution_fitness.png'
+                )
+
+            # Statistical tests
+            visualizations.plot_statistical_tests(
+                hansen_results=robustness_results['hansen_spa'],
+                white_results=robustness_results['white_rc'],
+                bootstrap_results=robustness_results['bootstrap'],
+                output_path=output_dir / 'statistical_tests.png'
+            )
+
+            # Returns distribution
+            returns = portfolio_equity.pct_change().dropna()
+            visualizations.plot_returns_distribution(
+                returns=returns,
+                output_path=output_dir / 'returns_distribution.png'
+            )
+
+            logger.info("[OK] All visualizations generated successfully")
+
+        except Exception as e:
+            logger.error(f"[FAIL] Visualization generation failed: {e}")
+
+        # 2. Generate Markdown report
+        logger.info("\n--- Generating Markdown Report ---")
+
+        try:
+            report_generator.generate_report(
+                portfolio=portfolio,
+                portfolio_equity=portfolio_equity,
+                benchmark_equity=benchmark_equity,
+                evolution_data=evolution_data,
+                final_generation=generation,
+                hansen_results=robustness_results['hansen_spa'],
+                white_results=robustness_results['white_rc'],
+                bootstrap_results=robustness_results['bootstrap'],
+                data=data,
+                config=config,
+                output_path=output_dir / 'experiment_report.md'
+            )
+
+            logger.info("[OK] Markdown report generated successfully")
+
+        except Exception as e:
+            logger.error(f"[FAIL] Report generation failed: {e}")
+
+        # 3. Export LaTeX tables
+        logger.info("\n--- Exporting LaTeX Tables ---")
+
+        try:
+            # Calculate metrics for tables
+            portfolio_metrics = calculate_all_metrics(portfolio_equity, periods_per_year)
+            benchmark_metrics = calculate_all_metrics(benchmark_equity, periods_per_year)
+
+            latex_exporter.export_all_latex_tables(
+                portfolio=portfolio,
+                portfolio_metrics=portfolio_metrics,
+                benchmark_metrics=benchmark_metrics,
+                hansen_results=robustness_results['hansen_spa'],
+                white_results=robustness_results['white_rc'],
+                bootstrap_results=robustness_results['bootstrap'],
+                output_dir=output_dir
+            )
+
+            logger.info("[OK] LaTeX tables exported successfully")
+
+        except Exception as e:
+            logger.error(f"[FAIL] LaTeX export failed: {e}")
+
+        # Summary of outputs
+        logger.info("\n--- Output Files Generated ---")
+        logger.info(f"Reports directory: {output_dir}")
+        logger.info(f"  - equity_performance.png")
+        logger.info(f"  - drawdown_analysis.png")
+        logger.info(f"  - evolution_fitness.png")
+        logger.info(f"  - statistical_tests.png")
+        logger.info(f"  - returns_distribution.png")
+        logger.info(f"  - experiment_report.md")
+        logger.info(f"  - patterns_table.tex")
+        logger.info(f"  - metrics_table.tex")
+        logger.info(f"  - statistical_tests_table.tex")
+        logger.info(f"  - hansen_spa_results.json")
+        logger.info(f"  - white_rc_results.json")
+        logger.info(f"  - bootstrap_results.json")
+        logger.info(f"  - equity_curves.csv")
+
+    else:
+        logger.warning("Skipping report generation (no portfolio or robustness results)")
+
+    # ========================================================================
+    # FINAL SUMMARY
+    # ========================================================================
+    logger.info(f"\n{'='*80}")
+    logger.info("🎉 EXPERIMENT COMPLETE 🎉")
+    logger.info(f"{'='*80}")
+
+    end_time = datetime.now()
+    total_runtime = (end_time - start_time).total_seconds() / 60
+
+    logger.info(f"\nExperiment Summary:")
+    logger.info(f"  Start time: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"  End time: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"  Total runtime: {total_runtime:.1f} minutes ({total_runtime/60:.1f} hours)")
+
+    logger.info(f"\nData:")
+    logger.info(f"  Symbol: {config['data']['symbol']}")
+    logger.info(f"  Timeframe: {config['data']['timeframe']}")
+    logger.info(f"  Bars: {len(data):,}")
+
+    logger.info(f"\nGenetic Algorithm:")
+    logger.info(f"  Generations run: {generation}")
+    logger.info(f"  Final population: {len(population)}")
+    logger.info(f"  Best fitness: {best_pattern.fitness:.4f}")
+
+    logger.info(f"\nPortfolio:")
+    if len(portfolio) > 0:
+        # Extract patterns from portfolio tuples
+        if isinstance(portfolio[0], tuple):
+            portfolio_patterns = [p[0] for p in portfolio]
+        else:
+            portfolio_patterns = portfolio
+
+        logger.info(f"  Size: {len(portfolio)} patterns")
+        logger.info(f"  LONG count: {sum(1 for p in portfolio_patterns if p.direction == 'LONG')}")
+        logger.info(f"  SHORT count: {sum(1 for p in portfolio_patterns if p.direction == 'SHORT')}")
+    else:
+        logger.info(f"  Size: 0 patterns (empty)")
+
+    if 'robustness_results' in locals() and robustness_results:
+        logger.info(f"\nStatistical Validation:")
+        if robustness_results.get('hansen_spa'):
+            hansen = robustness_results['hansen_spa']
+            status = "✓ PASSED" if hansen['reject_null'] else "✗ FAILED"
+            logger.info(f"  Hansen SPA: {status} (p={hansen['p_value']:.4f})")
+
+        if robustness_results.get('white_rc'):
+            white = robustness_results['white_rc']
+            status = "✓ PASSED" if white['reject_null'] else "✗ FAILED"
+            logger.info(f"  White RC: {status} (p={white['p_value']:.4f})")
+
+    logger.info(f"\nOutputs:")
+    logger.info(f"  Reports directory: {Path(config['output']['reports_dir'])}")
+    evolution_dir = Path(config['output'].get('evolution_dir', 'output_evolution'))
+    if evolution_dir.exists():
+        logger.info(f"  Evolution snapshots: {evolution_dir}")
+
+    logger.info(f"\n{'='*80}")
+    logger.info("Next Steps:")
+    logger.info("  1. Review: output_reports/experiment_report.md")
+    logger.info("  2. Check visualizations: output_reports/*.png")
+    logger.info("  3. Import LaTeX tables into your paper")
+    logger.info("  4. Run validation: pytest tests/")
+    logger.info(f"{'='*80}\n")
+
+    print(BANNER)
+    print(f"Completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Total time: {total_runtime:.1f} minutes\n")
 
 if __name__ == '__main__':
     main()

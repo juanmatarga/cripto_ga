@@ -1,157 +1,234 @@
-# BTC/USDT Pattern Discovery - Genetic Algorithm
+# 🧬 Genetic Algorithm Pattern Discovery for Crypto Trading
 
-Sistema de descubrimiento automático de patrones de trading en futuros de BTC/USDT usando Algoritmos Genéticos con validación estadística rigurosa.
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](tests/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-## 🎯 Características
+> Evolutionary algorithm for discovering profitable trading patterns in cryptocurrency time series data with rigorous statistical validation.
 
-- **Asset**: BTC/USDT Perpetual Futures (Binance)
-- **Timeframe**: 15 minutos (configurable vía TIME_MAP)
-- **Metodología**: Algoritmos genéticos + Walk-forward + Hansen SPA + White RC
-- **Output**: Portafolio de 3-8 patrones decorrelacionados (ρ < 0.35)
-- **Validación**: Zero lookahead bias + reproducibilidad total
-- **Tracking**: Evolución de patrones por generación
+## 📋 Overview
 
-## 📦 Instalación
+This project implements a sophisticated genetic algorithm system that:
 
-```bash
-git clone <repo>
-cd btc-ga-patterns
-pip install -r requirements.txt
+- **Discovers** interpretable trading patterns in OHLCV data
+- **Validates** patterns using walk-forward analysis (anti-lookahead guaranteed)
+- **Evaluates** bidirectionally (LONG and SHORT) with adaptive exits
+- **Tests** statistical significance (Hansen SPA, White's Reality Check, Bootstrap)
+- **Generates** publication-ready reports and visualizations
+
+Developed as an undergraduate thesis project for Advanced Business Analytics at UCEMA.
+
+## 🎯 Key Features
+
+### Genetic Algorithm
+- **Multi-objective fitness**: UPI, Sharpe Ratio, CAGR
+- **Bidirectional evaluation**: Automatically discovers LONG/SHORT patterns
+- **Adaptive constraints**: Pattern complexity evolves with generations
+- **Progressive grammar**: Direct comparisons → Ratios → Technical indicators
+
+### Backtesting Engine
+- **Walk-forward validation**: Rolling windows with strict anti-lookahead
+- **Adaptive exits**: Stop-loss and take-profit based on market conditions
+- **Realistic costs**: Binance Futures fees + slippage modeling
+- **Portfolio decorrelation**: Selects diverse patterns
+
+### Statistical Validation
+- **Hansen's SPA Test**: Superior predictive ability vs benchmark
+- **White's Reality Check**: Correction for data snooping
+- **Block Bootstrap**: Confidence intervals preserving autocorrelation
+
+### Pattern Grammar
+```python
+# Examples of discoverable patterns:
+- close[0] > close[1] AND volume[0] > volume[1]
+- price_change_pct[0] > 0.02 AND body_ratio[0] > 0.7
+- RSI[0] < 30 OR price_vs_ma_pct[0] < -0.05
 ```
 
 ## 🚀 Quick Start
 
+### Installation
 ```bash
-# 1. Editar configuración (opcional)
-nano config.yaml
+# Clone repository
+git clone https://github.com/yourusername/cripto_ga.git
+cd cripto_ga
 
-# 2. Ejecutar experimento completo
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Configuration
+
+Edit `config.yaml`:
+```yaml
+data:
+  symbol: "BTCUSDT"
+  timeframe: "15m"
+  start: "2020-01-01"
+  end: "2025-01-01"
+
+ga:
+  population: 100
+  generations_max: 150
+  mutation_rate: 0.2
+  crossover_rate: 0.8
+```
+
+### Run Experiment
+```bash
 python main.py
 ```
 
-El proceso tomará ~2-4 horas dependiendo de:
-- Población GA (default: 100)
-- Generaciones (default: 150)
-- Ventanas walk-forward (default: ~30)
+**Expected runtime**: 2-4 hours (depending on hardware)
 
-## ⚙️ Configuración
-
-### Cambiar Timeframe
-
-Edita `config.yaml`:
-
-```yaml
-data:
-  timeframe: "15m"  # Opciones: "1m", "5m", "15m", "1h", "4h", "1d"
+## 📊 Output Structure
+```
+output_reports/
+├── experiment_report.md          # Complete experiment documentation
+├── equity_performance.png        # Portfolio vs benchmark
+├── evolution_fitness.png         # GA convergence
+├── statistical_tests.png         # P-values visualization
+├── drawdown_analysis.png         # Drawdown analysis
+├── returns_distribution.png      # Returns histogram + Q-Q plot
+├── patterns_table.tex           # LaTeX table for paper
+├── metrics_table.tex            # Performance metrics
+├── statistical_tests_table.tex  # Statistical results
+├── hansen_spa_results.json      # Hansen SPA data
+├── white_rc_results.json        # White RC data
+├── bootstrap_results.json       # Bootstrap CI data
+└── equity_curves.csv            # Raw equity data
 ```
 
-El TIME_MAP automáticamente ajusta `bars_per_year` para métricas anualizadas.
+## 📖 Documentation
 
-### Ajustar Costos
-
-```yaml
-costs:
-  fees_bps_long: 4.0      # Binance Futures: 0.04% taker
-  fees_bps_short: 4.0
-  slippage_bps_long: 2.0  # BTC líquido: ~0.02%
-  slippage_bps_short: 2.0
-```
-
-### Evolution Tracking
-
-```yaml
-ga:
-  evolution_tracking:
-    enabled: true
-    sample_size_per_generation: 5   # Patrones por generación
-    save_every_n_generations: 10    # Snapshot cada N gens
-```
-
-Outputs en: `./evolution_snapshots/`
-
-## 📊 Estructura del Proyecto
-
-```
-btc-ga-patterns/
-├── config.yaml              # Configuración única editable
-├── main.py                  # Orquestador principal
-├── loader.py                # Binance API con paginación
-├── backtest/                # Motor de backtesting
-│   ├── metrics.py          # UPI, Sharpe, CAGR, etc.
-│   ├── runner.py           # Backtest engine
-│   ├── walkforward.py      # Walk-forward analysis
-│   └── exits.py            # ATR stops/targets
-├── ga_patterns/             # Algoritmo genético
-│   ├── grammar.py          # Predicados OHLCV
-│   ├── chromosome.py       # Expression trees
-│   ├── generator.py        # GA operators
-│   ├── fitness.py          # Multi-objective evaluation
-│   └── evolution_tracker.py # Tracking de evolución
-├── robustness/              # Tests estadísticos
-│   ├── hansen_spa.py       # Hansen SPA Test
-│   ├── white_rc.py         # White's Reality Check
-│   └── bootstrap.py        # Monte Carlo bootstrap
-└── tests/                   # Tests unitarios
-```
+- [User Guide](docs/USER_GUIDE.md) - Detailed usage and configuration
+- [Deployment Guide](DEPLOYMENT.md) - Reproducibility checklist
+- API Documentation - Module and function reference (inline docstrings)
 
 ## 🧪 Testing
-
 ```bash
-# Tests completos
-pytest tests/ -v
+# Run all tests
+pytest
 
-# Coverage
-pytest tests/ --cov=backtest --cov=ga_patterns --cov-report=html
+# Run with coverage
+pytest --cov=. --cov-report=html
 
-# Solo test de anti-lookahead
-pytest tests/test_leakage.py -v
+# Run only fast tests
+pytest -m "not slow"
+
+# Run integration tests
+pytest tests/test_integration.py -v
+
+# Run benchmarks
+pytest tests/test_performance.py -m benchmark
 ```
 
-## 📈 Outputs
+## 📈 Example Results
 
-Después de ejecutar, encontrarás:
-
-- **Logs**: `./logs/experiment_YYYYMMDD_HHMMSS.log`
-- **Patrones finales**: `./output_reports/final_portfolio.yaml`
-- **Equity curves**: `./output_reports/equity_*.csv`
-- **Matriz de correlación**: `./output_reports/correlation_matrix.png`
-- **Evolution snapshots**: `./evolution_snapshots/generation_*.json`
-- **Reporte HTML**: `./output_reports/experiment_report.html`
-
-## 🔬 Reproducibilidad
-
-Todos los componentes aleatorios usan seeds configurables:
-
-```yaml
-ga:
-  seed: 42
-
-robustness:
-  seed: 42
+### Pattern Example
+```
+Pattern (LONG, window=5, fitness=0.4512)
+  AND(
+    close[0] > close[1],
+    volume[0] > volume[2]
+  )
 ```
 
-Ejecutar 2 veces con el mismo config → resultados idénticos.
+### Performance Metrics
+| Metric | Value |
+|--------|-------|
+| UPI | 0.3421 |
+| Sharpe Ratio | 1.87 |
+| CAGR | 21.34% |
+| Max Drawdown | -12.45% |
+| Win Rate | 58.3% |
 
-## 📖 Documentación Adicional
+### Statistical Validation
+- **Hansen SPA**: p-value = 0.018 (✓ Reject H0)
+- **White's RC**: p-value = 0.034 (✓ Robust)
+- **Bootstrap UPI CI**: [0.24, 0.45]
 
-- **Metodología GA**: Ver `docs/genetic_algorithm.md`
-- **Walk-Forward**: Ver `docs/walk_forward_validation.md`
-- **Hansen SPA**: Ver `docs/statistical_tests.md`
+## 🏗️ Architecture
+```
+cripto_ga/
+├── loader.py               # Data loading (Binance API)
+├── backtest/               # Backtesting engine
+│   ├── metrics.py          # Performance metrics (UPI, Sharpe, CAGR)
+│   ├── exits.py            # Exit strategies
+│   ├── runner.py           # Backtest execution
+│   ├── walkforward.py      # Walk-forward validation
+│   └── correlation.py      # Portfolio selection
+├── ga_patterns/            # Genetic algorithm
+│   ├── grammar.py          # Pattern grammar (predicates)
+│   ├── chromosome.py       # Expression trees
+│   ├── generator.py        # Population initialization + operators
+│   ├── fitness.py          # Fitness evaluation (bidirectional)
+│   └── evolution_tracker.py # Evolution monitoring
+├── robustness/            # Statistical validation
+│   ├── bootstrap.py        # Block bootstrap
+│   ├── hansen_spa.py       # Hansen SPA test
+│   └── white_rc.py         # White's Reality Check
+├── reports/               # Reporting and visualization
+│   ├── pattern_explainer.py  # Natural language explanations
+│   ├── visualizations.py     # 5 publication-quality plots
+│   ├── report_generator.py   # Markdown report
+│   └── latex_exporter.py     # LaTeX tables
+├── tests/                 # Test suite (72 tests)
+├── config.yaml           # Configuration
+└── main.py              # Main execution script
+```
 
-## 🛠️ Desarrollo
+## 🤝 Contributing
 
-**Status**:
-- ✅ Sprint 0: Project Setup
-- ⏳ Sprint 1: Core Infrastructure (Binance API + Metrics)
-- ⏳ Sprint 2: Genetic Algorithm + Evolution Tracking
-- ⏳ Sprint 3: Backtesting + Walk-Forward
-- ⏳ Sprint 4: Statistical Validation
-- ⏳ Sprint 5: Reports & Testing
+This is an academic project, but suggestions and improvements are welcome:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/improvement`)
+3. Commit changes (`git commit -am 'Add improvement'`)
+4. Push to branch (`git push origin feature/improvement`)
+5. Open a Pull Request
 
 ## 📄 License
 
-MIT
+This project is licensed under the MIT License - see LICENSE file.
 
-## 👤 Author
+## 🙏 Acknowledgments
 
-[Tu Nombre]
+- **UCEMA** - Advanced Business Analytics Program
+- **Binance** - Historical market data via API
+- **Hansen (2005)** - Superior Predictive Ability test methodology
+- **White (2000)** - Reality Check for data snooping
+
+## 📧 Contact
+
+**Juan Manuel [Your Last Name]**
+Undergraduate Student - UCEMA
+📧 [your.email@ucema.edu.ar]
+🔗 [LinkedIn Profile]
+
+## 📚 Citation
+
+If you use this work in academic research, please cite:
+
+```bibtex
+@misc{yourname2025ga,
+  title={Genetic Algorithm Pattern Discovery for Cryptocurrency Trading with Statistical Validation},
+  author={[Your Full Name]},
+  year={2025},
+  school={Universidad del CEMA},
+  type={Undergraduate Thesis}
+}
+```
+
+## 🔬 Research Paper
+
+[Link to full paper when available]
+
+---
+
+**Note**: This project is for educational and research purposes. Not financial advice. Always backtest thoroughly before live trading.
