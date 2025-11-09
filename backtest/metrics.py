@@ -162,6 +162,23 @@ def calculate_all_metrics(equity_curve: pd.Series, periods_per_year: int) -> Dic
 
     returns = calculate_returns(equity_curve).dropna()
 
+    # Calculate win rate and profit factor from returns
+    positive_returns = returns[returns > 0]
+    negative_returns = returns[returns < 0]
+
+    win_rate = len(positive_returns) / len(returns) if len(returns) > 0 else 0.0
+
+    # Profit factor = sum(positive returns) / abs(sum(negative returns))
+    total_gains = positive_returns.sum() if len(positive_returns) > 0 else 0.0
+    total_losses = abs(negative_returns.sum()) if len(negative_returns) > 0 else 0.0
+
+    if total_losses > 0:
+        profit_factor = total_gains / total_losses
+    elif total_gains > 0:
+        profit_factor = 999.0  # All wins, no losses
+    else:
+        profit_factor = 0.0  # No trades
+
     metrics = {
         'upi': upi_ratio(equity_curve, periods_per_year),
         'sharpe': sharpe_ratio(equity_curve, periods_per_year),
@@ -170,7 +187,9 @@ def calculate_all_metrics(equity_curve: pd.Series, periods_per_year: int) -> Dic
         'ulcer_index': ulcer_index(equity_curve),
         'total_return': (equity_curve.iloc[-1] / equity_curve.iloc[0]) - 1,
         'volatility': returns.std() * np.sqrt(periods_per_year),  # Anualizada
-        'num_periods': len(equity_curve)
+        'num_periods': len(equity_curve),
+        'win_rate': win_rate,
+        'profit_factor': profit_factor
     }
 
     return metrics

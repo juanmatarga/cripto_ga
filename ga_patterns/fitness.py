@@ -1,6 +1,6 @@
 """
 Fitness Evaluation - BIDIRECTIONAL (LONG vs SHORT)
-MOCK VERSION for Sprint 2 - Will be replaced with real backtesting in Sprint 3
+REAL BACKTESTING VERSION (Sprint 3)
 """
 
 import pandas as pd
@@ -9,42 +9,14 @@ from typing import List, Tuple
 import logging
 
 from ga_patterns.chromosome import Pattern
+from backtest.runner import run_backtest
 
 logger = logging.getLogger(__name__)
-
-def create_mock_equity_curve(pattern: Pattern, data: pd.DataFrame,
-                             direction: str) -> pd.Series:
-    """
-    MOCK: Equity curve sintético.
-
-    IMPORTANTE: Será reemplazado en Sprint 3.
-
-    El seed depende del patrón + dirección para consistencia.
-    """
-    n_periods = min(len(data), 1000)
-
-    # Seed basado en patrón + dirección
-    seed_str = f"{str(pattern)}{direction}"
-    seed = hash(seed_str) % 2**32
-    np.random.seed(seed)
-
-    # Random walk con drift
-    # LONG: drift positivo
-    # SHORT: drift negativo (simulando market positivo)
-    if direction == 'LONG':
-        drift = 0.001
-    else:
-        drift = -0.0005  # SHORT es más difícil en bull market
-
-    returns = np.random.randn(n_periods) * 0.02 + drift
-    equity = 100 * (1 + returns).cumprod()
-
-    return pd.Series(equity, index=data.index[:n_periods])
 
 def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
                                    config: dict) -> Tuple[float, str]:
     """
-    Evalúa patrón en LONG y SHORT, retorna mejor fitness + dirección.
+    Evalúa patrón en LONG y SHORT con BACKTESTING REAL, retorna mejor fitness + dirección.
 
     Args:
         pattern: Pattern a evaluar
@@ -54,7 +26,7 @@ def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
     Returns:
         (best_fitness, best_direction)
 
-    MOCK VERSION: Usa equity sintético.
+    REAL BACKTESTING VERSION: Usa backtest.runner con ATR exits y costos reales.
     """
     from backtest.metrics import calculate_all_metrics
 
@@ -63,58 +35,100 @@ def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
 
     # Evaluar LONG
     logger.debug(f"Evaluating pattern as LONG...")
-    equity_long = create_mock_equity_curve(pattern, data, 'LONG')
+
+    # Crear copia del patrón para LONG
+    pattern_long = pattern.__class__(
+        direction='LONG',
+        window=pattern.window,
+        expression=pattern.expression,
+        fitness=pattern.fitness,
+        fitness_long=pattern.fitness_long,
+        fitness_short=pattern.fitness_short,
+        generation_created=pattern.generation_created
+    )
 
     try:
-        metrics_long = calculate_all_metrics(equity_long, periods_per_year)
+        # Run backtest LONG
+        equity_long, trades_long = run_backtest(pattern_long, data, config)
 
-        # Calcular fitness LONG
-        if metrics_long['cagr'] < config['ga']['fitness']['cagr_min_threshold']:
+        # Filtrar trades inválidos
+        if len(trades_long) < 5:  # Mínimo 5 trades para ser válido
+            logger.debug(f"LONG: Insufficient trades ({len(trades_long)})")
             fitness_long = -999.0
         else:
-            # Safeguards para valores infinitos o muy grandes
-            upi_norm = min(metrics_long['upi'], 100.0)  # Cap UPI
-            sharpe_norm = min(metrics_long['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
-            cagr_norm = min(metrics_long['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
+            metrics_long = calculate_all_metrics(equity_long, periods_per_year)
 
-            fitness_long = (
-                config['ga']['fitness']['weight_upi'] * upi_norm +
-                config['ga']['fitness']['weight_sharpe'] * sharpe_norm +
-                config['ga']['fitness']['weight_cagr'] * cagr_norm
-            )
-
-            # Final safeguard: cap total fitness
-            if np.isinf(fitness_long) or np.isnan(fitness_long) or fitness_long > 1000:
+            # Calcular fitness LONG
+            if metrics_long['cagr'] < config['ga']['fitness']['cagr_min_threshold']:
                 fitness_long = -999.0
+            else:
+                # Safeguards para valores infinitos o muy grandes
+                upi_norm = min(metrics_long['upi'], 100.0)  # Cap UPI
+                sharpe_norm = min(metrics_long['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
+                cagr_norm = min(metrics_long['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
+
+                fitness_long = (
+                    config['ga']['fitness']['weight_upi'] * upi_norm +
+                    config['ga']['fitness']['weight_sharpe'] * sharpe_norm +
+                    config['ga']['fitness']['weight_cagr'] * cagr_norm
+                )
+
+                # Final safeguard: cap total fitness
+                if np.isinf(fitness_long) or np.isnan(fitness_long) or fitness_long > 1000:
+                    fitness_long = -999.0
+
+            logger.debug(f"LONG: {len(trades_long)} trades, UPI={metrics_long['upi']:.2f}, fitness={fitness_long:.4f}")
+
     except Exception as e:
         logger.error(f"Error calculating LONG fitness: {e}")
         fitness_long = -999.0
 
     # Evaluar SHORT
     logger.debug(f"Evaluating pattern as SHORT...")
-    equity_short = create_mock_equity_curve(pattern, data, 'SHORT')
+
+    # Crear copia del patrón para SHORT
+    pattern_short = pattern.__class__(
+        direction='SHORT',
+        window=pattern.window,
+        expression=pattern.expression,
+        fitness=pattern.fitness,
+        fitness_long=pattern.fitness_long,
+        fitness_short=pattern.fitness_short,
+        generation_created=pattern.generation_created
+    )
 
     try:
-        metrics_short = calculate_all_metrics(equity_short, periods_per_year)
+        # Run backtest SHORT
+        equity_short, trades_short = run_backtest(pattern_short, data, config)
 
-        # Calcular fitness SHORT
-        if metrics_short['cagr'] < config['ga']['fitness']['cagr_min_threshold']:
+        # Filtrar trades inválidos
+        if len(trades_short) < 5:  # Mínimo 5 trades para ser válido
+            logger.debug(f"SHORT: Insufficient trades ({len(trades_short)})")
             fitness_short = -999.0
         else:
-            # Safeguards para valores infinitos o muy grandes
-            upi_norm = min(metrics_short['upi'], 100.0)  # Cap UPI
-            sharpe_norm = min(metrics_short['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
-            cagr_norm = min(metrics_short['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
+            metrics_short = calculate_all_metrics(equity_short, periods_per_year)
 
-            fitness_short = (
-                config['ga']['fitness']['weight_upi'] * upi_norm +
-                config['ga']['fitness']['weight_sharpe'] * sharpe_norm +
-                config['ga']['fitness']['weight_cagr'] * cagr_norm
-            )
-
-            # Final safeguard: cap total fitness
-            if np.isinf(fitness_short) or np.isnan(fitness_short) or fitness_short > 1000:
+            # Calcular fitness SHORT
+            if metrics_short['cagr'] < config['ga']['fitness']['cagr_min_threshold']:
                 fitness_short = -999.0
+            else:
+                # Safeguards para valores infinitos o muy grandes
+                upi_norm = min(metrics_short['upi'], 100.0)  # Cap UPI
+                sharpe_norm = min(metrics_short['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
+                cagr_norm = min(metrics_short['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
+
+                fitness_short = (
+                    config['ga']['fitness']['weight_upi'] * upi_norm +
+                    config['ga']['fitness']['weight_sharpe'] * sharpe_norm +
+                    config['ga']['fitness']['weight_cagr'] * cagr_norm
+                )
+
+                # Final safeguard: cap total fitness
+                if np.isinf(fitness_short) or np.isnan(fitness_short) or fitness_short > 1000:
+                    fitness_short = -999.0
+
+            logger.debug(f"SHORT: {len(trades_short)} trades, UPI={metrics_short['upi']:.2f}, fitness={fitness_short:.4f}")
+
     except Exception as e:
         logger.error(f"Error calculating SHORT fitness: {e}")
         fitness_short = -999.0
@@ -141,12 +155,12 @@ def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
 def evaluate_population(population: List[Pattern], data: pd.DataFrame,
                        config: dict) -> List[float]:
     """
-    Evalúa población completa con evaluación bidireccional.
+    Evalúa población completa con evaluación bidireccional REAL.
 
     Returns:
         Lista de fitness scores
     """
-    logger.info(f"Evaluating population of {len(population)} patterns (BIDIRECTIONAL, MOCK mode)...")
+    logger.info(f"Evaluating population of {len(population)} patterns (BIDIRECTIONAL, REAL BACKTEST)...")
 
     fitness_scores = []
     long_count = 0
@@ -164,7 +178,7 @@ def evaluate_population(population: List[Pattern], data: pd.DataFrame,
         if (i + 1) % 10 == 0:
             logger.info(f"  Evaluated {i+1}/{len(population)}")
 
-    logger.info(f"[OK] Population evaluated (BIDIRECTIONAL, MOCK)")
+    logger.info(f"[OK] Population evaluated (BIDIRECTIONAL, REAL BACKTEST)")
     logger.info(f"  Best fitness: {max(fitness_scores):.4f}")
     logger.info(f"  Mean fitness: {np.mean(fitness_scores):.4f}")
     logger.info(f"  Valid patterns: {sum(1 for f in fitness_scores if f > -999)}")

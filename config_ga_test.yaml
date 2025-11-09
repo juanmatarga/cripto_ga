@@ -81,19 +81,19 @@ exits:
   atr_stop: 1.5
   atr_take: 3.0
 
-# SELECTION & FILTERING
+# SELECTION & FILTERING (EXTREMELY RELAXED FOR 1-DAY TEST)
 selection:
   topk: 5                # Menos para test
-  corr_threshold: 0.35
+  corr_threshold: 0.95   # Casi sin restricción para test
 
   filters:
-    upi_min: 0.15
-    sharpe_min: 1.5
-    cagr_min: 0.15
-    max_drawdown_max: 0.25
-    profit_factor_min: 1.5
-    win_rate_min: 0.45
-    min_trades_per_window: 15
+    upi_min: -1.0        # Sin restricción práctica
+    sharpe_min: -1.0     # Sin restricción práctica
+    cagr_min: -1.0       # Sin restricción práctica
+    max_drawdown_max: 1.0  # Sin restricción práctica
+    profit_factor_min: 0.0  # Sin restricción práctica
+    win_rate_min: 0.0    # Sin restricción práctica
+    min_trades_per_window: 3  # Solo 3 trades mínimos
 
 # ROBUSTNESS TESTS
 robustness:

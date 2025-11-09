@@ -263,7 +263,19 @@ def main():
     logger.info("FASE 3: PORTFOLIO SELECTION")
     logger.info("="*80)
 
-    # TODO: Implementar en Sprint 3
+    from backtest.correlation import select_portfolio
+
+    # Select decorrelated portfolio from top patterns
+    portfolio = select_portfolio(top_patterns, data, config)
+
+    if len(portfolio) == 0:
+        logger.error("Portfolio selection failed - no patterns passed filters!")
+        logger.info("\n" + "="*80)
+        logger.info("EXPERIMENT STOPPED (No valid portfolio)")
+        logger.info("="*80)
+        return
+
+    logger.info(f"\n[OK] Selected {len(portfolio)} decorrelated patterns for validation")
 
     # FASE 4: Statistical Validation
     logger.info("\n" + "="*80)
