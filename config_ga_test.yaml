@@ -95,18 +95,18 @@ selection:
     win_rate_min: 0.0    # Sin restricción práctica
     min_trades_per_window: 3  # Solo 3 trades mínimos
 
-# ROBUSTNESS TESTS
+# ROBUSTNESS TESTS (REDUCED FOR FAST TEST)
 robustness:
   seed: 42
   bootstrap:
-    n_iterations: 100     # Reducido
-    block_size: 20
+    n_iterations: 50      # Muy reducido para test rápido
+    block_size: 10        # Pequeño para dataset de 1 día
     confidence_level: 0.95
   hansen_spa:
-    enabled: false        # Disabled para test rápido
+    enabled: true         # Enabled para test completo
     alpha: 0.05
   white_rc:
-    enabled: false        # Disabled para test rápido
+    enabled: true         # Enabled para test completo
     alpha: 0.05
 
 # OUTPUT

@@ -9,6 +9,7 @@ from pathlib import Path
 from datetime import datetime
 import sys
 import numpy as np
+import pandas as pd
 
 # Setup logging antes de cualquier import
 def setup_logging(config: dict):
@@ -282,7 +283,69 @@ def main():
     logger.info("FASE 4: STATISTICAL VALIDATION")
     logger.info("="*80)
 
-    # TODO: Implementar en Sprint 4
+    if len(portfolio) > 0:
+        from robustness import run_robustness_tests
+
+        logger.info("Running robustness tests on final portfolio...")
+        logger.info("WARNING: This may take 10-20 minutes...")
+
+        robustness_results = run_robustness_tests(
+            portfolio_patterns=portfolio,
+            data=data,
+            config=config
+        )
+
+        # Guardar resultados
+        import json
+
+        output_dir = Path(config['output']['reports_dir'])
+        output_dir.mkdir(exist_ok=True)
+
+        # Guardar Hansen SPA
+        if robustness_results['hansen_spa']:
+            hansen_file = output_dir / 'hansen_spa_results.json'
+            with open(hansen_file, 'w') as f:
+                json.dump(robustness_results['hansen_spa'], f, indent=2)
+            logger.info(f"[OK] Saved Hansen SPA results to {hansen_file}")
+
+        # Guardar White RC
+        if robustness_results['white_rc']:
+            white_file = output_dir / 'white_rc_results.json'
+            with open(white_file, 'w') as f:
+                json.dump(robustness_results['white_rc'], f, indent=2)
+            logger.info(f"[OK] Saved White RC results to {white_file}")
+
+        # Guardar Bootstrap
+        if robustness_results['bootstrap']:
+            bootstrap_file = output_dir / 'bootstrap_results.json'
+            # Convertir a JSON-serializable (sin arrays numpy)
+            bootstrap_json = {}
+            for metric, stats in robustness_results['bootstrap'].items():
+                bootstrap_json[metric] = {
+                    'mean': float(stats['mean']),
+                    'median': float(stats['median']),
+                    'std': float(stats['std']),
+                    'ci_lower': float(stats['ci_lower']),
+                    'ci_upper': float(stats['ci_upper'])
+                }
+            with open(bootstrap_file, 'w') as f:
+                json.dump(bootstrap_json, f, indent=2)
+            logger.info(f"[OK] Saved Bootstrap results to {bootstrap_file}")
+
+        # Guardar equity curves para visualización
+        portfolio_equity = robustness_results['portfolio_equity']
+        benchmark_equity = robustness_results['benchmark_equity']
+
+        equity_df = pd.DataFrame({
+            'portfolio': portfolio_equity,
+            'benchmark': benchmark_equity
+        })
+        equity_file = output_dir / 'equity_curves.csv'
+        equity_df.to_csv(equity_file)
+        logger.info(f"[OK] Saved equity curves to {equity_file}")
+
+    else:
+        logger.warning("No portfolio to validate (empty)")
 
     # FASE 5: Report Generation
     logger.info("\n" + "="*80)

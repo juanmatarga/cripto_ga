@@ -1,0 +1,7 @@
+{
+  "test_statistic": 0.15563389385175308,
+  "p_value": 0.44,
+  "reject_null": false,
+  "mean_outperformance": 4.254753987175767e-05,
+  "alpha": 0.05
+}

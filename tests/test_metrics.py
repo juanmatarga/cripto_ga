@@ -71,7 +71,7 @@ def test_calculate_all_metrics_structure():
     metrics = calculate_all_metrics(equity, periods_per_year=35040)
 
     expected_keys = {'upi', 'sharpe', 'cagr', 'max_dd', 'ulcer_index',
-                     'total_return', 'volatility', 'num_periods'}
+                     'total_return', 'volatility', 'num_periods', 'win_rate', 'profit_factor'}
     assert set(metrics.keys()) == expected_keys
 
 def test_reproducibility():
