@@ -5,6 +5,7 @@ Chromosome Representation - Expression Trees with Direct Comparisons
 from dataclasses import dataclass, field
 from typing import Union, List, Dict, Optional
 import pandas as pd
+import numpy as np
 import logging
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,14 @@ class PredicateNode:
         predicate_func = predicate_info['func']
 
         try:
+            # Validación: verificar que tenemos suficientes barras
+            n_bars = len(data)
+            required_bars = max(self.bar_offset, self.compare_with_bar if self.compare_with_bar is not None else 0) + 1
+
+            if n_bars < required_bars:
+                logger.debug(f"Insufficient data: need {required_bars} bars, have {n_bars}")
+                return False
+
             # Calcular valor en bar_offset
             value1 = predicate_func(data, bar_offset=self.bar_offset, **(self.params or {}))
 
@@ -52,12 +61,23 @@ class PredicateNode:
                 # Comparación con threshold
                 value2 = self.threshold
 
+            # Validar que los valores no son None/NaN
+            if value1 is None or value2 is None:
+                return False
+
+            if isinstance(value1, float) and (np.isnan(value1) or np.isinf(value1)):
+                return False
+            if isinstance(value2, float) and (np.isnan(value2) or np.isinf(value2)):
+                return False
+
             # Evaluar
             result = ComparisonOperator.evaluate(self.operator, value1, value2)
             return result
 
         except Exception as e:
-            logger.error(f"Error evaluating {self.predicate_name}: {e}")
+            logger.error(f"Error evaluating {self.predicate_name}[{self.bar_offset}] {self.operator} "
+                        f"{'bar['+str(self.compare_with_bar)+']' if self.compare_with_bar is not None else self.threshold}: "
+                        f"{type(e).__name__}: {e}")
             return False
 
     def __repr__(self):

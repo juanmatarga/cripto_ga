@@ -62,17 +62,29 @@ ga:
   allow_indicators: false
   seed: 42  # CRÍTICO: Reproducibilidad
 
+  # SPRINT 8: Building Blocks Configuration
+  building_blocks:
+    allow_indicators: true      # Enable RSI, MACD, etc.
+    min_modules_per_pattern: 1
+    max_modules_per_pattern: 5
+
+  # Progressive Grammar (Gen 0-29: base, 30-79: +indicators, 80+: +advanced)
+  progressive_grammar:
+    enable: true
+    unlock_indicators_gen: 30
+    unlock_advanced_gen: 80
+
   fitness:
     weight_upi: 0.5
     weight_sharpe: 0.3
     weight_cagr: 0.2
-    cagr_min_threshold: 0.15   # 15% anual (cripto más volátil)
+    cagr_min_threshold: 0.0    # SPRINT 8: Relaxed to allow more patterns (0% = break-even)
     sharpe_cap: 3.0
-    cagr_cap: 0.30             # 30% cap para normalización
+    cagr_cap: 1.0              # Increased cap for normalization
 
   fast_mode:
     enabled: true
-    n_windows: 5
+    n_windows: 3               # SPRINT 8: Reduced from 5 to 3 for speed
     strategy: "stratified"
 
   # NUEVO: Evolution tracking

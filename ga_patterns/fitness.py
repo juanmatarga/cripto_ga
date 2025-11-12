@@ -9,19 +9,22 @@ from typing import List, Tuple
 import logging
 
 from ga_patterns.chromosome import Pattern
+from ga_patterns.chromosome_v2 import PatternChromosome
+from ga_patterns.evaluator import evaluate_expression, preprocess_indicators
 from backtest.runner import run_backtest
 
 logger = logging.getLogger(__name__)
 
-def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
+def evaluate_fitness_bidirectional(pattern, data: pd.DataFrame,
                                    config: dict, fast_mode: bool = True) -> Tuple[float, str]:
     """
     Evalúa patrón en LONG y SHORT con WALK-FORWARD REAL.
 
     CRÍTICO: Esta versión SÍ usa walk-forward correctamente.
+    FIX SPRINT 8: Equity normalization entre ventanas usando returns.
 
     Args:
-        pattern: Pattern a evaluar
+        pattern: Pattern o PatternChromosome a evaluar
         data: DataFrame OHLCV completo
         config: Config dict
         fast_mode: Si True, usa stratified sampling de ventanas
@@ -31,6 +34,14 @@ def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
     """
     from backtest.metrics import calculate_all_metrics
     from backtest.walkforward import create_walkforward_windows, stratified_sampling_windows
+
+    # Check if pattern is new v2 or legacy
+    is_v2 = isinstance(pattern, PatternChromosome)
+
+    if is_v2:
+        logger.debug(f"Evaluating PatternChromosome: {pattern.to_readable()}")
+    else:
+        logger.debug(f"Evaluating legacy Pattern")
 
     timeframe = config['data']['timeframe']
     periods_per_year = config['data']['time_map'][timeframe]['bars_per_year']
@@ -70,8 +81,8 @@ def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
     # ========================================================================
     pattern.direction = 'LONG'
 
-    # Combinar equity curves de SOLO test sets (OOS)
-    all_equity_long = []
+    # FIX SPRINT 8: Store returns instead of equity curves
+    all_returns_long = []  # Store returns, not equity
     all_trades_long = []
 
     for i, (train_df, test_df) in enumerate(windows_to_eval):
@@ -79,15 +90,24 @@ def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
         equity_curve, trades = run_backtest(pattern, test_df, config)
 
         if len(trades) > 0:
-            all_equity_long.append(equity_curve)
+            # CRITICAL: Extract returns from this window
+            # equity_curve goes from 100 → X
+            # We want the % returns per bar
+            window_returns = equity_curve.pct_change().fillna(0)
+            all_returns_long.append(window_returns)
             all_trades_long.extend(trades)
 
     # Calcular fitness LONG
-    if len(all_equity_long) == 0 or len(all_trades_long) == 0:
+    if len(all_returns_long) == 0 or len(all_trades_long) == 0:
         fitness_long = -999.0
     else:
-        # Concatenar equity curves
-        combined_equity_long = pd.concat(all_equity_long)
+        # FIX: Concatenate returns from all windows
+        combined_returns = pd.concat(all_returns_long, ignore_index=True)
+
+        # Rebuild equity curve starting from 100
+        equity_series = 100.0 * (1 + combined_returns).cumprod()
+        combined_equity_long = pd.concat([pd.Series([100.0]), equity_series], ignore_index=True)
+        combined_equity_long = combined_equity_long.reset_index(drop=True)
 
         try:
             metrics = calculate_all_metrics(combined_equity_long, periods_per_year)
@@ -126,21 +146,30 @@ def evaluate_fitness_bidirectional(pattern: Pattern, data: pd.DataFrame,
     # ========================================================================
     pattern.direction = 'SHORT'
 
-    all_equity_short = []
+    # FIX SPRINT 8: Store returns instead of equity curves
+    all_returns_short = []
     all_trades_short = []
 
     for i, (train_df, test_df) in enumerate(windows_to_eval):
         equity_curve, trades = run_backtest(pattern, test_df, config)
 
         if len(trades) > 0:
-            all_equity_short.append(equity_curve)
+            # CRITICAL: Extract returns from this window
+            window_returns = equity_curve.pct_change().fillna(0)
+            all_returns_short.append(window_returns)
             all_trades_short.extend(trades)
 
     # Calcular fitness SHORT
-    if len(all_equity_short) == 0 or len(all_trades_short) == 0:
+    if len(all_returns_short) == 0 or len(all_trades_short) == 0:
         fitness_short = -999.0
     else:
-        combined_equity_short = pd.concat(all_equity_short)
+        # FIX: Concatenate returns from all windows
+        combined_returns = pd.concat(all_returns_short, ignore_index=True)
+
+        # Rebuild equity curve starting from 100
+        equity_series = 100.0 * (1 + combined_returns).cumprod()
+        combined_equity_short = pd.concat([pd.Series([100.0]), equity_series], ignore_index=True)
+        combined_equity_short = combined_equity_short.reset_index(drop=True)
 
         try:
             metrics = calculate_all_metrics(combined_equity_short, periods_per_year)

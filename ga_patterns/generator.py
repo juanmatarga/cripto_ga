@@ -93,7 +93,7 @@ def _generate_random_predicate(available_predicates: List[str]) -> PredicateNode
     predicate_name = random.choice(available_predicates)
     predicate_info = PREDICATE_REGISTRY[predicate_name]
 
-    operator = random.choice(['>', '>=', '<='])
+    operator = random.choice(['>', '>=', '<', '<='])
     bar_offset = random.randint(0, 5)
 
     # Determinar tipo de comparación
@@ -336,7 +336,7 @@ def mutate_pattern(pattern: Pattern, generation: int, config: dict) -> Pattern:
         # Flip operator
         node = _select_random_node(mutated.expression)
         if isinstance(node, PredicateNode):
-            flip_map = {'>': '<=', '>=': '<=', '<=': '>='}
+            flip_map = {'>': '<=', '>=': '<', '<': '>=', '<=': '>'}
             node.operator = flip_map.get(node.operator, node.operator)
         elif isinstance(node, LogicalNode):
             node.operator = 'OR' if node.operator == 'AND' else 'AND'

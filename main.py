@@ -188,11 +188,12 @@ def main():
 
     import random
     import copy
-    from ga_patterns.generator import (
-        initialize_population, tournament_selection,
-        subtree_crossover, mutate_pattern
-    )
-    from ga_patterns.fitness import evaluate_population
+    # SPRINT 8: Building Blocks System
+    from ga_patterns.generator_v2 import initialize_population
+    from ga_patterns.generator import tournament_selection  # Still use legacy for tournament
+    from ga_patterns.operators_v2 import crossover, mutate
+    from ga_patterns.chromosome_v2 import PatternChromosome
+    from ga_patterns.fitness import evaluate_fitness_bidirectional
     from ga_patterns.evolution_tracker import EvolutionTracker
 
     # Seeds
@@ -215,10 +216,22 @@ def main():
     logger.info("INITIALIZING POPULATION")
     logger.info(f"{'='*80}")
 
-    population = initialize_population(population_size, generation=0, config=config['ga'])
+    population = initialize_population(population_size, generation=0, config=config)
 
-    # Evaluate initial
-    evaluate_population(population, data, config)
+    # Evaluate initial - SPRINT 8: Individual fitness evaluation
+    logger.info("Evaluating initial population...")
+    for i, pattern in enumerate(population):
+        fitness, direction = evaluate_fitness_bidirectional(
+            pattern, data, config, fast_mode=config['ga']['fast_mode']['enabled']
+        )
+        pattern.fitness = fitness
+        pattern.direction = direction
+        if (i + 1) % 10 == 0:
+            logger.info(f"  Evaluated {i+1}/{len(population)} patterns")
+
+    logger.info(f"[OK] Initial population evaluated")
+    valid_count = sum(1 for p in population if p.fitness > -999)
+    logger.info(f"Valid patterns: {valid_count}/{len(population)}")
 
     best_fitness_history = []
     best_pattern = max(population, key=lambda p: p.fitness)
@@ -236,6 +249,12 @@ def main():
     for generation in range(1, max_generations + 1):
         logger.info(f"\n--- Generation {generation}/{max_generations} ---")
 
+        # SPRINT 8: Log module unlocks
+        if generation == 30:
+            logger.info("🔓 UNLOCKED: INDICATOR MODULES (RSI, SMA, etc.)")
+        elif generation == 80:
+            logger.info("🔓 UNLOCKED: ADVANCED MODULES (MACD, BB, ATR, Stochastic)")
+
         # New population
         new_population = []
 
@@ -244,33 +263,48 @@ def main():
         for i in range(elitism):
             new_population.append(copy.deepcopy(population_sorted[i]))
 
-        # Generate offspring
+        # Generate offspring - SPRINT 8: Use new operators
         while len(new_population) < population_size:
             parent1 = tournament_selection(population)
             parent2 = tournament_selection(population)
 
             if random.random() < crossover_rate:
-                offspring = subtree_crossover(parent1, parent2, generation, config['ga'])
+                offspring = crossover(parent1, parent2, generation, config)
             else:
                 offspring = copy.deepcopy(parent1)
 
             if random.random() < mutation_rate:
-                offspring = mutate_pattern(offspring, generation, config['ga'])
+                offspring = mutate(offspring, generation, config)
 
             new_population.append(offspring)
 
         population = new_population
 
-        # Evaluate
-        evaluate_population(population, data, config)
+        # Evaluate - SPRINT 8: Individual evaluation
+        for pattern in population:
+            if pattern.fitness == -999.0:  # Only evaluate new patterns
+                fitness, direction = evaluate_fitness_bidirectional(
+                    pattern, data, config, fast_mode=config['ga']['fast_mode']['enabled']
+                )
+                pattern.fitness = fitness
+                pattern.direction = direction
 
         # Tracking
         current_best = max(population, key=lambda p: p.fitness)
         mean_fitness = np.mean([p.fitness for p in population])
         best_fitness_history.append(current_best.fitness)
 
-        logger.info(f"Best: {current_best.fitness:.4f} ({current_best.direction})")
+        # SPRINT 8: Readable logging with module stats
+        logger.info(f"Best: {current_best.fitness:.4f} - {current_best.to_readable()}")
         logger.info(f"Mean: {mean_fitness:.4f}")
+
+        # Module usage stats (every 10 generations)
+        if generation % 10 == 0:
+            from collections import Counter
+            all_modules = [m for p in population for m in p.modules]
+            module_counts = Counter(all_modules)
+            top_5_modules = module_counts.most_common(5)
+            logger.info(f"Top modules: {', '.join([f'{m}({c})' for m, c in top_5_modules])}")
 
         # Track
         tracker.track_generation(generation, population, current_best, mean_fitness)
@@ -301,11 +335,14 @@ def main():
     # Save summary
     tracker.save_final_summary(generation, top_patterns)
 
-    # Display top 5
+    # Display top 5 - SPRINT 8: Use readable format
     logger.info(f"\nTop 5 Patterns:")
     for i, pattern in enumerate(top_patterns[:5], 1):
-        logger.info(f"\n{i}. {pattern.direction} | Fit: {pattern.fitness:.4f} | L:{pattern.fitness_long:.4f} S:{pattern.fitness_short:.4f}")
-        logger.info(f"   {pattern.expression}")
+        logger.info(f"\n{i}. {pattern.to_readable()} | Fit: {pattern.fitness:.4f} | L:{pattern.fitness_long:.4f} S:{pattern.fitness_short:.4f}")
+        if hasattr(pattern, 'to_expression'):
+            logger.info(f"   Modules: {', '.join(pattern.modules)}")
+        else:
+            logger.info(f"   {pattern.expression}")
 
     # FASE 3: Pattern Selection
     logger.info("\n" + "="*80)

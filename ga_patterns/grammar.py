@@ -351,12 +351,15 @@ class ComparisonOperator:
     OPERATORS = {
         '>': lambda x, y: x > y,
         '>=': lambda x, y: x >= y,
+        '<': lambda x, y: x < y,
         '<=': lambda x, y: x <= y,
     }
 
     @staticmethod
     def evaluate(operator: str, value1: float, value2: float) -> bool:
         """Evalúa comparación entre dos valores."""
+        if operator not in ComparisonOperator.OPERATORS:
+            raise ValueError(f"Unknown operator: {operator}. Valid operators: {list(ComparisonOperator.OPERATORS.keys())}")
         return ComparisonOperator.OPERATORS[operator](value1, value2)
 
 

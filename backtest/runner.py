@@ -9,6 +9,8 @@ from typing import Dict, Tuple, List
 import logging
 
 from ga_patterns.chromosome import Pattern
+from ga_patterns.chromosome_v2 import PatternChromosome
+from ga_patterns.evaluator import evaluate_expression, preprocess_indicators
 from backtest.exits import (
     calculate_atr, calculate_exit_levels,
     check_exit_conditions, calculate_time_exit_bar
@@ -69,13 +71,16 @@ def apply_transaction_costs(price: float, direction: str,
 
     return adjusted_price
 
-def generate_signals(pattern: Pattern, data: pd.DataFrame) -> pd.Series:
+def generate_signals(pattern, data: pd.DataFrame, expression: str = None) -> pd.Series:
     """
     Generate trading signals by evaluating pattern on each bar.
 
+    SPRINT 8: Now supports both legacy Pattern and new PatternChromosome.
+
     Args:
-        pattern: Pattern to evaluate
-        data: OHLCV DataFrame
+        pattern: Pattern or PatternChromosome to evaluate
+        data: OHLCV DataFrame (must be preprocessed with indicators for v2)
+        expression: Optional pre-compiled expression for PatternChromosome
 
     Returns:
         pd.Series of bool: True = signal triggered, False = no signal
@@ -87,18 +92,24 @@ def generate_signals(pattern: Pattern, data: pd.DataFrame) -> pd.Series:
     """
     signals = pd.Series(False, index=data.index)
 
+    # Check if pattern is v2
+    is_v2 = isinstance(pattern, PatternChromosome)
+
     # Calculate minimum bars needed
     min_bars_needed = pattern.window + 20  # Conservative buffer
 
     for i in range(min_bars_needed, len(data)):
-        # Get window of data up to current bar (no lookahead)
-        window_data = data.iloc[max(0, i - pattern.window - 20):i + 1].copy()
-
         try:
-            # Evaluate pattern
-            signal = pattern.expression.evaluate(window_data)
+            if is_v2:
+                # New PatternChromosome - use evaluator
+                signal = evaluate_expression(expression, data, i)
+            else:
+                # Legacy Pattern - use old method
+                window_data = data.iloc[max(0, i - pattern.window - 20):i + 1].copy()
+                signal = pattern.expression.evaluate(window_data)
+
             signals.iloc[i] = bool(signal)
-        except (IndexError, KeyError, ValueError) as e:
+        except (IndexError, KeyError, ValueError, Exception) as e:
             # Insufficient data or evaluation error
             logger.debug(f"Signal generation error at bar {i}: {e}")
             signals.iloc[i] = False
@@ -107,13 +118,15 @@ def generate_signals(pattern: Pattern, data: pd.DataFrame) -> pd.Series:
 
     return signals
 
-def run_backtest(pattern: Pattern, data: pd.DataFrame,
+def run_backtest(pattern, data: pd.DataFrame,
                 config: dict) -> Tuple[pd.Series, pd.DataFrame]:
     """
     Run full backtest for a pattern with position management.
 
+    SPRINT 8: Now supports both legacy Pattern and new PatternChromosome.
+
     Args:
-        pattern: Pattern to backtest
+        pattern: Pattern or PatternChromosome to backtest
         data: OHLCV DataFrame (must have OHLCV + index)
         config: Config dict
 
@@ -138,8 +151,21 @@ def run_backtest(pattern: Pattern, data: pd.DataFrame,
     """
     logger.info(f"Running backtest for pattern: {pattern.direction}")
 
+    # Check pattern type
+    is_v2 = isinstance(pattern, PatternChromosome)
+
+    # For v2 patterns, preprocess indicators once and compile expression
+    expression = None
+    if is_v2:
+        logger.debug("Preprocessing indicators for PatternChromosome evaluation")
+        data = preprocess_indicators(data.copy())
+
+        # Get expression string
+        expression = pattern.to_expression()
+        logger.debug(f"Pattern expression: {expression[:100]}...")  # Log first 100 chars
+
     # Generate signals
-    signals = generate_signals(pattern, data)
+    signals = generate_signals(pattern, data, expression)
 
     # Calculate ATR if using ATR exits
     if config['exits']['use_atr_exits']:
