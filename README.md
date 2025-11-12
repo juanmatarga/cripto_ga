@@ -206,28 +206,10 @@ This project is licensed under the MIT License - see LICENSE file.
 
 ## 📧 Contact
 
-**Juan Manuel [Your Last Name]**
+**Juan Manuel Targa**
 Undergraduate Student - UCEMA
-📧 [your.email@ucema.edu.ar]
-🔗 [LinkedIn Profile]
-
-## 📚 Citation
-
-If you use this work in academic research, please cite:
-
-```bibtex
-@misc{yourname2025ga,
-  title={Genetic Algorithm Pattern Discovery for Cryptocurrency Trading with Statistical Validation},
-  author={[Your Full Name]},
-  year={2025},
-  school={Universidad del CEMA},
-  type={Undergraduate Thesis}
-}
-```
-
-## 🔬 Research Paper
-
-[Link to full paper when available]
+📧 [jmtarga26@ucema.edu.ar]
+🔗 [@juanmanueltarga]
 
 ---
 
