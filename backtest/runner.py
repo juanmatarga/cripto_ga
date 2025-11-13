@@ -154,11 +154,15 @@ def run_backtest(pattern, data: pd.DataFrame,
     # Check pattern type
     is_v2 = isinstance(pattern, PatternChromosome)
 
-    # For v2 patterns, preprocess indicators once and compile expression
+    # For v2 patterns, check if indicators are already preprocessed
     expression = None
     if is_v2:
-        logger.debug("Preprocessing indicators for PatternChromosome evaluation")
-        data = preprocess_indicators(data.copy())
+        # SPRINT 9: Only preprocess if not already done
+        if 'RSI_14' not in data.columns:
+            logger.debug("Preprocessing indicators for PatternChromosome evaluation")
+            data = preprocess_indicators(data.copy())
+        else:
+            logger.debug("Using pre-processed indicators")
 
         # Get expression string
         expression = pattern.to_expression()

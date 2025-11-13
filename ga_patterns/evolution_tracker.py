@@ -83,21 +83,78 @@ class EvolutionTracker:
                 'fitness': best_short.fitness
             })
 
-        # Samplear patrones
-        import random
-        sample_size = min(self.sample_size, len(population))
-        sampled_patterns = random.sample(population, sample_size)
+        # SPRINT 11: Save top 5 LONG + top 5 SHORT instead of random samples
+        # Sort patterns by fitness
+        long_sorted = sorted(long_patterns, key=lambda p: p.fitness, reverse=True)
+        short_sorted = sorted(short_patterns, key=lambda p: p.fitness, reverse=True)
+
+        # Take top 5 of each (or less if not available)
+        top_long = long_sorted[:5]
+        top_short = short_sorted[:5]
+
+        # Filter out invalid patterns (fitness = -999)
+        top_long_valid = [p for p in top_long if p.fitness > -999]
+        top_short_valid = [p for p in top_short if p.fitness > -999]
+
+        # Module usage statistics
+        from collections import Counter
+        all_modules = [m for p in population for m in p.modules]
+        module_usage = dict(Counter(all_modules).most_common(10))
 
         self.generation_samples[generation] = {
             'best_overall': best_pattern.to_dict(),
             'best_long': best_long.to_dict() if best_long else None,
             'best_short': best_short.to_dict() if best_short else None,
-            'samples': [p.to_dict() for p in sampled_patterns],
-            'mean_fitness': mean_fitness,
-            'long_count': len(long_patterns),
-            'short_count': len(short_patterns),
+            # SPRINT 11: Top performers instead of random samples
+            'top_long': [
+                {
+                    'rank': i+1,
+                    'fitness': p.fitness,
+                    'readable': p.to_readable(),
+                    'modules': p.modules,
+                    'logic': p.logic,
+                    'window': p.window,
+                    'generation_created': p.generation_created,
+                    'expression': p.to_expression(),
+                    'sharpe': p.metrics.get('sharpe', None) if hasattr(p, 'metrics') and p.metrics else None,
+                    'cagr': p.metrics.get('cagr', None) if hasattr(p, 'metrics') and p.metrics else None,
+                    'upi': p.metrics.get('upi', None) if hasattr(p, 'metrics') and p.metrics else None,
+                    'max_dd': p.metrics.get('max_dd', None) if hasattr(p, 'metrics') and p.metrics else None,
+                    'n_trades': p.n_trades if hasattr(p, 'n_trades') else None
+                }
+                for i, p in enumerate(top_long_valid)
+            ],
+            'top_short': [
+                {
+                    'rank': i+1,
+                    'fitness': p.fitness,
+                    'readable': p.to_readable(),
+                    'modules': p.modules,
+                    'logic': p.logic,
+                    'window': p.window,
+                    'generation_created': p.generation_created,
+                    'expression': p.to_expression(),
+                    'sharpe': p.metrics.get('sharpe', None) if hasattr(p, 'metrics') and p.metrics else None,
+                    'cagr': p.metrics.get('cagr', None) if hasattr(p, 'metrics') and p.metrics else None,
+                    'upi': p.metrics.get('upi', None) if hasattr(p, 'metrics') and p.metrics else None,
+                    'max_dd': p.metrics.get('max_dd', None) if hasattr(p, 'metrics') and p.metrics else None,
+                    'n_trades': p.n_trades if hasattr(p, 'n_trades') else None
+                }
+                for i, p in enumerate(top_short_valid)
+            ],
+            'module_usage': module_usage,
+            'statistics': {
+                'mean_fitness': mean_fitness,
+                'long_count': len(long_patterns),
+                'short_count': len(short_patterns),
+                'valid_count': len([p for p in population if p.fitness > -999]),
+                'valid_long': len([p for p in long_patterns if p.fitness > -999]),
+                'valid_short': len([p for p in short_patterns if p.fitness > -999])
+            },
             'timestamp': datetime.now().isoformat()
         }
+
+        logger.info(f"[OK] Tracked generation {generation}: {len(top_long_valid)} top LONG + {len(top_short_valid)} top SHORT")
 
         # Snapshot
         if generation % self.save_every == 0:

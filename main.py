@@ -33,6 +33,7 @@ import yaml
 from pathlib import Path
 from datetime import datetime
 import sys
+import argparse
 import numpy as np
 import pandas as pd
 import warnings
@@ -104,12 +105,24 @@ def main():
     5. Report generation
     """
     # Parse arguments
-    config_path = 'config.yaml'
-    if len(sys.argv) > 1:
-        config_path = sys.argv[1]
+    parser = argparse.ArgumentParser(description='Genetic Algorithm Pattern Discovery')
+    parser.add_argument('--config', type=str, default='config.yaml',
+                       help='Path to config file (default: config.yaml)')
+    parser.add_argument('--generations', type=int, default=None,
+                       help='Override max generations from config')
+    args = parser.parse_args()
+
+    config_path = args.config
 
     # FASE 0: Setup
-    print(BANNER)
+    try:
+        print(BANNER)
+    except UnicodeEncodeError:
+        # Fallback for Windows console encoding issues
+        print("\n" + "="*60)
+        print("  GENETIC ALGORITHM PATTERN DISCOVERY")
+        print("  Cryptocurrency Trading Pattern Evolution")
+        print("="*60)
     print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
     start_time = datetime.now()  # Track total runtime
@@ -121,6 +134,12 @@ def main():
 
     config = load_config(config_path)
     validate_config(config)
+
+    # Override generations if provided
+    if args.generations is not None:
+        print(f"Overriding generations: {config['ga']['generations_max']} -> {args.generations}")
+        config['ga']['generations_max'] = args.generations
+
     logger = setup_logging(config)
 
     logger.info("Configuration loaded successfully")
@@ -181,6 +200,18 @@ def main():
         else:
             logger.info(f"  {key}: {value}")
 
+    # SPRINT 9: Preprocess indicators ONCE
+    logger.info("\n" + "="*80)
+    logger.info("PREPROCESSING INDICATORS (ONCE)")
+    logger.info("="*80)
+
+    from ga_patterns.evaluator import preprocess_indicators
+    data = preprocess_indicators(data)
+
+    indicator_cols = [c for c in data.columns if c not in ['Open','High','Low','Close','Volume']]
+    logger.info(f"[OK] Added {len(indicator_cols)} indicator columns")
+    logger.info(f"Indicators: {', '.join(indicator_cols[:5])}... (+{len(indicator_cols)-5} more)")
+
     # FASE 2: GA Evolution
     logger.info("\n" + "="*80)
     logger.info("FASE 2: GENETIC ALGORITHM EVOLUTION (BIDIRECTIONAL)")
@@ -218,14 +249,31 @@ def main():
 
     population = initialize_population(population_size, generation=0, config=config)
 
-    # Evaluate initial - SPRINT 8: Individual fitness evaluation
+    # SPRINT 11: CREATE EVALUATION WINDOWS ONCE (GLOBAL)
+    logger.info(f"\n{'='*80}")
+    logger.info("CREATING EVALUATION WINDOWS (ONCE)")
+    logger.info(f"{'='*80}")
+
+    from backtest.simple_sampling import create_simple_windows
+    from ga_patterns.fitness import evaluate_fitness_unidirectional
+
+    global_windows = create_simple_windows(
+        data,
+        n_windows=config['ga']['fast_mode']['n_windows'],
+        window_months=config['ga']['fast_mode']['window_months'],
+        seed=config['ga']['seed']
+    )
+
+    logger.info(f"[OK] Created {len(global_windows)} global windows")
+    logger.info("These windows will be reused for ALL pattern evaluations")
+    logger.info("")
+
+    # Evaluate initial - SPRINT 11: Unidirectional with global windows
     logger.info("Evaluating initial population...")
     for i, pattern in enumerate(population):
-        fitness, direction = evaluate_fitness_bidirectional(
-            pattern, data, config, fast_mode=config['ga']['fast_mode']['enabled']
+        fitness, direction = evaluate_fitness_unidirectional(
+            pattern, global_windows, config
         )
-        pattern.fitness = fitness
-        pattern.direction = direction
         if (i + 1) % 10 == 0:
             logger.info(f"  Evaluated {i+1}/{len(population)} patterns")
 
@@ -247,13 +295,16 @@ def main():
     logger.info(f"{'='*80}")
 
     for generation in range(1, max_generations + 1):
-        logger.info(f"\n--- Generation {generation}/{max_generations} ---")
+        logger.info("")
+        logger.info("="*80)
+        logger.info(f"GENERATION {generation}/{max_generations}")
+        logger.info("="*80)
 
-        # SPRINT 8: Log module unlocks
+        # SPRINT 11: Log module unlocks with emoji-free version for Windows
         if generation == 30:
-            logger.info("🔓 UNLOCKED: INDICATOR MODULES (RSI, SMA, etc.)")
+            logger.info("UNLOCKED: Indicator modules (RSI, SMA, MACD)")
         elif generation == 80:
-            logger.info("🔓 UNLOCKED: ADVANCED MODULES (MACD, BB, ATR, Stochastic)")
+            logger.info("UNLOCKED: Advanced modules (Bollinger Bands, ATR, Stochastic)")
 
         # New population
         new_population = []
@@ -280,31 +331,64 @@ def main():
 
         population = new_population
 
-        # Evaluate - SPRINT 8: Individual evaluation
-        for pattern in population:
-            if pattern.fitness == -999.0:  # Only evaluate new patterns
-                fitness, direction = evaluate_fitness_bidirectional(
-                    pattern, data, config, fast_mode=config['ga']['fast_mode']['enabled']
-                )
-                pattern.fitness = fitness
-                pattern.direction = direction
+        # SPRINT 11: Evaluate new patterns only with unidirectional
+        patterns_to_eval = [p for p in population if p.fitness == -999.0]
+        logger.info(f"\nEvaluating {len(patterns_to_eval)} new patterns...")
+
+        for i, pattern in enumerate(patterns_to_eval):
+            if (i+1) % 10 == 0:
+                logger.info(f"  Progress: {i+1}/{len(patterns_to_eval)} patterns evaluated")
+
+            fitness, direction = evaluate_fitness_unidirectional(
+                pattern,
+                global_windows,
+                config
+            )
+
+        # SPRINT 11: Enhanced statistics
+        valid_patterns = [p for p in population if p.fitness > -999]
+        long_patterns = [p for p in population if p.direction == 'LONG']
+        short_patterns = [p for p in population if p.direction == 'SHORT']
+
+        valid_long = [p for p in long_patterns if p.fitness > -999]
+        valid_short = [p for p in short_patterns if p.fitness > -999]
+
+        best_long = max(long_patterns, key=lambda p: p.fitness) if long_patterns else None
+        best_short = max(short_patterns, key=lambda p: p.fitness) if short_patterns else None
+
+        logger.info("")
+        logger.info("GENERATION SUMMARY")
+        logger.info("-" * 80)
+        logger.info(f"Valid patterns: {len(valid_patterns)}/100 ({len(valid_patterns)}%)")
+        logger.info(f"  LONG: {len(valid_long)}/{len(long_patterns)} ({len(valid_long)*100//len(long_patterns) if long_patterns else 0}%)")
+        logger.info(f"  SHORT: {len(valid_short)}/{len(short_patterns)} ({len(valid_short)*100//len(short_patterns) if short_patterns else 0}%)")
+
+        if best_long and best_long.fitness > -999:
+            logger.info(f"\nBest LONG pattern (fitness={best_long.fitness:.4f}):")
+            logger.info(f"  {best_long.to_readable()}")
+            if hasattr(best_long, 'metrics') and best_long.metrics:
+                logger.info(f"  Sharpe: {best_long.metrics.get('sharpe', 0):.2f}, CAGR: {best_long.metrics.get('cagr', 0)*100:.1f}%, Trades: {best_long.n_trades}")
+
+        if best_short and best_short.fitness > -999:
+            logger.info(f"\nBest SHORT pattern (fitness={best_short.fitness:.4f}):")
+            logger.info(f"  {best_short.to_readable()}")
+            if hasattr(best_short, 'metrics') and best_short.metrics:
+                logger.info(f"  Sharpe: {best_short.metrics.get('sharpe', 0):.2f}, CAGR: {best_short.metrics.get('cagr', 0)*100:.1f}%, Trades: {best_short.n_trades}")
+
+        # Module usage
+        from collections import Counter
+        all_modules = [m for p in population for m in p.modules]
+        top_modules = Counter(all_modules).most_common(5)
+        logger.info(f"\nTop 5 modules:")
+        for module, count in top_modules:
+            logger.info(f"  {module}: {count}")
+
+        logger.info("")
 
         # Tracking
         current_best = max(population, key=lambda p: p.fitness)
         mean_fitness = np.mean([p.fitness for p in population])
         best_fitness_history.append(current_best.fitness)
-
-        # SPRINT 8: Readable logging with module stats
-        logger.info(f"Best: {current_best.fitness:.4f} - {current_best.to_readable()}")
-        logger.info(f"Mean: {mean_fitness:.4f}")
-
-        # Module usage stats (every 10 generations)
-        if generation % 10 == 0:
-            from collections import Counter
-            all_modules = [m for p in population for m in p.modules]
-            module_counts = Counter(all_modules)
-            top_5_modules = module_counts.most_common(5)
-            logger.info(f"Top modules: {', '.join([f'{m}({c})' for m, c in top_5_modules])}")
 
         # Track
         tracker.track_generation(generation, population, current_best, mean_fitness)

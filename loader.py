@@ -234,11 +234,11 @@ def _validate_ohlc_data(df: pd.DataFrame, config: dict):
     mean_return = returns.mean()
     std_return = returns.std()
 
-    # Usar 10σ para cripto (más volátil que acciones)
+    # Usar 10 sigma para cripto (más volátil que acciones)
     outliers = (returns.abs() > mean_return + 10 * std_return).sum()
 
     if outliers > 0:
-        logger.warning(f"  Detected {outliers} outliers (>10σ movements)")
+        logger.warning(f"  Detected {outliers} outliers (>10 sigma movements)")
         logger.warning(f"    Max return: {returns.max():.2%}, Min return: {returns.min():.2%}")
     else:
         logger.info("  [OK] No extreme outliers detected")

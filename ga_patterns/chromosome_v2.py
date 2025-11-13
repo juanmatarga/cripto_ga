@@ -33,6 +33,8 @@ class PatternChromosome:
         fitness: Combined fitness score
         fitness_long: Fitness when evaluated as LONG
         fitness_short: Fitness when evaluated as SHORT
+        metrics: Dict of performance metrics (sharpe, cagr, upi, max_dd, etc.)
+        n_trades: Total number of trades across all evaluation windows
 
     Example:
         >>> chrom = PatternChromosome(
@@ -52,6 +54,8 @@ class PatternChromosome:
     fitness: float = -999.0
     fitness_long: float = -999.0
     fitness_short: float = -999.0
+    metrics: Dict = field(default_factory=dict)  # Performance metrics
+    n_trades: int = 0  # Total trades across windows
 
     def to_readable(self) -> str:
         """
@@ -154,6 +158,40 @@ class PatternChromosome:
         return (f"PatternChromosome(direction={self.direction}, "
                 f"modules={self.modules}, logic={self.logic}, "
                 f"window={self.window}, fitness={self.fitness:.4f})")
+
+    def to_dict(self) -> dict:
+        """
+        Convert chromosome to dictionary for serialization.
+
+        Used by evolution tracker for saving snapshots.
+
+        Returns:
+            dict: All chromosome attributes
+
+        Example:
+            >>> chrom = PatternChromosome(
+            ...     direction='LONG',
+            ...     modules=['momentum_up_2bar'],
+            ...     logic='AND'
+            ... )
+            >>> d = chrom.to_dict()
+            >>> d['direction']
+            'LONG'
+        """
+        return {
+            'direction': self.direction,
+            'modules': self.modules,
+            'logic': self.logic,
+            'window': self.window,
+            'generation_created': self.generation_created,
+            'fitness': self.fitness,
+            'fitness_long': self.fitness_long,
+            'fitness_short': self.fitness_short,
+            'metrics': self.metrics,  # SPRINT 11: Performance metrics
+            'n_trades': self.n_trades,  # SPRINT 11: Trade count
+            'expression_readable': self.to_readable(),
+            'expression_full': self.to_expression()
+        }
 
 
 def validate_chromosome(chrom: PatternChromosome) -> bool:

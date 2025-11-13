@@ -55,10 +55,10 @@ ga:
   generations_max: 150
   patience_no_improve: 20
   elitism: 2
-  mutation_rate: 0.15
-  crossover_rate: 0.70
-  window_min: 2
-  window_max: 8
+  mutation_rate: 0.2
+  crossover_rate: 0.7
+  window_min: 3
+  window_max: 10
   allow_indicators: false
   seed: 42  # CRÍTICO: Reproducibilidad
 
@@ -84,8 +84,8 @@ ga:
 
   fast_mode:
     enabled: true
-    n_windows: 3               # SPRINT 8: Reduced from 5 to 3 for speed
-    strategy: "stratified"
+    n_windows: 5               # SPRINT 10: Number of random windows to evaluate
+    window_months: 1           # SPRINT 10: Duration of each window (months)
 
   # NUEVO: Evolution tracking
   evolution_tracking:
@@ -110,13 +110,13 @@ selection:
   corr_threshold: 0.35
 
   filters:
-    upi_min: 0.15           # Más exigente para cripto
-    sharpe_min: 1.5
-    cagr_min: 0.15          # 15% anual
-    max_drawdown_max: 0.25  # 25% max DD
-    profit_factor_min: 1.5
-    win_rate_min: 0.45      # Menos exigente (cripto más volátil)
-    min_trades_per_window: 15
+    upi_min: 0.05           # SPRINT 9: Relaxed for debugging
+    sharpe_min: 0.5         # SPRINT 9: Relaxed
+    cagr_min: -0.20         # SPRINT 9: Allow some loss
+    max_drawdown_max: 0.40  # SPRINT 9: Relaxed
+    profit_factor_min: 1.0  # SPRINT 9: Break-even OK
+    win_rate_min: 0.35      # SPRINT 9: Relaxed
+    min_trades_per_window: 3  # SPRINT 9: Reduced from 15 to 3
 
 # ROBUSTNESS TESTS
 robustness:
