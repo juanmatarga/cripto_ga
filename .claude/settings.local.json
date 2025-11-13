@@ -6,7 +6,17 @@
       "Bash(pytest:*)",
       "Bash(timeout 300 python:*)",
       "Bash(if not exist docs mkdir docs)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(set PYTHONIOENCODING=utf-8:*)",
+      "Bash(timeout 5 sleep:*)",
+      "Bash($null)",
+      "Bash(nul)",
+      "Bash(dir logs*.log /O-D 2)",
+      "Bash(NUL)",
+      "Bash(timeout 10 python:*)",
+      "Bash(timeout 30 sleep:*)",
+      "Bash(timeout 60 sleep:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []
