@@ -56,6 +56,10 @@ def evaluate_expression(expression: str, data: pd.DataFrame, bar_index: int) -> 
     # Find all tokens like C[n], V[n], RSI[14][n], etc.
     tokens = find_all_tokens(expression)
 
+    # CRITICAL FIX: Sort tokens by length (longest first) to avoid substring replacement issues
+    # Example: Must replace "SMA_V[20][0]" before "V[0]" to avoid "SMA_8100.627[20][0]"
+    tokens = sorted(tokens, key=len, reverse=True)
+
     for token in tokens:
         try:
             value = parse_token(token, data, bar_index)

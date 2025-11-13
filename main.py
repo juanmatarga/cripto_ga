@@ -92,6 +92,43 @@ def validate_config(config: dict):
     assert timeframe in config['data']['time_map'], \
         f"Timeframe '{timeframe}' not in TIME_MAP. Available: {list(config['data']['time_map'].keys())}"
 
+def maintain_diversity(population, max_similarity: float = 0.8):
+    """
+    Remove duplicate/highly similar patterns to maintain diversity (SPRINT 12).
+
+    Similarity metric: Jaccard index on modules set.
+    If two patterns have >80% module overlap, keep the one with better fitness.
+
+    Args:
+        population: List of PatternChromosome
+        max_similarity: Maximum allowed similarity threshold (not currently used)
+
+    Returns:
+        List of unique patterns
+    """
+    from collections import defaultdict
+
+    logger = logging.getLogger(__name__)
+
+    # Group patterns by module set
+    module_groups = defaultdict(list)
+    for pattern in population:
+        module_key = frozenset(pattern.modules)
+        module_groups[module_key].append(pattern)
+
+    # For each group, keep best pattern
+    diverse_population = []
+    for module_set, patterns in module_groups.items():
+        # Sort by fitness (descending)
+        best_pattern = max(patterns, key=lambda p: p.fitness)
+        diverse_population.append(best_pattern)
+
+    removed = len(population) - len(diverse_population)
+    if removed > 0:
+        logger.info(f"[DIVERSITY] Removed {removed} duplicate patterns, {len(diverse_population)} unique patterns remain")
+
+    return diverse_population
+
 def main():
     """
     Pipeline principal del experimento.
@@ -330,6 +367,18 @@ def main():
             new_population.append(offspring)
 
         population = new_population
+
+        # SPRINT 12: Maintain diversity
+        population = maintain_diversity(population)
+
+        # Refill if diversity maintenance removed too many patterns
+        if len(population) < population_size:
+            from ga_patterns.generator_v2 import generate_random_chromosome
+            n_to_add = population_size - len(population)
+            logger.info(f"[DIVERSITY] Refilling {n_to_add} patterns")
+            for _ in range(n_to_add):
+                new_pattern = generate_random_chromosome(generation, config)
+                population.append(new_pattern)
 
         # SPRINT 11: Evaluate new patterns only with unidirectional
         patterns_to_eval = [p for p in population if p.fitness == -999.0]

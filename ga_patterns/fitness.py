@@ -118,15 +118,23 @@ def evaluate_fitness_bidirectional(pattern, data: pd.DataFrame,
             elif len(all_trades_long) < min_trades_total:
                 fitness_long = -999.0
             else:
-                # Fitness combinado con caps
-                upi_norm = min(metrics['upi'], 100.0)
-                sharpe_norm = min(metrics['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
-                cagr_norm = min(metrics['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
+                # SPRINT 12: New fitness calculation
+                from backtest.metrics import calculate_sortino_ratio, calculate_calmar_ratio
+
+                returns = combined_returns.dropna()
+                sortino = calculate_sortino_ratio(returns, periods_per_year)
+                calmar = calculate_calmar_ratio(metrics['cagr'], metrics['max_dd'])
+                win_rate = len([t for t in all_trades_long if t['pnl_pct'] > 0]) / len(all_trades_long) if len(all_trades_long) > 0 else 0.0
+
+                # Normalize
+                sortino_norm = min(sortino / 3.0, 1.0) if sortino > 0 else 0.0
+                calmar_norm = min(calmar / 2.0, 1.0) if calmar > 0 else 0.0
+                win_rate_norm = win_rate
 
                 fitness_long = (
-                    config['ga']['fitness']['weight_upi'] * upi_norm +
-                    config['ga']['fitness']['weight_sharpe'] * sharpe_norm +
-                    config['ga']['fitness']['weight_cagr'] * cagr_norm
+                    0.4 * sortino_norm +
+                    0.4 * calmar_norm +
+                    0.2 * win_rate_norm
                 )
 
                 # Final safeguards
@@ -180,14 +188,21 @@ def evaluate_fitness_bidirectional(pattern, data: pd.DataFrame,
             elif len(all_trades_short) < min_trades_total:
                 fitness_short = -999.0
             else:
-                upi_norm = min(metrics['upi'], 100.0)
-                sharpe_norm = min(metrics['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
-                cagr_norm = min(metrics['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
+                # SPRINT 12: New fitness calculation
+                returns = combined_returns.dropna()
+                sortino = calculate_sortino_ratio(returns, periods_per_year)
+                calmar = calculate_calmar_ratio(metrics['cagr'], metrics['max_dd'])
+                win_rate = len([t for t in all_trades_short if t['pnl_pct'] > 0]) / len(all_trades_short) if len(all_trades_short) > 0 else 0.0
+
+                # Normalize
+                sortino_norm = min(sortino / 3.0, 1.0) if sortino > 0 else 0.0
+                calmar_norm = min(calmar / 2.0, 1.0) if calmar > 0 else 0.0
+                win_rate_norm = win_rate
 
                 fitness_short = (
-                    config['ga']['fitness']['weight_upi'] * upi_norm +
-                    config['ga']['fitness']['weight_sharpe'] * sharpe_norm +
-                    config['ga']['fitness']['weight_cagr'] * cagr_norm
+                    0.4 * sortino_norm +
+                    0.4 * calmar_norm +
+                    0.2 * win_rate_norm
                 )
 
                 if np.isinf(fitness_short) or np.isnan(fitness_short) or fitness_short > 1000:
@@ -239,7 +254,7 @@ def evaluate_fitness_unidirectional(pattern,
         'LONG'
     """
     from backtest.runner import run_backtest
-    from backtest.metrics import calculate_all_metrics
+    from backtest.metrics import calculate_all_metrics, calculate_sortino_ratio, calculate_calmar_ratio
 
     logger.debug(f"Evaluating {pattern.direction} pattern: {pattern.to_readable()}")
 
@@ -254,7 +269,8 @@ def evaluate_fitness_unidirectional(pattern,
             # Extract returns from this window
             window_returns = equity_curve.pct_change().fillna(0)
             all_returns.append(window_returns)
-            all_trades.extend(trades)
+            # Convert DataFrame trades to list of dicts for win rate calculation
+            all_trades.extend(trades.to_dict('records'))
 
     # Calculate fitness
     if len(all_returns) == 0 or len(all_trades) == 0:
@@ -297,22 +313,46 @@ def evaluate_fitness_unidirectional(pattern,
             pattern.n_trades = len(all_trades)
             return -999.0, pattern.direction
 
-        # Calculate fitness score
-        upi_norm = min(metrics['upi'], 100.0)
-        sharpe_norm = min(metrics['sharpe'] / config['ga']['fitness']['sharpe_cap'], 1.0)
-        cagr_norm = min(metrics['cagr'] / config['ga']['fitness']['cagr_cap'], 1.0)
+        # SPRINT 12: Calculate fitness using Sortino + Calmar + Win Rate
+        # Get returns for Sortino
+        returns = combined_returns.dropna()
 
+        # Sortino ratio (like Sharpe but only penalizes downside volatility)
+        sortino = calculate_sortino_ratio(returns, periods_per_year)
+
+        # Calmar ratio (CAGR / |max_dd|)
+        calmar = calculate_calmar_ratio(metrics['cagr'], metrics['max_dd'])
+
+        # Win rate from trades
+        win_rate = len([t for t in all_trades if t['pnl_pct'] > 0]) / len(all_trades) if len(all_trades) > 0 else 0.0
+
+        # Normalize metrics
+        sortino_norm = min(sortino / 3.0, 1.0) if sortino > 0 else 0.0  # Cap at 3.0
+        calmar_norm = min(calmar / 2.0, 1.0) if calmar > 0 else 0.0     # Cap at 2.0
+        win_rate_norm = win_rate  # Already 0-1
+
+        # Combined fitness with new weights
         fitness = (
-            config['ga']['fitness']['weight_upi'] * upi_norm +
-            config['ga']['fitness']['weight_sharpe'] * sharpe_norm +
-            config['ga']['fitness']['weight_cagr'] * cagr_norm
+            0.4 * sortino_norm +
+            0.4 * calmar_norm +
+            0.2 * win_rate_norm
         )
+
+        # Store components for debugging
+        pattern.fitness_components = {
+            'sortino': sortino,
+            'sortino_norm': sortino_norm,
+            'calmar': calmar,
+            'calmar_norm': calmar_norm,
+            'win_rate': win_rate,
+            'win_rate_norm': win_rate_norm
+        }
 
         # Safeguard against inf/nan
         if np.isinf(fitness) or np.isnan(fitness) or fitness > 1000:
             fitness = -999.0
 
-        logger.debug(f"Fitness = {fitness:.4f} (UPI={metrics['upi']:.4f}, Sharpe={metrics['sharpe']:.2f}, CAGR={metrics['cagr']:.4f})")
+        logger.debug(f"Fitness = {fitness:.4f} (Sortino={sortino:.2f}/{sortino_norm:.2f}, Calmar={calmar:.2f}/{calmar_norm:.2f}, WinRate={win_rate:.2%})")
 
         # Store detailed metrics in pattern
         pattern.fitness = fitness

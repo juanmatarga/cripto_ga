@@ -274,9 +274,17 @@ def run_backtest(pattern, data: pd.DataFrame,
                 # Calculate exits
                 if config['exits']['use_atr_exits']:
                     if pd.notna(atr.iloc[i]):
-                        stop_loss, take_profit = calculate_exit_levels(
-                            entry_price, atr.iloc[i], pattern.direction, config
-                        )
+                        # SPRINT 12: Pass pattern-specific TP/SL multipliers if v2
+                        if is_v2 and hasattr(pattern, 'tp_atr_mult') and hasattr(pattern, 'sl_atr_mult'):
+                            stop_loss, take_profit = calculate_exit_levels(
+                                entry_price, atr.iloc[i], pattern.direction, config,
+                                tp_mult=pattern.tp_atr_mult, sl_mult=pattern.sl_atr_mult
+                            )
+                        else:
+                            # Legacy pattern or no TP/SL params - use config defaults
+                            stop_loss, take_profit = calculate_exit_levels(
+                                entry_price, atr.iloc[i], pattern.direction, config
+                            )
                     else:
                         # No valid ATR - skip this trade
                         logger.warning(f"No valid ATR at bar {i}. Skipping entry.")

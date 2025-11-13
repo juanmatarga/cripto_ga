@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 from itertools import combinations
 import logging
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,8 @@ class PatternChromosome:
         fitness_short: Fitness when evaluated as SHORT
         metrics: Dict of performance metrics (sharpe, cagr, upi, max_dd, etc.)
         n_trades: Total number of trades across all evaluation windows
+        tp_atr_mult: Take profit multiplier (TP = tp_atr_mult × ATR)
+        sl_atr_mult: Stop loss multiplier (SL = sl_atr_mult × ATR)
 
     Example:
         >>> chrom = PatternChromosome(
@@ -56,6 +59,26 @@ class PatternChromosome:
     fitness_short: float = -999.0
     metrics: Dict = field(default_factory=dict)  # Performance metrics
     n_trades: int = 0  # Total trades across windows
+    tp_atr_mult: float = 2.5  # SPRINT 12: TP multiplier (will be randomized in __post_init__)
+    sl_atr_mult: float = 1.5  # SPRINT 12: SL multiplier (will be randomized in __post_init__)
+
+    def __post_init__(self):
+        """
+        Initialize TP/SL parameters with random values after dataclass creation.
+
+        SPRINT 12: ATR-based adaptive TP/SL.
+        - TP: 1.5-4.0 × ATR (profit target)
+        - SL: 0.8-2.0 × ATR (stop loss)
+        - Ensures favorable risk/reward (TP >= 1.5 × SL)
+        """
+        # Only randomize if default values (not loaded from dict)
+        if self.tp_atr_mult == 2.5 and self.sl_atr_mult == 1.5:
+            self.tp_atr_mult = random.uniform(1.5, 4.0)
+            self.sl_atr_mult = random.uniform(0.8, 2.0)
+
+            # Ensure favorable risk/reward ratio
+            if self.tp_atr_mult < 1.5 * self.sl_atr_mult:
+                self.tp_atr_mult = 1.5 * self.sl_atr_mult
 
     def to_readable(self) -> str:
         """
@@ -189,6 +212,8 @@ class PatternChromosome:
             'fitness_short': self.fitness_short,
             'metrics': self.metrics,  # SPRINT 11: Performance metrics
             'n_trades': self.n_trades,  # SPRINT 11: Trade count
+            'tp_atr_mult': self.tp_atr_mult,  # SPRINT 12: TP/SL parameters
+            'sl_atr_mult': self.sl_atr_mult,
             'expression_readable': self.to_readable(),
             'expression_full': self.to_expression()
         }

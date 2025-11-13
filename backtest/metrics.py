@@ -193,3 +193,87 @@ def calculate_all_metrics(equity_curve: pd.Series, periods_per_year: int) -> Dic
     }
 
     return metrics
+
+
+def calculate_sortino_ratio(returns: pd.Series, periods_per_year: float) -> float:
+    """
+    Calculate Sortino ratio (return / downside deviation) - SPRINT 12.
+
+    Like Sharpe but only penalizes downside volatility, which is more
+    relevant for traders who don't mind upside volatility.
+
+    Args:
+        returns: Series of returns (pct_change)
+        periods_per_year: Number of periods per year for annualization
+
+    Returns:
+        float: Sortino ratio (higher is better)
+
+    Example:
+        >>> returns = pd.Series([0.01, -0.02, 0.03, -0.01, 0.02])
+        >>> sortino = calculate_sortino_ratio(returns, 252)
+        >>> sortino > 0
+        True
+
+    Notes:
+        - Only negative returns are considered in volatility calculation
+        - Returns 999.0 if there is no downside volatility (perfect strategy)
+        - Annualized using periods_per_year
+    """
+    if len(returns) == 0:
+        return 0.0
+
+    mean_return = returns.mean()
+
+    # Only negative returns for downside risk
+    downside_returns = returns[returns < 0]
+
+    if len(downside_returns) == 0:
+        # No downside = perfect strategy
+        return 999.0
+
+    downside_std = downside_returns.std()
+
+    if downside_std == 0 or np.isnan(downside_std):
+        return 999.0
+
+    # Annualize
+    sortino = (mean_return / downside_std) * np.sqrt(periods_per_year)
+
+    return sortino
+
+
+def calculate_calmar_ratio(cagr_value: float, max_dd_value: float) -> float:
+    """
+    Calculate Calmar ratio (CAGR / |max drawdown|) - SPRINT 12.
+
+    Measures return per unit of worst drawdown.
+    Higher is better.
+
+    Args:
+        cagr_value: Compound annual growth rate (decimal, e.g., 0.15 for 15%)
+        max_dd_value: Maximum drawdown (decimal, e.g., -0.30 for -30%)
+
+    Returns:
+        float: Calmar ratio (higher is better)
+
+    Example:
+        >>> calmar = calculate_calmar_ratio(0.25, -0.10)
+        >>> calmar
+        2.5
+
+    Notes:
+        - If max_dd is essentially 0, returns a very high score
+        - If CAGR is negative, returns 0 (invalid strategy)
+    """
+    if cagr_value <= 0:
+        # Negative or zero CAGR = bad strategy
+        return 0.0
+
+    if max_dd_value >= -0.01:
+        # Essentially no drawdown = excellent
+        return cagr_value * 100
+
+    calmar = cagr_value / abs(max_dd_value)
+
+    return calmar

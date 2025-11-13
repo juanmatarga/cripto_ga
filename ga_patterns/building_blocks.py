@@ -216,6 +216,67 @@ BASE_MODULES = {
         'complexity': 'simple',
         'min_generation': 0
     },
+
+    # ========================================================================
+    # SPRINT 12: MEAN-REVERSION SHORT MODULES (8 modules)
+    # Designed specifically for 15min timeframe where trends are noisy
+    # ========================================================================
+    'overbought_pullback_short': {
+        'expression': 'C[0] > C[1] AND C[1] > C[2] AND RSI[14][0] > 65 AND C[0] < H[0] * 0.998',
+        'description': 'Overbought pullback - price rising but RSI high and failing at highs',
+        'category': 'momentum',
+        'complexity': 'simple',
+        'min_generation': 0
+    },
+    'exhaustion_top_short': {
+        'expression': 'C[0] < O[0] AND Body%[0] > 0.008 AND H[0] > H[1] AND H[0] > H[2]',
+        'description': 'Bearish engulfing at new high - exhaustion',
+        'category': 'pattern',
+        'complexity': 'simple',
+        'min_generation': 0
+    },
+    'failed_breakout_short': {
+        'expression': 'H[0] > H[1] AND H[1] > H[2] AND C[0] < C[1] AND V[0] < V[1]',
+        'description': 'Failed breakout - new high but close lower on decreasing volume',
+        'category': 'pattern',
+        'complexity': 'simple',
+        'min_generation': 0
+    },
+    'volume_climax_short': {
+        'expression': 'V[0] > SMA_V[20][0] * 2.0 AND C[0] < O[0] AND Range%[0] > 0.015',
+        'description': 'Volume climax down - selling pressure spike',
+        'category': 'volume',
+        'complexity': 'simple',
+        'min_generation': 0
+    },
+    'rejection_from_resistance_short': {
+        'expression': 'H[0] > SMA[20][0] AND C[0] < SMA[20][0] AND Body%[0] > 0.006',
+        'description': 'Price rejected from SMA20 resistance with strong bearish candle',
+        'category': 'pattern',
+        'complexity': 'simple',
+        'min_generation': 0
+    },
+    'momentum_down_strong': {
+        'expression': 'C[0] < C[1] * 0.995 AND C[1] < C[2] * 0.995',
+        'description': 'Strong momentum down - 0.5%+ drops for 2 bars',
+        'category': 'momentum',
+        'complexity': 'simple',
+        'min_generation': 0
+    },
+    'weak_bounce_short': {
+        'expression': 'C[0] > C[1] AND C[1] < C[2] AND C[0] < C[2] AND V[0] < V[1]',
+        'description': 'Weak bounce after drop - lower volume retracement',
+        'category': 'momentum',
+        'complexity': 'simple',
+        'min_generation': 0
+    },
+    'lower_highs_short': {
+        'expression': 'H[0] < H[1] AND H[1] < H[2]',
+        'description': 'Lower highs pattern - bearish structure',
+        'category': 'pattern',
+        'complexity': 'simple',
+        'min_generation': 0
+    },
 }
 
 # ============================================================================

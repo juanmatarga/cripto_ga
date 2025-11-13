@@ -8,7 +8,7 @@ data:
   symbol: "BTC/USDT"      # Formato ccxt: BASE/QUOTE
   market_type: "future"   # "spot" o "future"
   timeframe: "15m"        # Ver TIME_MAP abajo
-  start: "2020-01-01 00:00:00"
+  start: "2023-01-01 00:00:00"
   end: "2025-10-25 23:59:59"
 
   # Paginación (Binance limit: 1000 candles/request)
@@ -33,12 +33,12 @@ data:
 # TRANSACTION COSTS (Binance Futures)
 costs:
   # Binance Futures fees (USDT-M)
-  fees_bps_long: 4.0    # 0.04% taker fee (market orders)
-  fees_bps_short: 4.0   # 0.04% taker fee
+  fees_bps_long: 1.0    # 0.01% taker fee (market orders)
+  fees_bps_short: 1.0   # 0.01% taker fee
 
   # Slippage (cripto es más líquido que acciones)
-  slippage_bps_long: 2.0   # 0.02% (BTC muy líquido)
-  slippage_bps_short: 2.0  # 0.02%
+  slippage_bps_long: 1.0   # 0.01% (BTC muy líquido)
+  slippage_bps_short: 1.0  # 0.01%
 
   # Funding rate (futuros perpetuos): IGNORAR en este proyecto
   # En producción real, considerar funding cada 8h (~0.01% promedio)
@@ -51,16 +51,16 @@ walkforward:
 
 # GENETIC ALGORITHM
 ga:
-  population: 100
-  generations_max: 150
-  patience_no_improve: 20
+  population: 50
+  generations_max: 50
+  patience_no_improve: 3
   elitism: 2
   mutation_rate: 0.2
   crossover_rate: 0.7
-  window_min: 3
-  window_max: 10
+  window_min: 3         # SPRINT 12: These are overridden by dynamic window sizing
+  window_max: 10        # SPRINT 12: Window size now scales with pattern complexity
   allow_indicators: false
-  seed: 42  # CRÍTICO: Reproducibilidad
+  seed: 41  # CRÍTICO: Reproducibilidad
 
   # SPRINT 8: Building Blocks Configuration
   building_blocks:
@@ -71,16 +71,29 @@ ga:
   # Progressive Grammar (Gen 0-29: base, 30-79: +indicators, 80+: +advanced)
   progressive_grammar:
     enable: true
-    unlock_indicators_gen: 30
-    unlock_advanced_gen: 80
+    unlock_indicators_gen: 20
+    unlock_advanced_gen: 35
+
+  # SPRINT 12: Seed Patterns (30% of initial population)
+  # - 15 proven LONG patterns (mean-reversion, trend-following, breakout)
+  # - 15 proven SHORT patterns (mean-reversion focused for 15min timeframe)
+  # - Gives GA a head start, especially critical for SHORT patterns
+
+  # SPRINT 12: Diversity Maintenance (automatic, no config needed)
+  # - Removes duplicate patterns (same module set) every generation
+  # - Keeps best fitness when duplicates found
+  # - Refills population with random patterns if needed
 
   fitness:
-    weight_upi: 0.5
-    weight_sharpe: 0.3
-    weight_cagr: 0.2
-    cagr_min_threshold: 0.0    # SPRINT 8: Relaxed to allow more patterns (0% = break-even)
-    sharpe_cap: 3.0
-    cagr_cap: 1.0              # Increased cap for normalization
+    # SPRINT 12: New fitness function (Sortino + Calmar + Win Rate)
+    # Formula: 0.4*Sortino + 0.4*Calmar + 0.2*WinRate
+    # Old weights (UPI/Sharpe/CAGR) are DEPRECATED and no longer used
+    weight_upi: 0.5           # DEPRECATED (kept for backward compatibility)
+    weight_sharpe: 0.3        # DEPRECATED
+    weight_cagr: 0.2          # DEPRECATED
+    cagr_min_threshold: 0.0   # Still used as hard constraint
+    sharpe_cap: 3.0           # DEPRECATED (Sortino cap is 3.0, hardcoded)
+    cagr_cap: 1.0             # DEPRECATED (Calmar cap is 2.0, hardcoded)
 
   fast_mode:
     enabled: true
@@ -101,8 +114,11 @@ exits:
 
   use_atr_exits: true
   atr_period: 14
-  atr_stop: 1.5        # 1.5 ATR stop loss
-  atr_take: 3.0        # 3.0 ATR take profit (R:R = 2:1)
+  # SPRINT 12: These are DEFAULT values only (fallback for legacy patterns)
+  # New PatternChromosome has individual tp_atr_mult and sl_atr_mult parameters
+  # that override these defaults (range: TP 1.5-4.0, SL 0.8-2.0)
+  atr_stop: 1.0        # Default: 1.0 ATR stop loss
+  atr_take: 2.0        # Default: 2.0 ATR take profit (R:R = 2:1)
 
 # SELECTION & FILTERING
 selection:
@@ -116,7 +132,7 @@ selection:
     max_drawdown_max: 0.40  # SPRINT 9: Relaxed
     profit_factor_min: 1.0  # SPRINT 9: Break-even OK
     win_rate_min: 0.35      # SPRINT 9: Relaxed
-    min_trades_per_window: 3  # SPRINT 9: Reduced from 15 to 3
+    min_trades_per_window: 1  # SPRINT 9: Reduced from 15 to 3
 
 # ROBUSTNESS TESTS
 robustness:

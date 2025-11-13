@@ -47,34 +47,48 @@ def calculate_atr(data: pd.DataFrame, period: int = 14) -> pd.Series:
     return atr
 
 def calculate_exit_levels(entry_price: float, atr_value: float,
-                         direction: str, config: dict) -> Tuple[float, float]:
+                         direction: str, config: dict,
+                         tp_mult: float = None, sl_mult: float = None) -> Tuple[float, float]:
     """
     Calculate stop loss and take profit levels based on ATR.
+
+    SPRINT 12: Now accepts pattern-specific TP/SL multipliers.
 
     Args:
         entry_price: Entry price for the position
         atr_value: Current ATR value
         direction: 'LONG' or 'SHORT'
         config: Config dict with exits section
+        tp_mult: Pattern-specific take profit multiplier (SPRINT 12)
+        sl_mult: Pattern-specific stop loss multiplier (SPRINT 12)
 
     Returns:
         (stop_loss, take_profit)
 
     Example:
-        LONG entry at 50000, ATR=500, atr_stop=1.5, atr_take=3.0
+        LONG entry at 50000, ATR=500, sl_mult=1.5, tp_mult=3.0
         - Stop:  50000 - 1.5*500 = 49250
         - Target: 50000 + 3.0*500 = 51500
 
     Notes:
         - Returns None if ATR is NaN or invalid
         - Stop is always closer to entry than target (risk/reward)
+        - Uses pattern multipliers if provided, else falls back to config
     """
     if pd.isna(atr_value) or atr_value <= 0:
         logger.warning(f"Invalid ATR value: {atr_value}. Cannot calculate exits.")
         return None, None
 
-    atr_stop_mult = config['exits']['atr_stop']
-    atr_take_mult = config['exits']['atr_take']
+    # SPRINT 12: Use pattern-specific multipliers if provided
+    if sl_mult is not None and tp_mult is not None:
+        atr_stop_mult = sl_mult
+        atr_take_mult = tp_mult
+        logger.debug(f"Using pattern TP/SL: sl={sl_mult:.2f}, tp={tp_mult:.2f}")
+    else:
+        # Fallback to config
+        atr_stop_mult = config['exits']['atr_stop']
+        atr_take_mult = config['exits']['atr_take']
+        logger.debug(f"Using config TP/SL: sl={atr_stop_mult:.2f}, tp={atr_take_mult:.2f}")
 
     if direction == 'LONG':
         stop_loss = entry_price - (atr_stop_mult * atr_value)
