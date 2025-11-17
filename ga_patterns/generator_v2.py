@@ -1,8 +1,15 @@
 """
 Pattern Generator V2 - Building Blocks System
 
+SPRINT 13: Added semantic validation to prevent nonsense patterns.
+
 Generates random PatternChromosomes using building block modules.
 Respects progressive complexity unlocking.
+
+Key improvements:
+- Filters modules by direction compatibility before sampling
+- Validates semantic coherence (LONG uses bullish, SHORT uses bearish)
+- Prevents redundant modules from same family
 """
 
 import random
@@ -11,6 +18,11 @@ import logging
 
 from ga_patterns.chromosome_v2 import PatternChromosome, validate_chromosome
 from ga_patterns.building_blocks import get_available_modules
+from ga_patterns.module_semantics import (
+    get_compatible_modules,
+    is_pattern_semantically_valid,
+    check_redundant_modules
+)
 
 logger = logging.getLogger(__name__)
 
@@ -118,9 +130,19 @@ def generate_random_chromosome(generation: int, config: dict) -> PatternChromoso
     max_attempts = 100
 
     for attempt in range(max_attempts):
+        # SPRINT 13: Choose direction FIRST, then filter compatible modules
+        direction = random.choice(['LONG', 'SHORT'])
+
         # Get available modules
         allow_indicators = config.get('ga', {}).get('building_blocks', {}).get('allow_indicators', True)
         available_modules = get_available_modules(generation, allow_indicators)
+
+        # SPRINT 13: Filter modules compatible with direction
+        compatible_modules = get_compatible_modules(direction, list(available_modules.keys()))
+
+        if len(compatible_modules) < 2:
+            logger.warning(f"Not enough compatible modules for {direction}, attempt {attempt+1}")
+            continue
 
         # Determine number of modules based on generation
         if generation < 30:
@@ -131,13 +153,10 @@ def generate_random_chromosome(generation: int, config: dict) -> PatternChromoso
             n_modules = random.randint(3, 5)
 
         # Ensure we have enough modules
-        n_modules = min(n_modules, len(available_modules))
+        n_modules = min(n_modules, len(compatible_modules))
 
-        # Sample modules
-        module_names = random.sample(list(available_modules.keys()), n_modules)
-
-        # Random direction
-        direction = random.choice(['LONG', 'SHORT'])
+        # Sample COMPATIBLE modules only
+        module_names = random.sample(compatible_modules, n_modules)
 
         # Random logic
         logic_options = ['AND', 'OR']
@@ -159,6 +178,15 @@ def generate_random_chromosome(generation: int, config: dict) -> PatternChromoso
         else:  # 5+ modules
             window = random.randint(6, 10)
 
+        # SPRINT 13: Check for redundant modules before creating chromosome
+        redundant = check_redundant_modules(module_names)
+        if redundant:
+            # Remove redundant modules
+            module_names = [m for m in module_names if m not in redundant]
+            if len(module_names) == 0:
+                logger.debug(f"Attempt {attempt + 1}: All modules redundant, retrying...")
+                continue
+
         # Create chromosome
         chromosome = PatternChromosome(
             direction=direction,
@@ -171,12 +199,16 @@ def generate_random_chromosome(generation: int, config: dict) -> PatternChromoso
             fitness_short=-999.0
         )
 
-        # Validate (SPRINT 12: added logic validation)
+        # SPRINT 13: Validate syntactic AND semantic correctness
         if validate_chromosome(chromosome) and validate_pattern_logic(chromosome):
-            logger.debug(f"Generated: {chromosome.to_readable()}")
-            return chromosome
+            # Check semantic validity
+            if is_pattern_semantically_valid(module_names, direction, min_bias_score=0.5):
+                logger.debug(f"Generated: {chromosome.to_readable()}")
+                return chromosome
+            else:
+                logger.debug(f"Attempt {attempt + 1}: Semantically invalid, retrying...")
         else:
-            logger.debug(f"Attempt {attempt + 1}: Invalid chromosome, retrying...")
+            logger.debug(f"Attempt {attempt + 1}: Syntactically invalid, retrying...")
 
     # Fallback: return simple valid chromosome
     logger.warning("Failed to generate valid random chromosome after max attempts. Using fallback.")

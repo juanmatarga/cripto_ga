@@ -32,6 +32,7 @@ import logging
 import yaml
 from pathlib import Path
 from datetime import datetime
+from typing import List
 import sys
 import argparse
 import numpy as np
@@ -91,6 +92,95 @@ def validate_config(config: dict):
     timeframe = config['data']['timeframe']
     assert timeframe in config['data']['time_map'], \
         f"Timeframe '{timeframe}' not in TIME_MAP. Available: {list(config['data']['time_map'].keys())}"
+
+def calculate_diversity(population):
+    """
+    SPRINT 12.6: Calculate population genetic diversity.
+
+    Diversity metric: Percentage of unique module sets in population.
+    Higher diversity = more exploration potential.
+
+    Args:
+        population: List of PatternChromosome
+
+    Returns:
+        float: Diversity percentage (0.0 to 1.0)
+
+    Example:
+        >>> # Population with 100 patterns
+        >>> # If 50 have unique module combinations, diversity = 0.50
+        >>> diversity = calculate_diversity(population)
+        >>> diversity
+        0.50
+    """
+    if len(population) == 0:
+        return 0.0
+
+    # Count unique module sets
+    unique_module_sets = set()
+    for p in population:
+        # Convert modules list to frozenset for hashing
+        module_set = frozenset(p.modules)
+        unique_module_sets.add(module_set)
+
+    # Diversity = unique patterns / total patterns
+    diversity = len(unique_module_sets) / len(population)
+
+    return diversity
+
+def inject_immigrants(population: List, generation: int, config: dict, n_immigrants: int = 20):
+    """
+    SPRINT 12.6: Inject fresh random patterns to combat stagnation.
+
+    Replaces worst patterns with new random patterns to restore genetic diversity.
+    This prevents premature convergence to local optima.
+
+    Args:
+        population: Current population (List of PatternChromosome)
+        generation: Current generation number
+        config: Config dict
+        n_immigrants: Number of fresh patterns to inject (default 20)
+
+    Returns:
+        Updated population with immigrants injected
+
+    Example:
+        If population has converged and best fitness hasn't improved for 2 gens,
+        inject 20 fresh patterns to bring new genetic material.
+    """
+    from ga_patterns.generator_v2 import generate_random_chromosome
+    from ga_patterns.chromosome_v2 import validate_chromosome
+
+    logger = logging.getLogger(__name__)
+    logger.info(f"IMMIGRATION: Injecting {n_immigrants} fresh patterns to restore diversity...")
+
+    # Generate immigrants
+    immigrants = []
+    attempts = 0
+    max_attempts = n_immigrants * 10  # Try up to 10x to get valid patterns
+
+    while len(immigrants) < n_immigrants and attempts < max_attempts:
+        immigrant = generate_random_chromosome(generation, config)
+        if validate_chromosome(immigrant):
+            immigrant.fitness = -999.0  # Will be evaluated next generation
+            immigrants.append(immigrant)
+        attempts += 1
+
+    if len(immigrants) < n_immigrants:
+        logger.warning(f"Only generated {len(immigrants)}/{n_immigrants} valid immigrants after {attempts} attempts")
+
+    # Sort population by fitness (ascending)
+    population.sort(key=lambda p: p.fitness)
+
+    # Replace worst N patterns with immigrants
+    # Keep top (population_size - n_immigrants), add n_immigrants new patterns
+    n_replace = min(len(immigrants), len(population))
+    new_population = population[n_replace:] + immigrants
+
+    logger.info(f"[OK] Injected {len(immigrants)} immigrants, replacing worst {n_replace} patterns")
+    logger.info(f"     Population size: {len(population)} → {len(new_population)}")
+
+    return new_population
 
 def maintain_diversity(population, max_similarity: float = 0.8):
     """
@@ -405,24 +495,37 @@ def main():
         best_long = max(long_patterns, key=lambda p: p.fitness) if long_patterns else None
         best_short = max(short_patterns, key=lambda p: p.fitness) if short_patterns else None
 
+        # SPRINT 14: Enhanced dashboard logging
         logger.info("")
-        logger.info("GENERATION SUMMARY")
-        logger.info("-" * 80)
-        logger.info(f"Valid patterns: {len(valid_patterns)}/100 ({len(valid_patterns)}%)")
-        logger.info(f"  LONG: {len(valid_long)}/{len(long_patterns)} ({len(valid_long)*100//len(long_patterns) if long_patterns else 0}%)")
-        logger.info(f"  SHORT: {len(valid_short)}/{len(short_patterns)} ({len(valid_short)*100//len(short_patterns) if short_patterns else 0}%)")
+        logger.info("="*80)
+        logger.info(f"GENERATION {generation}/{max_generations} DASHBOARD")
+        logger.info("="*80)
+
+        # Quick stats
+        current_best = max(population, key=lambda p: p.fitness)
+        mean_fit = np.mean([p.fitness for p in valid_patterns]) if valid_patterns else 0
+
+        logger.info(f"VALID: {len(valid_patterns)}/{len(population)} ({len(valid_patterns)*100//len(population)}%)")
+        logger.info(f"BEST: {current_best.fitness:.4f} ({current_best.direction})")
+        logger.info(f"MEAN: {mean_fit:.4f}")
+        logger.info(f"DIVERSITY: {calculate_diversity(population)*100:.1f}%")
+        logger.info("")
+        logger.info(f"LONG: {len(valid_long)}/{len(long_patterns)} valid ({len(valid_long)*100//len(long_patterns) if long_patterns else 0}%)")
+        logger.info(f"SHORT: {len(valid_short)}/{len(short_patterns)} valid ({len(valid_short)*100//len(short_patterns) if short_patterns else 0}%)")
 
         if best_long and best_long.fitness > -999:
-            logger.info(f"\nBest LONG pattern (fitness={best_long.fitness:.4f}):")
-            logger.info(f"  {best_long.to_readable()}")
+            logger.info("")
+            logger.info("BEST LONG:")
+            logger.info(f"  {best_long.to_readable()[:80]}")
             if hasattr(best_long, 'metrics') and best_long.metrics:
-                logger.info(f"  Sharpe: {best_long.metrics.get('sharpe', 0):.2f}, CAGR: {best_long.metrics.get('cagr', 0)*100:.1f}%, Trades: {best_long.n_trades}")
+                logger.info(f"  Fitness={best_long.fitness:.4f}, Sharpe={best_long.metrics.get('sharpe', 0):.2f}, CAGR={best_long.metrics.get('cagr', 0)*100:.1f}%, Trades={best_long.n_trades}")
 
         if best_short and best_short.fitness > -999:
-            logger.info(f"\nBest SHORT pattern (fitness={best_short.fitness:.4f}):")
-            logger.info(f"  {best_short.to_readable()}")
+            logger.info("")
+            logger.info("BEST SHORT:")
+            logger.info(f"  {best_short.to_readable()[:80]}")
             if hasattr(best_short, 'metrics') and best_short.metrics:
-                logger.info(f"  Sharpe: {best_short.metrics.get('sharpe', 0):.2f}, CAGR: {best_short.metrics.get('cagr', 0)*100:.1f}%, Trades: {best_short.n_trades}")
+                logger.info(f"  Fitness={best_short.fitness:.4f}, Sharpe={best_short.metrics.get('sharpe', 0):.2f}, CAGR={best_short.metrics.get('cagr', 0)*100:.1f}%, Trades={best_short.n_trades}")
 
         # Module usage
         from collections import Counter
@@ -442,8 +545,15 @@ def main():
         # Track
         tracker.track_generation(generation, population, current_best, mean_fitness)
 
-        # Early stopping
-        if current_best.fitness > best_pattern.fitness:
+        # SPRINT 12.6: Track genetic diversity
+        diversity = calculate_diversity(population)
+        logger.info(f"Population diversity: {diversity:.2%} ({int(diversity * len(population))} unique patterns)")
+
+        if diversity < 0.30:
+            logger.warning("LOW DIVERSITY (<30% unique patterns) - population may be converging")
+
+        # SPRINT 12.6: Track improvement and trigger immigration
+        if current_best.fitness > best_pattern.fitness + 0.01:  # Minimum 0.01 improvement
             best_pattern = current_best
             generations_without_improvement = 0
             logger.info("[OK] New best!")
@@ -451,6 +561,15 @@ def main():
             generations_without_improvement += 1
             logger.info(f"No improvement ({generations_without_improvement}/{patience})")
 
+        # SPRINT 12.6: Immigration trigger when stagnation detected
+        if generations_without_improvement >= 2 and generation < max_generations - 5:
+            logger.info("")
+            logger.info("STAGNATION DETECTED - Triggering immigration to restore diversity")
+            population = inject_immigrants(population, generation, config, n_immigrants=20)
+            # Don't reset counter - let patience still work for final early stop
+            logger.info("")
+
+        # Early stopping (with higher patience now)
         if generations_without_improvement >= patience:
             logger.info(f"\n[OK] Early stopping at gen {generation}")
             break
@@ -701,7 +820,7 @@ def main():
     # FINAL SUMMARY
     # ========================================================================
     logger.info(f"\n{'='*80}")
-    logger.info("🎉 EXPERIMENT COMPLETE 🎉")
+    logger.info("EXPERIMENT COMPLETE")
     logger.info(f"{'='*80}")
 
     end_time = datetime.now()
@@ -761,6 +880,57 @@ def main():
     logger.info("  3. Import LaTeX tables into your paper")
     logger.info("  4. Run validation: pytest tests/")
     logger.info(f"{'='*80}\n")
+
+    # ========================================================================
+    # SPRINT 14: Auto-run Evolution Analytics
+    # ========================================================================
+    logger.info("")
+    logger.info("="*80)
+    logger.info("GENERATING EVOLUTION ANALYTICS")
+    logger.info("="*80)
+
+    try:
+        from analysis.evolution_analytics import EvolutionAnalyzer
+
+        # Use tracking config from config.yaml
+        snapshots_dir = config['ga']['evolution_tracking'].get('output_dir', './evolution_snapshots')
+
+        analyzer = EvolutionAnalyzer(snapshots_dir=snapshots_dir)
+        results_df = analyzer.run_full_analysis(output_dir="./analysis_output")
+
+        logger.info("[OK] Evolution analytics generated successfully")
+        logger.info("    - Plots: ./analysis_output/*.png")
+        logger.info("    - Report: ./analysis_output/evolution_report.md")
+
+        # Generate presentation
+        logger.info("")
+        logger.info("Generating HTML presentation...")
+        try:
+            from analysis.generate_presentation import generate_html_presentation
+
+            success = generate_html_presentation(
+                report_path="./analysis_output/evolution_report.md",
+                images_dir="./analysis_output",
+                output_path="./analysis_output/presentation.html"
+            )
+
+            if success:
+                logger.info("")
+                logger.info("="*80)
+                logger.info("PRESENTATION READY!")
+                logger.info("="*80)
+                logger.info(f"Open in browser: {Path('./analysis_output/presentation.html').absolute()}")
+                logger.info("Share this self-contained HTML file with your professor.")
+                logger.info("="*80)
+
+        except Exception as e:
+            logger.warning(f"Could not generate presentation: {e}")
+
+    except Exception as e:
+        logger.error(f"Failed to generate analytics: {e}")
+        logger.error("Continuing without analytics...")
+
+    logger.info("")
 
     print(BANNER)
     print(f"Completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

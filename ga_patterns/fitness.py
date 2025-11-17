@@ -338,6 +338,25 @@ def evaluate_fitness_unidirectional(pattern,
             0.2 * win_rate_norm
         )
 
+        # SPRINT 13: Trade frequency regularization penalty
+        # Prevents overtrading disasters (e.g., 5395 trades on 15min timeframe)
+        # Target: 1-10 trades per month (reasonable for 15min patterns)
+        n_months = len(windows) * config['ga']['fast_mode']['window_months']
+        avg_trades_per_month = len(all_trades) / n_months if n_months > 0 else 0
+
+        trade_freq_penalty = 0.0
+        if avg_trades_per_month > 120:  # Overtrading threshold
+            # Exponential penalty for extreme overtrading
+            excess = (avg_trades_per_month - 120) / 50  # Normalize
+            trade_freq_penalty = min(0.3, 0.15 * excess)  # Cap at -0.3
+            logger.debug(f"OVERTRADING penalty: -{trade_freq_penalty:.3f} ({avg_trades_per_month:.1f} trades/month)")
+        elif avg_trades_per_month < 0.5:  # Too rare (< 1 trade per 2 months)
+            trade_freq_penalty = 0.1  # Fixed penalty
+            logger.debug(f"UNDERTRADING penalty: -{trade_freq_penalty:.3f} ({avg_trades_per_month:.1f} trades/month)")
+
+        # Apply penalty
+        fitness = max(0.0, fitness - trade_freq_penalty)
+
         # Store components for debugging
         pattern.fitness_components = {
             'sortino': sortino,
@@ -345,14 +364,16 @@ def evaluate_fitness_unidirectional(pattern,
             'calmar': calmar,
             'calmar_norm': calmar_norm,
             'win_rate': win_rate,
-            'win_rate_norm': win_rate_norm
+            'win_rate_norm': win_rate_norm,
+            'trade_freq_penalty': trade_freq_penalty,
+            'avg_trades_per_month': avg_trades_per_month
         }
 
         # Safeguard against inf/nan
         if np.isinf(fitness) or np.isnan(fitness) or fitness > 1000:
             fitness = -999.0
 
-        logger.debug(f"Fitness = {fitness:.4f} (Sortino={sortino:.2f}/{sortino_norm:.2f}, Calmar={calmar:.2f}/{calmar_norm:.2f}, WinRate={win_rate:.2%})")
+        logger.debug(f"Fitness = {fitness:.4f} (Sortino={sortino:.2f}/{sortino_norm:.2f}, Calmar={calmar:.2f}/{calmar_norm:.2f}, WinRate={win_rate:.2%}, Trades/mo={avg_trades_per_month:.1f})")
 
         # Store detailed metrics in pattern
         pattern.fitness = fitness

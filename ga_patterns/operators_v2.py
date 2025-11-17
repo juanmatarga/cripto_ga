@@ -1,14 +1,17 @@
 """
-Genetic Operators V2 - Intelligent crossover and mutation for building blocks.
+Genetic Operators V2 - Semantic-Aware Crossover and Mutation
 
-These operators maintain the semantic meaning of patterns by operating on
-module-level rather than arbitrary subtree manipulation.
+SPRINT 13: Added semantic constraints to prevent nonsense patterns.
 
 Key improvements:
-    - Crossover: Uniform module mixing with 30% chance of adding new module
-    - Mutation: 5 intelligent strategies (add, remove, replace, flip_logic, flip_direction)
-    - Family-based replacement: Replace modules with others from same category
-    - Validation: All offspring are validated before returning
+    - Crossover: Preserves building blocks + semantic coherence
+    - Mutation: Direction-aware (LONG uses bullish, SHORT uses bearish)
+    - Validation: Rejects patterns with contradictory modules
+    - Redundancy check: Prevents duplicate modules from same family
+
+Prevents patterns like:
+    - LONG: AND(momentum_down_strong, rsi_overbought_70) ❌
+    - SHORT: OR(momentum_up_2bar, rsi_oversold_30) ❌
 """
 
 import random
@@ -16,6 +19,12 @@ import copy
 from typing import List
 from ga_patterns.chromosome_v2 import PatternChromosome, validate_chromosome
 from ga_patterns.building_blocks import get_available_modules, get_module_family
+from ga_patterns.module_semantics import (
+    get_compatible_modules,
+    is_pattern_semantically_valid,
+    filter_modules_for_direction,
+    check_redundant_modules
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -24,14 +33,21 @@ logger = logging.getLogger(__name__)
 def crossover(parent1: PatternChromosome, parent2: PatternChromosome,
               generation: int, config: dict) -> PatternChromosome:
     """
-    Uniform crossover of modules between parents.
+    SPRINT 13: Semantic-aware crossover that preserves building blocks.
+
+    CRITICAL CHANGES:
+    1. Only cross parents with SAME direction (prevent LONG/SHORT mixing)
+    2. If different directions, use dominant parent's direction
+    3. Filter incompatible modules after crossover
+    4. Remove redundant modules from same family
+    5. Validate semantic coherence before returning
 
     Strategy:
-        1. Pool modules from both parents
-        2. Sample subset of modules
-        3. Inherit direction/logic/window from parents
-        4. 30% chance: add new module from current generation
-        5. Validate offspring
+        1. Determine offspring direction (prefer parent1's direction)
+        2. Uniform crossover on module positions
+        3. Filter modules incompatible with offspring direction
+        4. Remove redundant modules (e.g., momentum_up_2bar + momentum_up_3bar)
+        5. Validate semantic coherence (≥50% modules support direction)
 
     Args:
         parent1: First parent chromosome
@@ -40,63 +56,92 @@ def crossover(parent1: PatternChromosome, parent2: PatternChromosome,
         config: Config dict with GA settings
 
     Returns:
-        PatternChromosome: Valid offspring or copy of parent1 if invalid
+        PatternChromosome: Valid offspring or copy of parent1 if crossover fails
 
     Example:
         >>> p1 = PatternChromosome(direction='LONG', modules=['momentum_up_2bar', 'volume_spike'], logic='AND')
-        >>> p2 = PatternChromosome(direction='SHORT', modules=['breakout_high_short', 'large_body'], logic='AND')
+        >>> p2 = PatternChromosome(direction='LONG', modules=['rsi_oversold_30', 'large_body'], logic='AND')
         >>> offspring = crossover(p1, p2, generation=0, config={})
-        >>> len(offspring.modules) >= 2
-        True
+        >>> offspring.direction
+        'LONG'
     """
-    logger.debug(f"Crossover between parents with {len(parent1.modules)} and {len(parent2.modules)} modules")
+    logger.debug(f"Crossover: P1={parent1.direction} ({len(parent1.modules)} modules), "
+                f"P2={parent2.direction} ({len(parent2.modules)} modules)")
 
-    # Combine modules from both parents
-    all_modules = parent1.modules + parent2.modules
-
-    # Remove duplicates while preserving order
-    seen = set()
-    unique_modules = []
-    for module in all_modules:
-        if module not in seen:
-            seen.add(module)
-            unique_modules.append(module)
-
-    # Determine number of modules for offspring based on generation complexity
-    if generation < 30:
-        n_modules = random.randint(2, 3)
-    elif generation < 80:
-        n_modules = random.randint(2, 4)
+    # STEP 1: Determine offspring direction
+    # Prefer same-direction crossover (80% of time use parent1's direction)
+    if random.random() < 0.8:
+        offspring_direction = parent1.direction
     else:
-        n_modules = random.randint(3, 5)
+        # 20% chance to flip (exploration)
+        offspring_direction = parent2.direction
 
-    # Ensure we don't exceed available modules
-    n_modules = min(n_modules, len(unique_modules))
+    logger.debug(f"Offspring direction: {offspring_direction}")
 
-    # Sample modules
-    if len(unique_modules) <= n_modules:
-        offspring_modules = unique_modules.copy()
+    # STEP 2: Uniform crossover on modules (position-by-position)
+    offspring_modules = []
+    max_len = max(len(parent1.modules), len(parent2.modules))
+
+    for i in range(max_len):
+        if random.random() < 0.5:
+            # Inherit from parent1
+            if i < len(parent1.modules):
+                module = parent1.modules[i]
+                if module not in offspring_modules:  # No duplicates
+                    offspring_modules.append(module)
+        else:
+            # Inherit from parent2
+            if i < len(parent2.modules):
+                module = parent2.modules[i]
+                if module not in offspring_modules:
+                    offspring_modules.append(module)
+
+    # Fallback if no modules (shouldn't happen)
+    if len(offspring_modules) == 0:
+        parent = random.choice([parent1, parent2])
+        if parent.modules:
+            offspring_modules.append(parent.modules[0])
+
+    logger.debug(f"After crossover: {len(offspring_modules)} modules: {offspring_modules}")
+
+    # STEP 3: Filter incompatible modules
+    # Remove modules that contradict offspring direction
+    offspring_modules = filter_modules_for_direction(
+        offspring_modules,
+        offspring_direction,
+        max_opposite_ratio=0.2  # Allow up to 20% opposite modules (noise tolerance)
+    )
+
+    logger.debug(f"After filtering: {len(offspring_modules)} modules: {offspring_modules}")
+
+    # STEP 4: Remove redundant modules from same family
+    redundant = check_redundant_modules(offspring_modules)
+    if redundant:
+        # Remove redundant modules
+        offspring_modules = [m for m in offspring_modules if m not in redundant]
+        logger.debug(f"Removed redundant modules: {redundant}")
+
+    # Ensure at least 1 module remains
+    if len(offspring_modules) == 0:
+        # Emergency fallback: take first compatible module from parent1
+        compatible = filter_modules_for_direction(parent1.modules, offspring_direction)
+        if compatible:
+            offspring_modules = [compatible[0]]
+        else:
+            # Last resort: use parent1's first module
+            offspring_modules = [parent1.modules[0]]
+        logger.warning(f"All modules filtered out, using fallback: {offspring_modules}")
+
+    # Cap at 5 modules to prevent bloat
+    if len(offspring_modules) > 5:
+        offspring_modules = random.sample(offspring_modules, 5)
+
+    # STEP 5: Inherit logic
+    if random.random() < 0.7:
+        offspring_logic = random.choice([parent1.logic, parent2.logic])
     else:
-        offspring_modules = random.sample(unique_modules, n_modules)
-
-    # 30% chance to add a new module available at this generation
-    if random.random() < 0.3:
-        allow_indicators = config.get('ga', {}).get('building_blocks', {}).get('allow_indicators', True)
-        available = get_available_modules(generation, allow_indicators)
-
-        # Find modules not already in offspring
-        new_candidates = [m for m in available.keys() if m not in offspring_modules]
-
-        if new_candidates:
-            new_module = random.choice(new_candidates)
-            offspring_modules.append(new_module)
-            logger.debug(f"Added new module: {new_module}")
-
-    # Inherit direction (random choice from parents)
-    offspring_direction = random.choice([parent1.direction, parent2.direction])
-
-    # Inherit logic (random choice from parents)
-    offspring_logic = random.choice([parent1.logic, parent2.logic])
+        # Mutate logic
+        offspring_logic = random.choice(['AND', 'OR', '2of3', '3of4'])
 
     # Validate logic makes sense for module count
     if offspring_logic == '2of3' and len(offspring_modules) < 2:
@@ -104,8 +149,26 @@ def crossover(parent1: PatternChromosome, parent2: PatternChromosome,
     elif offspring_logic == '3of4' and len(offspring_modules) < 3:
         offspring_logic = 'AND'
 
-    # Inherit window (random choice from parents)
-    offspring_window = random.choice([parent1.window, parent2.window])
+    # STEP 6: Inherit window
+    rand = random.random()
+    if rand < 0.5:
+        offspring_window = parent1.window
+    elif rand < 0.8:
+        offspring_window = parent2.window
+    else:
+        # Interpolate windows
+        offspring_window = (parent1.window + parent2.window) // 2
+
+    # STEP 7: Inherit TP/SL parameters (blend from parents)
+    if random.random() < 0.7:
+        # Take from one parent
+        source_parent = random.choice([parent1, parent2])
+        offspring_tp = source_parent.tp_atr_mult
+        offspring_sl = source_parent.sl_atr_mult
+    else:
+        # Average parents' TP/SL
+        offspring_tp = (parent1.tp_atr_mult + parent2.tp_atr_mult) / 2
+        offspring_sl = (parent1.sl_atr_mult + parent2.sl_atr_mult) / 2
 
     # Create offspring
     offspring = PatternChromosome(
@@ -116,28 +179,51 @@ def crossover(parent1: PatternChromosome, parent2: PatternChromosome,
         generation_created=generation,
         fitness=-999.0,
         fitness_long=-999.0,
-        fitness_short=-999.0
+        fitness_short=-999.0,
+        tp_atr_mult=offspring_tp,
+        sl_atr_mult=offspring_sl
     )
 
-    # Validate
-    if validate_chromosome(offspring):
-        logger.debug(f"Crossover successful: {offspring.to_readable()}")
-        return offspring
-    else:
+    # STEP 8: Validate syntactic correctness
+    if not validate_chromosome(offspring):
         logger.warning("Crossover produced invalid offspring, returning parent1")
         return copy.deepcopy(parent1)
+
+    # STEP 9: Validate semantic coherence
+    if not is_pattern_semantically_valid(offspring.modules, offspring.direction, min_bias_score=0.5):
+        logger.warning(f"Crossover produced semantically invalid pattern: {offspring.to_readable()}")
+        # Try to fix by filtering again with stricter threshold
+        offspring.modules = filter_modules_for_direction(
+            offspring.modules,
+            offspring.direction,
+            max_opposite_ratio=0.0  # No opposite modules
+        )
+
+        # If still empty, return parent1
+        if len(offspring.modules) == 0:
+            logger.warning("Cannot fix semantic issues, returning parent1")
+            return copy.deepcopy(parent1)
+
+    logger.debug(f"Crossover successful: {offspring.to_readable()}")
+    return offspring
 
 
 def mutate(chromosome: PatternChromosome, generation: int, config: dict) -> PatternChromosome:
     """
-    Mutate chromosome using one of 5 strategies.
+    SPRINT 13: Semantic-aware mutation with direction constraints.
+
+    CRITICAL CHANGES:
+    1. add_module: Only adds modules COMPATIBLE with pattern direction
+    2. flip_direction: Replaces ALL modules with opposite-direction modules
+    3. replace_module: Tries to use direction-compatible alternatives
+    4. Validates semantic coherence after mutation
 
     Mutation types (with probabilities):
-        - add_module (25%): Add new module from available set
+        - add_module (30%): Add direction-compatible module
         - remove_module (20%): Remove one module (keep minimum 1)
-        - replace_module (30%): Replace module with one from same family
+        - replace_module (30%): Replace with direction-compatible module
         - flip_logic (15%): Change combination logic (AND ↔ OR)
-        - flip_direction (10%): Change direction (LONG ↔ SHORT)
+        - flip_direction (5%): Change direction + replace modules
 
     Args:
         chromosome: Chromosome to mutate
@@ -150,33 +236,37 @@ def mutate(chromosome: PatternChromosome, generation: int, config: dict) -> Patt
     Example:
         >>> chrom = PatternChromosome(direction='LONG', modules=['momentum_up_2bar'], logic='AND')
         >>> mutated = mutate(chrom, generation=0, config={})
+        >>> # If mutated to SHORT, modules should be bearish
         >>> mutated.direction in ['LONG', 'SHORT']
         True
     """
     mutated = copy.deepcopy(chromosome)
 
-    # Choose mutation type
+    # Choose mutation type (reduced flip_direction probability)
     mutation_types = ['add_module', 'remove_module', 'replace_module', 'flip_logic', 'flip_direction']
-    mutation_weights = [0.25, 0.20, 0.30, 0.15, 0.10]
+    mutation_weights = [0.30, 0.20, 0.30, 0.15, 0.05]  # flip_direction reduced to 5%
     mutation_type = random.choices(mutation_types, weights=mutation_weights)[0]
 
-    logger.debug(f"Applying {mutation_type} mutation to pattern with {len(mutated.modules)} modules")
+    logger.debug(f"Applying {mutation_type} mutation to {mutated.direction} pattern with {len(mutated.modules)} modules")
 
     try:
         if mutation_type == 'add_module':
-            # Add new module available at this generation
+            # SPRINT 13: Only add modules COMPATIBLE with pattern direction
             allow_indicators = config.get('ga', {}).get('building_blocks', {}).get('allow_indicators', True)
             available = get_available_modules(generation, allow_indicators)
 
-            # Find modules not already in pattern
-            candidates = [m for m in available.keys() if m not in mutated.modules]
+            # Filter by direction compatibility
+            compatible = get_compatible_modules(mutated.direction, list(available.keys()))
+
+            # Exclude modules already in pattern
+            candidates = [m for m in compatible if m not in mutated.modules]
 
             if candidates:
                 new_module = random.choice(candidates)
                 mutated.modules.append(new_module)
-                logger.debug(f"Added module: {new_module}")
+                logger.debug(f"Added direction-compatible module: {new_module}")
             else:
-                logger.debug("No new modules to add")
+                logger.debug("No new compatible modules to add")
 
         elif mutation_type == 'remove_module':
             # Remove random module (keep at least 1)
@@ -195,7 +285,7 @@ def mutate(chromosome: PatternChromosome, generation: int, config: dict) -> Patt
                 logger.debug("Cannot remove module - only 1 remaining")
 
         elif mutation_type == 'replace_module':
-            # Replace module with one from same family (category)
+            # SPRINT 13: Replace with direction-compatible module from same family
             if mutated.modules:
                 idx = random.randint(0, len(mutated.modules) - 1)
                 old_module = mutated.modules[idx]
@@ -203,15 +293,29 @@ def mutate(chromosome: PatternChromosome, generation: int, config: dict) -> Patt
                 # Get modules from same family
                 family = get_module_family(old_module)
 
+                # Filter by direction compatibility
+                compatible_family = get_compatible_modules(mutated.direction, family)
+
                 # Remove old module from candidates
-                candidates = [m for m in family if m != old_module]
+                candidates = [m for m in compatible_family if m != old_module]
 
                 if candidates:
                     new_module = random.choice(candidates)
                     mutated.modules[idx] = new_module
-                    logger.debug(f"Replaced {old_module} with {new_module}")
+                    logger.debug(f"Replaced {old_module} with compatible {new_module}")
                 else:
-                    logger.debug(f"No alternatives in family for {old_module}")
+                    # Fallback: try any compatible module
+                    allow_indicators = config.get('ga', {}).get('building_blocks', {}).get('allow_indicators', True)
+                    available = get_available_modules(generation, allow_indicators)
+                    compatible_all = get_compatible_modules(mutated.direction, list(available.keys()))
+                    candidates = [m for m in compatible_all if m not in mutated.modules]
+
+                    if candidates:
+                        new_module = random.choice(candidates)
+                        mutated.modules[idx] = new_module
+                        logger.debug(f"Replaced {old_module} with any compatible {new_module}")
+                    else:
+                        logger.debug(f"No compatible replacements for {old_module}")
 
         elif mutation_type == 'flip_logic':
             # Change logic operator
@@ -237,10 +341,25 @@ def mutate(chromosome: PatternChromosome, generation: int, config: dict) -> Patt
                 logger.debug(f"Changed logic from {old_logic} to {mutated.logic}")
 
         elif mutation_type == 'flip_direction':
-            # Flip direction
+            # SPRINT 13: Flip direction AND replace modules with opposite-direction modules
             old_direction = mutated.direction
             mutated.direction = 'SHORT' if mutated.direction == 'LONG' else 'LONG'
-            logger.debug(f"Changed direction from {old_direction} to {mutated.direction}")
+            logger.debug(f"Flipping direction from {old_direction} to {mutated.direction}")
+
+            # Replace ALL modules with opposite-direction compatible modules
+            allow_indicators = config.get('ga', {}).get('building_blocks', {}).get('allow_indicators', True)
+            available = get_available_modules(generation, allow_indicators)
+            compatible = get_compatible_modules(mutated.direction, list(available.keys()))
+
+            if len(compatible) > 0:
+                # Keep same number of modules (or max 3)
+                n_modules = min(len(mutated.modules), 3)
+                mutated.modules = random.sample(compatible, min(n_modules, len(compatible)))
+                logger.debug(f"Replaced modules with {mutated.direction}-compatible: {mutated.modules}")
+            else:
+                # Revert direction if no compatible modules
+                mutated.direction = old_direction
+                logger.warning(f"No compatible modules for {mutated.direction}, reverting direction")
 
         # Reset fitness
         mutated.fitness = -999.0
@@ -248,13 +367,28 @@ def mutate(chromosome: PatternChromosome, generation: int, config: dict) -> Patt
         mutated.fitness_short = -999.0
         mutated.generation_created = generation
 
-        # Validate
-        if validate_chromosome(mutated):
-            logger.debug(f"Mutation successful: {mutated.to_readable()}")
-            return mutated
-        else:
-            logger.warning("Mutation produced invalid chromosome, returning original")
+        # SPRINT 13: Validate syntactic correctness
+        if not validate_chromosome(mutated):
+            logger.warning("Mutation produced syntactically invalid chromosome, returning original")
             return chromosome
+
+        # SPRINT 13: Validate semantic coherence
+        if not is_pattern_semantically_valid(mutated.modules, mutated.direction, min_bias_score=0.5):
+            logger.warning(f"Mutation produced semantically invalid pattern: {mutated.to_readable()}")
+            # Try to fix by filtering incompatible modules
+            mutated.modules = filter_modules_for_direction(
+                mutated.modules,
+                mutated.direction,
+                max_opposite_ratio=0.0
+            )
+
+            # If no modules left, return original
+            if len(mutated.modules) == 0:
+                logger.warning("Cannot fix semantic issues, returning original")
+                return chromosome
+
+        logger.debug(f"Mutation successful: {mutated.to_readable()}")
+        return mutated
 
     except Exception as e:
         logger.error(f"Error during {mutation_type} mutation: {e}")

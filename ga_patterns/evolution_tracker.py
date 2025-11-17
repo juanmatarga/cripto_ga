@@ -45,13 +45,28 @@ class EvolutionTracker:
 
     def track_generation(self, generation: int, population: List[Pattern],
                        best_pattern: Pattern, mean_fitness: float):
-        """Trackea generación con best LONG/SHORT."""
+        """
+        SPRINT 14: Enhanced tracking with comprehensive evolution analytics.
+
+        Tracks:
+        - Fitness statistics (mean, std, min, max, median)
+        - Diversity metrics (unique patterns, module diversity)
+        - Performance metrics (Sharpe, CAGR, trades distribution)
+        - Evolution indicators (improvement rate, stagnation)
+        """
         if not self.enabled:
             return
+
+        import numpy as np
 
         # Separar por dirección
         long_patterns = [p for p in population if p.direction == 'LONG']
         short_patterns = [p for p in population if p.direction == 'SHORT']
+
+        # Valid patterns only (fitness > -999)
+        valid_patterns = [p for p in population if p.fitness > -999]
+        valid_long = [p for p in long_patterns if p.fitness > -999]
+        valid_short = [p for p in short_patterns if p.fitness > -999]
 
         # Best LONG
         best_long = max(long_patterns, key=lambda p: p.fitness) if long_patterns else None
@@ -59,7 +74,55 @@ class EvolutionTracker:
         # Best SHORT
         best_short = max(short_patterns, key=lambda p: p.fitness) if short_patterns else None
 
-        # Guardar history
+        # SPRINT 14: Fitness statistics (comprehensive)
+        if valid_patterns:
+            fitness_values = [p.fitness for p in valid_patterns]
+            fitness_stats = {
+                'mean': float(np.mean(fitness_values)),
+                'std': float(np.std(fitness_values)),
+                'min': float(np.min(fitness_values)),
+                'max': float(np.max(fitness_values)),
+                'median': float(np.median(fitness_values)),
+                'q25': float(np.percentile(fitness_values, 25)),
+                'q75': float(np.percentile(fitness_values, 75))
+            }
+        else:
+            fitness_stats = {'mean': 0, 'std': 0, 'min': 0, 'max': 0, 'median': 0, 'q25': 0, 'q75': 0}
+
+        # SPRINT 14: Diversity metrics
+        unique_module_sets = set()
+        all_modules = []
+        for p in population:
+            unique_module_sets.add(tuple(sorted(p.modules)))
+            all_modules.extend(p.modules)
+
+        module_diversity = len(unique_module_sets) / len(population) if population else 0
+
+        # SPRINT 14: Performance metrics aggregation
+        performance_metrics = {
+            'sharpe': [],
+            'cagr': [],
+            'trades': [],
+            'win_rate': []
+        }
+
+        for p in valid_patterns:
+            if hasattr(p, 'metrics') and p.metrics:
+                performance_metrics['sharpe'].append(p.metrics.get('sharpe', 0))
+                performance_metrics['cagr'].append(p.metrics.get('cagr', 0))
+            if hasattr(p, 'n_trades'):
+                performance_metrics['trades'].append(p.n_trades)
+            if hasattr(p, 'fitness_components') and 'win_rate' in p.fitness_components:
+                performance_metrics['win_rate'].append(p.fitness_components['win_rate'])
+
+        avg_performance = {
+            'avg_sharpe': float(np.mean(performance_metrics['sharpe'])) if performance_metrics['sharpe'] else 0,
+            'avg_cagr': float(np.mean(performance_metrics['cagr'])) if performance_metrics['cagr'] else 0,
+            'avg_trades': float(np.mean(performance_metrics['trades'])) if performance_metrics['trades'] else 0,
+            'avg_win_rate': float(np.mean(performance_metrics['win_rate'])) if performance_metrics['win_rate'] else 0
+        }
+
+        # Guardar history (legacy)
         self.best_fitness_history.append({
             'generation': generation,
             'fitness': best_pattern.fitness,
@@ -98,13 +161,43 @@ class EvolutionTracker:
 
         # Module usage statistics
         from collections import Counter
-        all_modules = [m for p in population for m in p.modules]
         module_usage = dict(Counter(all_modules).most_common(10))
 
+        # SPRINT 14: Enhanced snapshot with comprehensive metrics
         self.generation_samples[generation] = {
+            'generation': generation,
+            'timestamp': datetime.now().isoformat(),
+
+            # Best patterns
             'best_overall': best_pattern.to_dict(),
             'best_long': best_long.to_dict() if best_long else None,
             'best_short': best_short.to_dict() if best_short else None,
+
+            # SPRINT 14: Population statistics
+            'population_stats': {
+                'total': len(population),
+                'valid': len(valid_patterns),
+                'valid_pct': (len(valid_patterns) / len(population) * 100) if population else 0,
+                'long_total': len(long_patterns),
+                'short_total': len(short_patterns),
+                'valid_long': len(valid_long),
+                'valid_short': len(valid_short),
+                'valid_long_pct': (len(valid_long) / len(long_patterns) * 100) if long_patterns else 0,
+                'valid_short_pct': (len(valid_short) / len(short_patterns) * 100) if short_patterns else 0
+            },
+
+            # SPRINT 14: Fitness statistics
+            'fitness_stats': fitness_stats,
+
+            # SPRINT 14: Diversity metrics
+            'diversity': {
+                'unique_patterns_pct': module_diversity * 100,
+                'unique_patterns_count': len(unique_module_sets),
+                'top_modules': module_usage
+            },
+
+            # SPRINT 14: Performance metrics
+            'performance': avg_performance,
             # SPRINT 11: Top performers instead of random samples
             'top_long': [
                 {
@@ -141,17 +234,7 @@ class EvolutionTracker:
                     'n_trades': p.n_trades if hasattr(p, 'n_trades') else None
                 }
                 for i, p in enumerate(top_short_valid)
-            ],
-            'module_usage': module_usage,
-            'statistics': {
-                'mean_fitness': mean_fitness,
-                'long_count': len(long_patterns),
-                'short_count': len(short_patterns),
-                'valid_count': len([p for p in population if p.fitness > -999]),
-                'valid_long': len([p for p in long_patterns if p.fitness > -999]),
-                'valid_short': len([p for p in short_patterns if p.fitness > -999])
-            },
-            'timestamp': datetime.now().isoformat()
+            ]
         }
 
         logger.info(f"[OK] Tracked generation {generation}: {len(top_long_valid)} top LONG + {len(top_short_valid)} top SHORT")
