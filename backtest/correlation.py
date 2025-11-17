@@ -80,45 +80,78 @@ def filter_patterns_by_metrics(patterns: List[Pattern], data: pd.DataFrame,
 
     for i, pattern in enumerate(patterns):
         try:
+            # ALWAYS print pattern being evaluated
+            logger.info(f"\n{'='*80}")
+            logger.info(f"PORTFOLIO SELECTION - Evaluating Pattern {i+1}/{len(patterns)}:")
+            logger.info(f"  Expression: {pattern.to_expression()}")
+            logger.info(f"  Readable:   {pattern.to_readable()}")
+            logger.info(f"  Direction:  {pattern.direction}")
+            logger.info(f"  Modules:    {pattern.modules}")
+            logger.info(f"  GA Fitness: {pattern.fitness:.4f}")
+            logger.info(f"{'='*80}")
+
             # Run backtest
             equity, trades = run_backtest(pattern, data, config)
 
-            # Calculate metrics
-            metrics = calculate_all_metrics(equity, periods_per_year)
+            # Calculate metrics (SPRINT 14 FIX: Pass trades for correct win rate)
+            metrics = calculate_all_metrics(equity, periods_per_year, trades)
 
             # Apply filters
+            logger.info(f"\nFilter Check:")
+            logger.info(f"  UPI:           {metrics['upi']:.2f} (min: {filters['upi_min']:.2f})")
+            logger.info(f"  Sharpe:        {metrics['sharpe']:.2f} (min: {filters['sharpe_min']:.2f})")
+            logger.info(f"  CAGR:          {metrics['cagr']:.2%} (min: {filters['cagr_min']:.2%})")
+            logger.info(f"  Max DD:        {abs(metrics['max_dd']):.2%} (max: {filters['max_drawdown_max']:.2%})")
+            logger.info(f"  Profit Factor: {metrics['profit_factor']:.2f} (min: {filters['profit_factor_min']:.2f})")
+            logger.info(f"  Win Rate:      {metrics['win_rate']:.2%} (min: {filters['win_rate_min']:.2%})")
+            logger.info(f"  Trades:        {len(trades)} (min: {filters['min_trades_per_window']}, max: {filters.get('max_trades_total', 1000)})")
+
             if metrics['upi'] < filters['upi_min']:
-                logger.debug(f"Pattern {i}: FAIL upi={metrics['upi']:.2f} < {filters['upi_min']}")
+                logger.info(f"❌ REJECTED: UPI too low")
+                logger.info(f"{'='*80}\n")
                 continue
 
             if metrics['sharpe'] < filters['sharpe_min']:
-                logger.debug(f"Pattern {i}: FAIL sharpe={metrics['sharpe']:.2f} < {filters['sharpe_min']}")
+                logger.info(f"❌ REJECTED: Sharpe too low")
+                logger.info(f"{'='*80}\n")
                 continue
 
             if metrics['cagr'] < filters['cagr_min']:
-                logger.debug(f"Pattern {i}: FAIL cagr={metrics['cagr']:.2%} < {filters['cagr_min']:.2%}")
+                logger.info(f"❌ REJECTED: CAGR too low")
+                logger.info(f"{'='*80}\n")
                 continue
 
             if abs(metrics['max_dd']) > filters['max_drawdown_max']:
-                logger.debug(f"Pattern {i}: FAIL max_dd={abs(metrics['max_dd']):.2%} > {filters['max_drawdown_max']:.2%}")
+                logger.info(f"❌ REJECTED: Drawdown too high")
+                logger.info(f"{'='*80}\n")
                 continue
 
             if metrics['profit_factor'] < filters['profit_factor_min']:
-                logger.debug(f"Pattern {i}: FAIL pf={metrics['profit_factor']:.2f} < {filters['profit_factor_min']}")
+                logger.info(f"❌ REJECTED: Profit factor too low")
+                logger.info(f"{'='*80}\n")
                 continue
 
             if metrics['win_rate'] < filters['win_rate_min']:
-                logger.debug(f"Pattern {i}: FAIL wr={metrics['win_rate']:.2%} < {filters['win_rate_min']:.2%}")
+                logger.info(f"❌ REJECTED: Win rate too low")
+                logger.info(f"{'='*80}\n")
                 continue
 
             if len(trades) < filters['min_trades_per_window']:
-                logger.debug(f"Pattern {i}: FAIL trades={len(trades)} < {filters['min_trades_per_window']}")
+                logger.info(f"❌ REJECTED: Not enough trades")
+                logger.info(f"{'='*80}\n")
+                continue
+
+            # SPRINT 14 FIX: Max trades filter (prevent overtrading patterns)
+            max_trades_total = filters.get('max_trades_total', 1000)
+            if len(trades) > max_trades_total:
+                logger.info(f"❌ REJECTED: Too many trades (overtrading)")
+                logger.info(f"{'='*80}\n")
                 continue
 
             # All filters passed
             passed_patterns.append((pattern, equity, metrics))
-            logger.debug(f"Pattern {i}: PASS - UPI={metrics['upi']:.2f}, Sharpe={metrics['sharpe']:.2f}, "
-                        f"CAGR={metrics['cagr']:.2%}, Trades={len(trades)}")
+            logger.info(f"✅ PASSED ALL FILTERS - Added to portfolio candidates")
+            logger.info(f"{'='*80}\n")
 
         except Exception as e:
             logger.error(f"Pattern {i}: Error during filtering: {e}")

@@ -533,6 +533,19 @@ def main():
                 new_pattern = generate_random_chromosome(generation, config)
                 population.append(new_pattern)
 
+        # SPRINT 14 FIX: ENFORCE EXACT POPULATION SIZE
+        while len(population) < population_size:
+            logger.warning(f"[SIZE] Population {len(population)} < {population_size}, adding pattern")
+            new_pattern = generate_random_chromosome(generation, config)
+            population.append(new_pattern)
+
+        while len(population) > population_size:
+            logger.warning(f"[SIZE] Population {len(population)} > {population_size}, removing worst")
+            population.sort(key=lambda p: p.fitness)
+            population.pop(0)  # Remove worst
+
+        logger.debug(f"[SIZE] Population size enforced: {len(population)}/{population_size}")
+
         # SPRINT 11: Evaluate new patterns only with unidirectional
         patterns_to_eval = [p for p in population if p.fitness == -999.0]
         logger.info(f"\nEvaluating {len(patterns_to_eval)} new patterns...")
@@ -657,14 +670,17 @@ def main():
         if diversity < 0.30:
             logger.warning("LOW DIVERSITY (<30% unique patterns) - population may be converging")
 
-        # SPRINT 12.6: Track improvement and trigger immigration
-        if current_best.fitness > best_pattern.fitness + 0.01:  # Minimum 0.01 improvement
+        # SPRINT 14 FIX: Track improvement with explicit threshold
+        improvement_threshold = 0.005  # 0.5% minimum improvement to reset counter
+
+        if current_best.fitness > best_pattern.fitness + improvement_threshold:
+            improvement = current_best.fitness - best_pattern.fitness
             best_pattern = current_best
             generations_without_improvement = 0
-            logger.info("[OK] New best!")
+            logger.info(f"[OK] New best! +{improvement:.4f} improvement")
         else:
             generations_without_improvement += 1
-            logger.info(f"No improvement ({generations_without_improvement}/{patience})")
+            logger.info(f"No significant improvement ({generations_without_improvement}/{patience})")
 
         # SPRINT 12.6: Immigration trigger when stagnation detected
         if generations_without_improvement >= 2 and generation < max_generations - 5:

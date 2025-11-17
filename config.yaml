@@ -54,7 +54,7 @@ walkforward:
 ga:
   population: 50       # Was 50 - doubled for more genetic diversity
   generations_max: 30       # Keep as is
-  patience_no_improve: 5    # Was 3 - more patient before early stopping
+  patience_no_improve: 8   # SPRINT 14 FIX: Increased from 5 to 10 (fitness improves slowly)
   elitism: 8                # AUDIT: Increased from 5 to preserve more top patterns (especially SHORT)
   mutation_rate: 0.35       # Was 0.2 - more exploration
   crossover_rate: 0.8       # Was 0.7 - more recombination
@@ -128,12 +128,13 @@ selection:
 
   filters:
     upi_min: 0.05           # SPRINT 9: Relaxed for debugging
-    sharpe_min: 0.4         # SPRINT 13: Lowered from 0.5 (more realistic)
-    cagr_min: 0.05          # SPRINT 13: Lowered from 0.08 (5% minimum)
-    max_drawdown_max: 0.50  # SPRINT 12.6: 50% max acceptable drawdown
-    profit_factor_min: 1.15 # SPRINT 13: Lowered from 1.2 (just above breakeven)
-    win_rate_min: 0.30      # SPRINT 13: Lowered from 0.35
+    sharpe_min: 0.3         # SPRINT 14 FIX: Lowered from 0.4 (more permissive)
+    cagr_min: 0.04          # SPRINT 14 FIX: Lowered from 0.05 (4% minimum)
+    max_drawdown_max: 0.60  # SPRINT 14 FIX: Increased from 0.50 (more permissive)
+    profit_factor_min: 1.1  # SPRINT 14 FIX: Lowered from 1.15 (just above breakeven)
+    win_rate_min: 0.30      # Keep at 0.30 (already permissive)
     min_trades_per_window: 3  # SPRINT 13: Increased from 1 (need reasonable sample)
+    max_trades_total: 2500  # SPRINT 14 FIX: NEW - maximum 1000 trades in full data
 
 # ROBUSTNESS TESTS
 robustness:

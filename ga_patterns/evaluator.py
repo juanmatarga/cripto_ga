@@ -63,6 +63,13 @@ def evaluate_expression(expression: str, data: pd.DataFrame, bar_index: int) -> 
     for token in tokens:
         try:
             value = parse_token(token, data, bar_index)
+
+            # FIX: Handle NaN values properly (don't convert to string "nan")
+            if pd.isna(value) or np.isnan(value):
+                # If any indicator is NaN (insufficient data), pattern should not trigger
+                logger.debug(f"Token '{token}' is NaN at bar {bar_index} - returning False")
+                return False
+
             # Replace token with its value
             parsed_expr = parsed_expr.replace(token, str(value))
         except Exception as e:

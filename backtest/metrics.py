@@ -136,16 +136,24 @@ def cagr(equity_curve: pd.Series, periods_per_year: int) -> float:
 
     return cagr_val
 
-def calculate_all_metrics(equity_curve: pd.Series, periods_per_year: int) -> Dict[str, float]:
+def calculate_all_metrics(equity_curve: pd.Series, periods_per_year: int,
+                         trades: list = None) -> Dict[str, float]:
     """
     Calcula bundle completo de métricas.
 
     Args:
         equity_curve: Series con equity values
         periods_per_year: De config['data']['time_map'][timeframe]['bars_per_year']
+        trades: Optional list of trade dicts (for accurate win rate / profit factor)
+                Each trade dict should have 'pnl_pct' key
 
     Returns:
-        dict con keys: upi, sharpe, cagr, max_dd, ulcer_index, total_return, volatility, num_periods
+        dict con keys: upi, sharpe, cagr, max_dd, ulcer_index, total_return, volatility, num_periods,
+                      win_rate, profit_factor
+
+    Notes:
+        - If trades provided: win_rate and profit_factor calculated from trade outcomes (CORRECT)
+        - If trades not provided: calculated from equity curve returns (APPROXIMATE - less accurate)
     """
     if len(equity_curve) < 2:
         logger.warning("Equity curve too short (<2 points), returning zero metrics")
@@ -157,27 +165,54 @@ def calculate_all_metrics(equity_curve: pd.Series, periods_per_year: int) -> Dic
             'ulcer_index': 0.0,
             'total_return': 0.0,
             'volatility': 0.0,
-            'num_periods': len(equity_curve)
+            'num_periods': len(equity_curve),
+            'win_rate': 0.0,
+            'profit_factor': 0.0
         }
 
     returns = calculate_returns(equity_curve).dropna()
 
-    # Calculate win rate and profit factor from returns
-    positive_returns = returns[returns > 0]
-    negative_returns = returns[returns < 0]
+    # SPRINT 14 FIX: Calculate win rate and profit factor from trades if available
+    if trades is not None and len(trades) > 0:
+        # ✓ CORRECT: Calculate from trade outcomes
+        winning_trades = [t for t in trades if t.get('pnl_pct', 0) > 0]
+        losing_trades = [t for t in trades if t.get('pnl_pct', 0) < 0]
 
-    win_rate = len(positive_returns) / len(returns) if len(returns) > 0 else 0.0
+        win_rate = len(winning_trades) / len(trades)
 
-    # Profit factor = sum(positive returns) / abs(sum(negative returns))
-    total_gains = positive_returns.sum() if len(positive_returns) > 0 else 0.0
-    total_losses = abs(negative_returns.sum()) if len(negative_returns) > 0 else 0.0
+        # Profit factor from actual trade P&L
+        total_gains = sum(t['pnl_pct'] for t in winning_trades)
+        total_losses = abs(sum(t['pnl_pct'] for t in losing_trades))
 
-    if total_losses > 0:
-        profit_factor = total_gains / total_losses
-    elif total_gains > 0:
-        profit_factor = 999.0  # All wins, no losses
+        if total_losses > 0:
+            profit_factor = total_gains / total_losses
+        elif total_gains > 0:
+            profit_factor = 999.0  # All wins, no losses
+        else:
+            profit_factor = 0.0  # No trades
+
+        logger.debug(f"Win rate calculated from {len(trades)} trades: {win_rate:.2%} "
+                    f"({len(winning_trades)}W / {len(losing_trades)}L)")
     else:
-        profit_factor = 0.0  # No trades
+        # FALLBACK: Calculate from equity curve returns (APPROXIMATE - less accurate)
+        # This counts bars where equity increased, not winning trades
+        logger.debug("No trades provided - calculating win rate from equity curve (less accurate)")
+
+        positive_returns = returns[returns > 0]
+        negative_returns = returns[returns < 0]
+
+        win_rate = len(positive_returns) / len(returns) if len(returns) > 0 else 0.0
+
+        # Profit factor = sum(positive returns) / abs(sum(negative returns))
+        total_gains = positive_returns.sum() if len(positive_returns) > 0 else 0.0
+        total_losses = abs(negative_returns.sum()) if len(negative_returns) > 0 else 0.0
+
+        if total_losses > 0:
+            profit_factor = total_gains / total_losses
+        elif total_gains > 0:
+            profit_factor = 999.0  # All wins, no losses
+        else:
+            profit_factor = 0.0  # No trades
 
     metrics = {
         'upi': upi_ratio(equity_curve, periods_per_year),

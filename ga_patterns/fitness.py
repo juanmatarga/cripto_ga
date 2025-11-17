@@ -38,10 +38,20 @@ def evaluate_fitness_bidirectional(pattern, data: pd.DataFrame,
     # Check if pattern is new v2 or legacy
     is_v2 = isinstance(pattern, PatternChromosome)
 
+    # ALWAYS print pattern being evaluated
     if is_v2:
-        logger.debug(f"Evaluating PatternChromosome: {pattern.to_readable()}")
+        logger.info(f"\n{'='*80}")
+        logger.info(f"EVALUATING PATTERN:")
+        logger.info(f"  Expression: {pattern.to_expression()}")
+        logger.info(f"  Readable:   {pattern.to_readable()}")
+        logger.info(f"  Modules:    {pattern.modules}")
+        logger.info(f"  Window:     {pattern.window} bars")
+        logger.info(f"  TP/SL:      {pattern.tp_atr_mult:.1f}x / {pattern.sl_atr_mult:.1f}x ATR")
+        logger.info(f"{'='*80}")
     else:
-        logger.debug(f"Evaluating legacy Pattern")
+        logger.info(f"\n{'='*80}")
+        logger.info(f"EVALUATING LEGACY PATTERN")
+        logger.info(f"{'='*80}")
 
     timeframe = config['data']['timeframe']
     periods_per_year = config['data']['time_map'][timeframe]['bars_per_year']
@@ -256,7 +266,16 @@ def evaluate_fitness_unidirectional(pattern,
     from backtest.runner import run_backtest
     from backtest.metrics import calculate_all_metrics, calculate_sortino_ratio, calculate_calmar_ratio
 
-    logger.debug(f"Evaluating {pattern.direction} pattern: {pattern.to_readable()}")
+    # ALWAYS print pattern being evaluated
+    logger.info(f"\n{'='*80}")
+    logger.info(f"EVALUATING PATTERN:")
+    logger.info(f"  Expression: {pattern.to_expression()}")
+    logger.info(f"  Readable:   {pattern.to_readable()}")
+    logger.info(f"  Direction:  {pattern.direction}")
+    logger.info(f"  Modules:    {pattern.modules}")
+    logger.info(f"  Window:     {pattern.window} bars")
+    logger.info(f"  TP/SL:      {pattern.tp_atr_mult:.1f}x / {pattern.sl_atr_mult:.1f}x ATR")
+    logger.info(f"{'='*80}")
 
     # Evaluate in NATIVE direction only
     all_returns = []
@@ -274,7 +293,11 @@ def evaluate_fitness_unidirectional(pattern,
 
     # Calculate fitness
     if len(all_returns) == 0 or len(all_trades) == 0:
-        logger.debug(f"Pattern generated no trades, fitness = -999")
+        logger.info(f"\nRESULT:")
+        logger.info(f"  Direction: {pattern.direction}")
+        logger.info(f"  Fitness:   -999.0000 (NO TRADES GENERATED)")
+        logger.info(f"  Trades:    0")
+        logger.info(f"{'='*80}\n")
         pattern.fitness = -999.0
         pattern.n_trades = 0
         return -999.0, pattern.direction
@@ -298,7 +321,11 @@ def evaluate_fitness_unidirectional(pattern,
 
         # Hard constraints
         if metrics['cagr'] < config['ga']['fitness']['cagr_min_threshold']:
-            logger.debug(f"CAGR {metrics['cagr']:.4f} below threshold, fitness = -999")
+            logger.info(f"\nRESULT:")
+            logger.info(f"  Direction: {pattern.direction}")
+            logger.info(f"  Fitness:   -999.0000 (CAGR {metrics['cagr']:.2%} < {config['ga']['fitness']['cagr_min_threshold']:.2%})")
+            logger.info(f"  Trades:    {len(all_trades)}")
+            logger.info(f"{'='*80}\n")
             pattern.fitness = -999.0
             pattern.n_trades = len(all_trades)
             return -999.0, pattern.direction
@@ -308,7 +335,11 @@ def evaluate_fitness_unidirectional(pattern,
         )
 
         if len(all_trades) < min_trades_required:
-            logger.debug(f"Only {len(all_trades)} trades (need {min_trades_required}), fitness = -999")
+            logger.info(f"\nRESULT:")
+            logger.info(f"  Direction: {pattern.direction}")
+            logger.info(f"  Fitness:   -999.0000 (Only {len(all_trades)} trades, need {min_trades_required})")
+            logger.info(f"  Trades:    {len(all_trades)}")
+            logger.info(f"{'='*80}\n")
             pattern.fitness = -999.0
             pattern.n_trades = len(all_trades)
             return -999.0, pattern.direction
@@ -338,21 +369,28 @@ def evaluate_fitness_unidirectional(pattern,
             0.2 * win_rate_norm
         )
 
-        # SPRINT 13: Trade frequency regularization penalty
-        # Prevents overtrading disasters (e.g., 5395 trades on 15min timeframe)
-        # Target: 1-10 trades per month (reasonable for 15min patterns)
+        # SPRINT 14 FIX: Trade frequency penalty
+        # Target: 120 trades per window (user specified)
         n_months = len(windows) * config['ga']['fast_mode']['window_months']
         avg_trades_per_month = len(all_trades) / n_months if n_months > 0 else 0
 
         trade_freq_penalty = 0.0
-        if avg_trades_per_month > 120:  # Overtrading threshold
+        if avg_trades_per_month > 120:  # Overtrading threshold: 120 trades/month
             # Exponential penalty for extreme overtrading
-            excess = (avg_trades_per_month - 120) / 50  # Normalize
-            trade_freq_penalty = min(0.3, 0.15 * excess)  # Cap at -0.3
+            excess_ratio = (avg_trades_per_month - 120) / 120  # Normalize as ratio
+            trade_freq_penalty = min(0.5, 0.3 * excess_ratio)  # Cap at -0.5
+
             logger.debug(f"OVERTRADING penalty: -{trade_freq_penalty:.3f} ({avg_trades_per_month:.1f} trades/month)")
-        elif avg_trades_per_month < 0.5:  # Too rare (< 1 trade per 2 months)
-            trade_freq_penalty = 0.1  # Fixed penalty
+
+            # Flag pattern as overtrading for post-processing
+            pattern.is_overtrading = True
+
+        elif avg_trades_per_month < 1:  # Undertrading (< 1 trade per month)
+            trade_freq_penalty = 0.2  # Stronger undertrading penalty
             logger.debug(f"UNDERTRADING penalty: -{trade_freq_penalty:.3f} ({avg_trades_per_month:.1f} trades/month)")
+        else:
+            # Within acceptable range
+            pattern.is_overtrading = False
 
         # Apply penalty
         fitness = max(0.0, fitness - trade_freq_penalty)
@@ -373,7 +411,17 @@ def evaluate_fitness_unidirectional(pattern,
         if np.isinf(fitness) or np.isnan(fitness) or fitness > 1000:
             fitness = -999.0
 
-        logger.debug(f"Fitness = {fitness:.4f} (Sortino={sortino:.2f}/{sortino_norm:.2f}, Calmar={calmar:.2f}/{calmar_norm:.2f}, WinRate={win_rate:.2%}, Trades/mo={avg_trades_per_month:.1f})")
+        # ALWAYS print evaluation result
+        logger.info(f"\nRESULT:")
+        logger.info(f"  Direction: {pattern.direction}")
+        logger.info(f"  Fitness:   {fitness:.4f}")
+        logger.info(f"  Sortino:   {sortino:.2f} (norm: {sortino_norm:.2f})")
+        logger.info(f"  Calmar:    {calmar:.2f} (norm: {calmar_norm:.2f})")
+        logger.info(f"  Win Rate:  {win_rate:.2%}")
+        logger.info(f"  Trades:    {len(all_trades)} ({avg_trades_per_month:.1f}/month)")
+        if trade_freq_penalty > 0:
+            logger.info(f"  Penalty:   -{trade_freq_penalty:.3f} ({'OVERTRADING' if avg_trades_per_month > 120 else 'UNDERTRADING'})")
+        logger.info(f"{'='*80}\n")
 
         # Store detailed metrics in pattern
         pattern.fitness = fitness
