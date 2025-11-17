@@ -488,36 +488,46 @@ ALL_MODULES = {**BASE_MODULES, **INDICATOR_MODULES, **ADVANCED_MODULES}
 # HELPER FUNCTIONS
 # ============================================================================
 
-def get_available_modules(generation: int, allow_indicators: bool = True) -> Dict[str, Dict]:
+def get_available_modules(generation: int, allow_indicators: bool = True,
+                         config: dict = None) -> Dict[str, Dict]:
     """
     Return modules available at given generation.
+
+    AUDIT FIX: Now reads unlock thresholds from config instead of hardcoded values.
 
     Args:
         generation: Current generation number (0-150)
         allow_indicators: If False, only return BASE_MODULES
+        config: Config dict with progressive_grammar settings (optional)
 
     Returns:
         Dict of module_name → module_info
 
     Example:
-        >>> modules = get_available_modules(0)
-        >>> len(modules)  # Only BASE_MODULES
-        25
+        >>> config = {'ga': {'progressive_grammar': {'unlock_indicators_gen': 0, 'unlock_advanced_gen': 0}}}
+        >>> modules = get_available_modules(0, True, config)
+        >>> len(modules)  # All modules from Gen 0
+        59
 
-        >>> modules = get_available_modules(50)
-        >>> len(modules)  # BASE + INDICATOR
-        36
-
-        >>> modules = get_available_modules(100)
+        >>> modules = get_available_modules(50, True, config)
         >>> len(modules)  # All modules
-        50
+        59
     """
     available = {**BASE_MODULES}
 
     if allow_indicators:
-        if generation >= 30:
+        # AUDIT FIX: Read thresholds from config instead of hardcoding
+        if config:
+            unlock_indicators = config.get('ga', {}).get('progressive_grammar', {}).get('unlock_indicators_gen', 30)
+            unlock_advanced = config.get('ga', {}).get('progressive_grammar', {}).get('unlock_advanced_gen', 80)
+        else:
+            # Fallback to old behavior if no config provided
+            unlock_indicators = 30
+            unlock_advanced = 80
+
+        if generation >= unlock_indicators:
             available.update(INDICATOR_MODULES)
-        if generation >= 80:
+        if generation >= unlock_advanced:
             available.update(ADVANCED_MODULES)
 
     logger.debug(f"Generation {generation}: {len(available)} modules available")

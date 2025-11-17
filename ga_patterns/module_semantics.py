@@ -44,9 +44,14 @@ BULLISH_MODULES = {
     # MACD signals
     'macd_bullish_cross',
     'macd_histogram_rising',
+    'macd_positive',  # MACD above zero (bullish)
+    'macd_histogram_growing',  # Momentum increasing
 
     # Bollinger
     'bb_lower_touch',  # Bounce from lower band
+
+    # Stochastic
+    'stoch_cross_bull',  # K crosses above D
 
     # Gap up
     'gap_up',
@@ -124,6 +129,15 @@ NEUTRAL_MODULES = {
     # ATR
     'atr_expanding',
     'atr_contracting',
+    'atr_high',
+    'atr_low',
+
+    # Volume indicators
+    'volume_above_sma',  # Can signal strength in either direction
+
+    # Bollinger Bands (neutral patterns)
+    'bb_squeeze',  # Precedes breakout (either direction)
+    'bb_expansion',  # Volatility expansion (either direction)
 }
 
 

@@ -253,7 +253,7 @@ def mutate(chromosome: PatternChromosome, generation: int, config: dict) -> Patt
         if mutation_type == 'add_module':
             # SPRINT 13: Only add modules COMPATIBLE with pattern direction
             allow_indicators = config.get('ga', {}).get('building_blocks', {}).get('allow_indicators', True)
-            available = get_available_modules(generation, allow_indicators)
+            available = get_available_modules(generation, allow_indicators, config)  # AUDIT FIX: Pass config
 
             # Filter by direction compatibility
             compatible = get_compatible_modules(mutated.direction, list(available.keys()))
@@ -306,7 +306,7 @@ def mutate(chromosome: PatternChromosome, generation: int, config: dict) -> Patt
                 else:
                     # Fallback: try any compatible module
                     allow_indicators = config.get('ga', {}).get('building_blocks', {}).get('allow_indicators', True)
-                    available = get_available_modules(generation, allow_indicators)
+                    available = get_available_modules(generation, allow_indicators, config)  # AUDIT FIX: Pass config
                     compatible_all = get_compatible_modules(mutated.direction, list(available.keys()))
                     candidates = [m for m in compatible_all if m not in mutated.modules]
 
@@ -348,7 +348,7 @@ def mutate(chromosome: PatternChromosome, generation: int, config: dict) -> Patt
 
             # Replace ALL modules with opposite-direction compatible modules
             allow_indicators = config.get('ga', {}).get('building_blocks', {}).get('allow_indicators', True)
-            available = get_available_modules(generation, allow_indicators)
+            available = get_available_modules(generation, allow_indicators, config)  # AUDIT FIX: Pass config
             compatible = get_compatible_modules(mutated.direction, list(available.keys()))
 
             if len(compatible) > 0:

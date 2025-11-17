@@ -55,7 +55,7 @@ ga:
   population: 50       # Was 50 - doubled for more genetic diversity
   generations_max: 30       # Keep as is
   patience_no_improve: 5    # Was 3 - more patient before early stopping
-  elitism: 5                # Was 2 - preserve more genetic lineages
+  elitism: 8                # AUDIT: Increased from 5 to preserve more top patterns (especially SHORT)
   mutation_rate: 0.35       # Was 0.2 - more exploration
   crossover_rate: 0.8       # Was 0.7 - more recombination
   window_min: 3         # SPRINT 12: These are overridden by dynamic window sizing

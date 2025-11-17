@@ -135,7 +135,7 @@ def generate_random_chromosome(generation: int, config: dict) -> PatternChromoso
 
         # Get available modules
         allow_indicators = config.get('ga', {}).get('building_blocks', {}).get('allow_indicators', True)
-        available_modules = get_available_modules(generation, allow_indicators)
+        available_modules = get_available_modules(generation, allow_indicators, config)  # AUDIT FIX: Pass config
 
         # SPRINT 13: Filter modules compatible with direction
         compatible_modules = get_compatible_modules(direction, list(available_modules.keys()))
@@ -249,7 +249,7 @@ def create_seed_patterns(generation: int, config: dict) -> List[PatternChromosom
 
     # Get available modules
     allow_indicators = config.get('ga', {}).get('building_blocks', {}).get('allow_indicators', True)
-    available = get_available_modules(generation, allow_indicators)
+    available = get_available_modules(generation, allow_indicators, config)  # AUDIT FIX: Pass config
 
     # LONG seeds (15 patterns) - proven strategies
     long_seeds = [

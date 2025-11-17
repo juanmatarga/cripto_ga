@@ -461,11 +461,74 @@ def main():
         # SPRINT 12: Maintain diversity
         population = maintain_diversity(population)
 
+        # AUDIT FIX: Direction quotas to ensure SHORT survival
+        # Target: 30% minimum for each direction (15 SHORT, 15 LONG out of 50)
+        min_quota_per_direction = int(population_size * 0.30)
+
+        long_count = sum(1 for p in population if p.direction == 'LONG')
+        short_count = sum(1 for p in population if p.direction == 'SHORT')
+
+        logger.debug(f"Direction distribution: {long_count} LONG, {short_count} SHORT")
+
+        from ga_patterns.generator_v2 import generate_random_chromosome
+        from ga_patterns.chromosome_v2 import PatternChromosome
+
+        # Enforce SHORT quota
+        if short_count < min_quota_per_direction:
+            shortage = min_quota_per_direction - short_count
+            logger.info(f"[QUOTA] SHORT shortage: {shortage} patterns. Generating SHORT patterns to meet quota...")
+
+            # Remove worst LONG patterns to make room
+            if long_count > min_quota_per_direction:
+                long_patterns = [p for p in population if p.direction == 'LONG']
+                long_sorted = sorted(long_patterns, key=lambda p: p.fitness)
+                to_remove = long_sorted[:shortage]
+                population = [p for p in population if p not in to_remove]
+                logger.debug(f"  Removed {len(to_remove)} worst LONG patterns to make room")
+
+            # Generate SHORT patterns
+            for _ in range(shortage):
+                # Generate random pattern and force SHORT direction
+                new_pattern = generate_random_chromosome(generation, config)
+                new_pattern.direction = 'SHORT'
+                # Re-filter modules to be SHORT-compatible
+                from ga_patterns.module_semantics import get_compatible_modules
+                compatible = get_compatible_modules('SHORT', new_pattern.modules)
+                if compatible:
+                    new_pattern.modules = compatible[:len(new_pattern.modules)]
+                population.append(new_pattern)
+
+            logger.info(f"[QUOTA] Added {shortage} SHORT patterns")
+
+        # Enforce LONG quota
+        if long_count < min_quota_per_direction:
+            shortage = min_quota_per_direction - long_count
+            logger.info(f"[QUOTA] LONG shortage: {shortage} patterns. Generating LONG patterns to meet quota...")
+
+            # Remove worst SHORT patterns to make room
+            if short_count > min_quota_per_direction:
+                short_patterns = [p for p in population if p.direction == 'SHORT']
+                short_sorted = sorted(short_patterns, key=lambda p: p.fitness)
+                to_remove = short_sorted[:shortage]
+                population = [p for p in population if p not in to_remove]
+                logger.debug(f"  Removed {len(to_remove)} worst SHORT patterns to make room")
+
+            # Generate LONG patterns
+            for _ in range(shortage):
+                new_pattern = generate_random_chromosome(generation, config)
+                new_pattern.direction = 'LONG'
+                from ga_patterns.module_semantics import get_compatible_modules
+                compatible = get_compatible_modules('LONG', new_pattern.modules)
+                if compatible:
+                    new_pattern.modules = compatible[:len(new_pattern.modules)]
+                population.append(new_pattern)
+
+            logger.info(f"[QUOTA] Added {shortage} LONG patterns")
+
         # Refill if diversity maintenance removed too many patterns
         if len(population) < population_size:
-            from ga_patterns.generator_v2 import generate_random_chromosome
             n_to_add = population_size - len(population)
-            logger.info(f"[DIVERSITY] Refilling {n_to_add} patterns")
+            logger.info(f"[DIVERSITY] Refilling {n_to_add} patterns to reach population size")
             for _ in range(n_to_add):
                 new_pattern = generate_random_chromosome(generation, config)
                 population.append(new_pattern)
@@ -512,6 +575,48 @@ def main():
         logger.info("")
         logger.info(f"LONG: {len(valid_long)}/{len(long_patterns)} valid ({len(valid_long)*100//len(long_patterns) if long_patterns else 0}%)")
         logger.info(f"SHORT: {len(valid_short)}/{len(short_patterns)} valid ({len(valid_short)*100//len(short_patterns) if short_patterns else 0}%)")
+
+        # AUDIT: Enhanced diagnostics for SHORT pattern tracking
+        logger.info("")
+        logger.info("DIAGNOSTIC: SHORT Pattern Analysis")
+        logger.info("-" * 40)
+
+        # Analyze why SHORT patterns are failing
+        failed_short = [p for p in short_patterns if p.fitness == -999]
+        if failed_short:
+            logger.info(f"Failed SHORT patterns: {len(failed_short)}")
+            # Check failure reasons by examining fitness components
+            zero_trades_count = sum(1 for p in failed_short if hasattr(p, 'n_trades') and p.n_trades == 0)
+            if zero_trades_count > 0:
+                logger.info(f"  - Zero trades: {zero_trades_count}/{len(failed_short)}")
+
+        # Show module usage breakdown by direction
+        long_modules = [m for p in long_patterns for m in p.modules]
+        short_modules = [m for p in short_patterns for m in p.modules]
+
+        from collections import Counter
+        if short_modules:
+            short_module_counts = Counter(short_modules).most_common(3)
+            logger.info(f"Top 3 SHORT modules: {', '.join([f'{m}({c})' for m, c in short_module_counts])}")
+
+        if long_modules:
+            long_module_counts = Counter(long_modules).most_common(3)
+            logger.info(f"Top 3 LONG modules: {', '.join([f'{m}({c})' for m, c in long_module_counts])}")
+
+        # Show best SHORT performance metrics
+        if valid_short:
+            best_valid_short = max(valid_short, key=lambda p: p.fitness)
+            logger.info("")
+            logger.info(f"Best valid SHORT fitness: {best_valid_short.fitness:.4f}")
+            if hasattr(best_valid_short, 'fitness_components'):
+                logger.info(f"  Components: Sortino={best_valid_short.fitness_components.get('sortino_norm', 0):.2f}, "
+                          f"Calmar={best_valid_short.fitness_components.get('calmar_norm', 0):.2f}, "
+                          f"WinRate={best_valid_short.fitness_components.get('win_rate', 0):.2%}")
+        else:
+            logger.warning("NO VALID SHORT PATTERNS FOUND!")
+
+        logger.info("-" * 40)
+        logger.info("")
 
         if best_long and best_long.fitness > -999:
             logger.info("")
