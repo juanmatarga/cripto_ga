@@ -501,7 +501,7 @@ def get_available_modules(generation: int, allow_indicators: bool = True,
         config: Config dict with progressive_grammar settings (optional)
 
     Returns:
-        Dict of module_name → module_info
+        Dict of module_name -> module_info
 
     Example:
         >>> config = {'ga': {'progressive_grammar': {'unlock_indicators_gen': 0, 'unlock_advanced_gen': 0}}}

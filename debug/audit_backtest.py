@@ -121,7 +121,7 @@ def test_1_data_sanity():
     logger.info(f"Total NaNs: {nan_count}")
 
     if nan_count > 0:
-        logger.warning(f"⚠️  Found {nan_count} NaN values")
+        logger.warning(f"[WARNING]  Found {nan_count} NaN values")
         nan_cols = data.columns[data.isnull().any()].tolist()
         logger.warning(f"Columns with NaNs: {nan_cols}")
 
@@ -143,7 +143,7 @@ def test_1_data_sanity():
     assert data.shape[0] > 1000, f"Expected >1000 bars, got {data.shape[0]}"
     assert first_close > 100, "Price should be >$100"
 
-    logger.info("\n✅ TEST 1 PASSED: Data is clean and reasonable\n")
+    logger.info("\n[OK] TEST 1 PASSED: Data is clean and reasonable\n")
     return data
 
 
@@ -182,7 +182,7 @@ def test_2_indicator_calculation():
 
     missing = [ind for ind in expected_indicators if ind not in data.columns]
     if missing:
-        logger.error(f"❌ Missing indicators: {missing}")
+        logger.error(f"[ERROR] Missing indicators: {missing}")
         raise AssertionError(f"Missing indicators: {missing}")
 
     # Check RSI range
@@ -207,7 +207,7 @@ def test_2_indicator_calculation():
 
     assert body_max < 0.5, f"body_pct should be <0.5 (50%), got {body_max}"
 
-    logger.info("\n✅ TEST 2 PASSED: Indicators calculated correctly\n")
+    logger.info("\n[OK] TEST 2 PASSED: Indicators calculated correctly\n")
     return data
 
 
@@ -259,7 +259,7 @@ def test_3_expression_evaluation():
     logger.info(f"  Expected: True")
 
     if result != True:
-        logger.error("❌ EXPRESSION BUG: Expression returned False on bullish bar!")
+        logger.error("[ERROR] EXPRESSION BUG: Expression returned False on bullish bar!")
         raise AssertionError("Expression evaluation is INVERTED")
 
     # Test on bearish bar
@@ -277,10 +277,10 @@ def test_3_expression_evaluation():
     logger.info(f"  Expected: False")
 
     if result_bear != False:
-        logger.error("❌ EXPRESSION BUG: Expression returned True on bearish bar!")
+        logger.error("[ERROR] EXPRESSION BUG: Expression returned True on bearish bar!")
         raise AssertionError("Expression evaluation is INVERTED")
 
-    logger.info("\n✅ TEST 3 PASSED: Expressions evaluate correctly\n")
+    logger.info("\n[OK] TEST 3 PASSED: Expressions evaluate correctly\n")
 
 
 # ============================================================================
@@ -315,7 +315,7 @@ def test_4_simple_backtest():
     btc_return = (btc_last / btc_first - 1) * 100
 
     logger.info(f"\nSample period: {sample_data.index[0]} to {sample_data.index[-1]}")
-    logger.info(f"Price: ${btc_first:,.2f} → ${btc_last:,.2f}")
+    logger.info(f"Price: ${btc_first:,.2f} -> ${btc_last:,.2f}")
     logger.info(f"Return: {btc_return:+.2f}%")
 
     # Run backtest
@@ -344,7 +344,7 @@ def test_4_simple_backtest():
         avg_pnl = trades['pnl_pct'].mean()
         logger.info(f"\nAverage PnL per trade: {avg_pnl*100:+.4f}%")
     else:
-        logger.warning("⚠️  No trades generated - pattern too restrictive")
+        logger.warning("[WARNING]  No trades generated - pattern too restrictive")
 
     # CRITICAL CHECK
     if btc_return > 5 and final_equity < 80:
@@ -356,7 +356,7 @@ def test_4_simple_backtest():
         logger.error("="*80)
         raise AssertionError("CRITICAL: Strategy loses money when price is up")
 
-    logger.info("\n✅ TEST 4 PASSED: Basic backtest works\n")
+    logger.info("\n[OK] TEST 4 PASSED: Basic backtest works\n")
 
 
 # ============================================================================
@@ -389,7 +389,7 @@ def run_all_tests():
 
     except AssertionError as e:
         logger.error("\n" + "="*80)
-        logger.error(f"❌ TEST FAILED")
+        logger.error(f"[ERROR] TEST FAILED")
         logger.error("="*80)
         logger.error(f"\nError: {e}")
         logger.error("\nA critical bug was detected.")
@@ -399,7 +399,7 @@ def run_all_tests():
 
     except Exception as e:
         logger.error("\n" + "="*80)
-        logger.error(f"❌ UNEXPECTED ERROR")
+        logger.error(f"[ERROR] UNEXPECTED ERROR")
         logger.error("="*80)
         logger.error(f"\nError: {e}")
         import traceback

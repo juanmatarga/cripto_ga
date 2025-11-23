@@ -107,50 +107,50 @@ def filter_patterns_by_metrics(patterns: List[Pattern], data: pd.DataFrame,
             logger.info(f"  Trades:        {len(trades)} (min: {filters['min_trades_per_window']}, max: {filters.get('max_trades_total', 1000)})")
 
             if metrics['upi'] < filters['upi_min']:
-                logger.info(f"❌ REJECTED: UPI too low")
+                logger.info(f"[ERROR] REJECTED: UPI too low")
                 logger.info(f"{'='*80}\n")
                 continue
 
             if metrics['sharpe'] < filters['sharpe_min']:
-                logger.info(f"❌ REJECTED: Sharpe too low")
+                logger.info(f"[ERROR] REJECTED: Sharpe too low")
                 logger.info(f"{'='*80}\n")
                 continue
 
             if metrics['cagr'] < filters['cagr_min']:
-                logger.info(f"❌ REJECTED: CAGR too low")
+                logger.info(f"[ERROR] REJECTED: CAGR too low")
                 logger.info(f"{'='*80}\n")
                 continue
 
             if abs(metrics['max_dd']) > filters['max_drawdown_max']:
-                logger.info(f"❌ REJECTED: Drawdown too high")
+                logger.info(f"[ERROR] REJECTED: Drawdown too high")
                 logger.info(f"{'='*80}\n")
                 continue
 
             if metrics['profit_factor'] < filters['profit_factor_min']:
-                logger.info(f"❌ REJECTED: Profit factor too low")
+                logger.info(f"[ERROR] REJECTED: Profit factor too low")
                 logger.info(f"{'='*80}\n")
                 continue
 
             if metrics['win_rate'] < filters['win_rate_min']:
-                logger.info(f"❌ REJECTED: Win rate too low")
+                logger.info(f"[ERROR] REJECTED: Win rate too low")
                 logger.info(f"{'='*80}\n")
                 continue
 
             if len(trades) < filters['min_trades_per_window']:
-                logger.info(f"❌ REJECTED: Not enough trades")
+                logger.info(f"[ERROR] REJECTED: Not enough trades")
                 logger.info(f"{'='*80}\n")
                 continue
 
             # SPRINT 14 FIX: Max trades filter (prevent overtrading patterns)
             max_trades_total = filters.get('max_trades_total', 1000)
             if len(trades) > max_trades_total:
-                logger.info(f"❌ REJECTED: Too many trades (overtrading)")
+                logger.info(f"[ERROR] REJECTED: Too many trades (overtrading)")
                 logger.info(f"{'='*80}\n")
                 continue
 
             # All filters passed
             passed_patterns.append((pattern, equity, metrics))
-            logger.info(f"✅ PASSED ALL FILTERS - Added to portfolio candidates")
+            logger.info(f"[OK] PASSED ALL FILTERS - Added to portfolio candidates")
             logger.info(f"{'='*80}\n")
 
         except Exception as e:

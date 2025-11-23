@@ -84,6 +84,9 @@ class PatternChromosome:
         """
         Convert to human-readable format for logging and snapshots.
 
+        SPRINT 16: Logic string now matches actual module count.
+        Example: 2of3 with 4 modules -> "2of4"
+
         Returns:
             String format: "LONG (w=5): AND(momentum_up_2bar, volume_spike, large_body)"
 
@@ -97,8 +100,29 @@ class PatternChromosome:
             >>> chrom.to_readable()
             'LONG (w=10): OR(momentum_up_2bar, volume_spike_short)'
         """
+        n_modules = len(self.modules)
+
+        # Map logic to readable - adjust for actual module count
+        if self.logic == 'AND':
+            logic_str = 'AND'
+        elif self.logic == 'OR':
+            logic_str = 'OR'
+        elif self.logic == '2of3':
+            # Adjust logic string to match actual module count
+            if n_modules == 2:
+                logic_str = 'AND'  # 2of2 = both must be true = AND
+            else:
+                logic_str = f'2of{n_modules}'
+        elif self.logic == '3of4':
+            if n_modules == 3:
+                logic_str = 'AND'  # 3of3 = all must be true = AND
+            else:
+                logic_str = f'3of{n_modules}'
+        else:
+            logic_str = self.logic
+
         modules_str = ", ".join(self.modules)
-        return f"{self.direction} (w={self.window}): {self.logic}({modules_str})"
+        return f"{self.direction} (w={self.window}): {logic_str}({modules_str})"
 
     def to_expression(self) -> str:
         """
@@ -153,7 +177,7 @@ class PatternChromosome:
                 combos = list(combinations(module_expressions, 2))
                 combo_strs = [f"({a} AND {b})" for a, b in combos]
                 result = " OR ".join(combo_strs)
-                logger.debug(f"2of3 with {len(module_expressions)} modules → {len(combos)} combinations")
+                logger.debug(f"2of3 with {len(module_expressions)} modules -> {len(combos)} combinations")
                 return result
 
         elif self.logic == '3of4':
@@ -164,7 +188,7 @@ class PatternChromosome:
                 combos = list(combinations(module_expressions, 3))
                 combo_strs = [f"({a} AND {b} AND {c})" for a, b, c in combos]
                 result = " OR ".join(combo_strs)
-                logger.debug(f"3of4 with {len(module_expressions)} modules → {len(combos)} combinations")
+                logger.debug(f"3of4 with {len(module_expressions)} modules -> {len(combos)} combinations")
                 return result
 
         else:
@@ -308,9 +332,9 @@ def get_chromosome_complexity(chrom: PatternChromosome) -> str:
         str: 'simple', 'medium', or 'advanced'
 
     Logic:
-        - If any module is 'advanced' → 'advanced'
-        - Else if any module is 'medium' → 'medium'
-        - Else → 'simple'
+        - If any module is 'advanced' -> 'advanced'
+        - Else if any module is 'medium' -> 'medium'
+        - Else -> 'simple'
 
     Example:
         >>> chrom = PatternChromosome(

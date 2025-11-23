@@ -41,7 +41,7 @@ def test_direct_comparison_node():
         'Volume': [1000, 1100, 1200]
     })
 
-    # C[0] > C[1] → 110 > 105 → True
+    # C[0] > C[1] -> 110 > 105 -> True
     node = PredicateNode(
         predicate_name='close',
         operator='>',
@@ -62,7 +62,7 @@ def test_threshold_comparison_node():
         'Volume': [1000, 1100, 1200]
     })
 
-    # C[0] > 105 → 110 > 105 → True
+    # C[0] > 105 -> 110 > 105 -> True
     node = PredicateNode(
         predicate_name='close',
         operator='>',
@@ -84,7 +84,7 @@ def test_logical_node_and():
     })
 
     # C[0] > C[1] AND V[0] > V[1]
-    # 110 > 105 AND 1200 > 1100 → True AND True → True
+    # 110 > 105 AND 1200 > 1100 -> True AND True -> True
     node1 = PredicateNode('close', '>', bar_offset=0, compare_with_bar=1)
     node2 = PredicateNode('volume', '>', bar_offset=0, compare_with_bar=1)
 

@@ -70,7 +70,7 @@ def test_simple_sampling():
         logger.info(f"    Bars: {len(window)}")
         logger.info(f"    Date range: {window.index[0].date()} to {window.index[-1].date()}")
         logger.info(f"    BTC return: {btc_return:+.2f}%")
-        logger.info(f"    Price: ${first_close:,.2f} → ${last_close:,.2f}")
+        logger.info(f"    Price: ${first_close:,.2f} -> ${last_close:,.2f}")
 
     # Validate non-overlap
     logger.info("\n" + "="*80)
@@ -82,11 +82,11 @@ def test_simple_sampling():
         end_i = windows[i].index[-1]
         start_next = windows[i+1].index[0]
         if end_i >= start_next:
-            logger.error(f"❌ Windows {i+1} and {i+2} overlap!")
+            logger.error(f"[ERROR] Windows {i+1} and {i+2} overlap!")
             overlapping = True
 
     if not overlapping:
-        logger.info("[OK] All windows are non-overlapping ✓")
+        logger.info("[OK] All windows are non-overlapping [PASS]")
 
     # Test different parameters
     logger.info("\n" + "="*80)
@@ -104,7 +104,7 @@ def test_simple_sampling():
     logger.info(f"Average window size: {sum(len(w) for w in windows2) / len(windows2):.0f} bars")
 
     logger.info("\n" + "="*80)
-    logger.info("✅ ALL TESTS PASSED")
+    logger.info("[OK] ALL TESTS PASSED")
     logger.info("="*80)
 
 def create_synthetic_data(n_bars=50000):

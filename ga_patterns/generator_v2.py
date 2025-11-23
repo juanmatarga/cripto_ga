@@ -167,8 +167,8 @@ def generate_random_chromosome(generation: int, config: dict) -> PatternChromoso
         logic = random.choice(logic_options)
 
         # SPRINT 12: Dynamic window sizing based on pattern complexity
-        # Simpler patterns (2 modules) → smaller windows (less overfitting)
-        # Complex patterns (4-5 modules) → larger windows (need more data)
+        # Simpler patterns (2 modules) -> smaller windows (less overfitting)
+        # Complex patterns (4-5 modules) -> larger windows (need more data)
         if n_modules == 2:
             window = random.randint(3, 5)
         elif n_modules == 3:

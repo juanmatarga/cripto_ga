@@ -282,7 +282,7 @@ def generate_html_presentation(report_path: str, images_dir: str, output_path: s
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧬 Genetic Algorithm Evolution Report</h1>
+            <h1>[GA] Genetic Algorithm Evolution Report</h1>
             <p>Cryptocurrency Trading Pattern Discovery</p>
             <p><strong>SPRINT 14 - Enhanced Analytics</strong></p>
         </div>
@@ -291,7 +291,7 @@ def generate_html_presentation(report_path: str, images_dir: str, output_path: s
 
         <hr>
 
-        <h2>📊 Visualizations</h2>
+        <h2>[DATA] Visualizations</h2>
 
         <div class="image-container">
             <h3>Fitness Evolution Over Generations</h3>
@@ -351,12 +351,12 @@ if __name__ == "__main__":
     if success:
         print("")
         print("="*80)
-        print("✅ PRESENTATION READY!")
+        print("[OK] PRESENTATION READY!")
         print("="*80)
         print(f"\nOpen in browser: {Path(args.output).absolute()}")
         print("\nYou can now share this self-contained HTML file with your professor.")
         print("="*80)
         print("")
     else:
-        print("\n❌ Presentation generation failed")
+        print("\n[ERROR] Presentation generation failed")
         sys.exit(1)

@@ -127,7 +127,7 @@ def test_config():
 
 
 def test_pipeline_grammar_to_pattern(test_config):
-    """Pipeline: Grammar → Pattern generation."""
+    """Pipeline: Grammar -> Pattern generation."""
     from ga_patterns.grammar import PREDICATE_REGISTRY
     from ga_patterns.generator import generate_random_pattern
 
@@ -145,7 +145,7 @@ def test_pipeline_grammar_to_pattern(test_config):
 
 
 def test_pipeline_pattern_evaluation(small_dataset, test_config):
-    """Pipeline: Pattern → Evaluation."""
+    """Pipeline: Pattern -> Evaluation."""
     from ga_patterns.generator import generate_random_pattern
 
     # Generate pattern
@@ -159,7 +159,7 @@ def test_pipeline_pattern_evaluation(small_dataset, test_config):
 
 
 def test_pipeline_backtest_execution(small_dataset, test_config):
-    """Pipeline: Pattern → Backtest → Trades."""
+    """Pipeline: Pattern -> Backtest -> Trades."""
     from ga_patterns.generator import generate_random_pattern
     from backtest.runner import run_backtest
 
@@ -177,7 +177,7 @@ def test_pipeline_backtest_execution(small_dataset, test_config):
 
 
 def test_pipeline_walkforward_windows(small_dataset, test_config):
-    """Pipeline: Data → Walk-forward windows."""
+    """Pipeline: Data -> Walk-forward windows."""
     from backtest.walkforward import create_walkforward_windows
 
     windows = create_walkforward_windows(
@@ -197,7 +197,7 @@ def test_pipeline_walkforward_windows(small_dataset, test_config):
 
 
 def test_pipeline_population_evolution(small_dataset, test_config):
-    """Pipeline: Population → Evolution → Fitness."""
+    """Pipeline: Population -> Evolution -> Fitness."""
     import random
     from ga_patterns.generator import initialize_population
     from ga_patterns.fitness import evaluate_population
@@ -247,7 +247,7 @@ def test_pipeline_ga_operators(test_config):
 
 
 def test_pipeline_metrics_calculation(small_dataset, test_config):
-    """Pipeline: Equity → Metrics."""
+    """Pipeline: Equity -> Metrics."""
     from backtest.metrics import calculate_all_metrics
 
     # Create synthetic equity
@@ -266,7 +266,7 @@ def test_pipeline_metrics_calculation(small_dataset, test_config):
 
 
 def test_pipeline_portfolio_selection(small_dataset, test_config):
-    """Pipeline: Patterns → Decorrelation → Portfolio."""
+    """Pipeline: Patterns -> Decorrelation -> Portfolio."""
     from ga_patterns.generator import generate_random_pattern
     from backtest.correlation import select_portfolio
 
@@ -359,7 +359,7 @@ def test_full_pipeline_integration(small_dataset, test_config, tmp_path):
 
 @pytest.mark.slow
 def test_statistical_validation_pipeline(small_dataset, test_config):
-    """Pipeline: Portfolio → Statistical tests."""
+    """Pipeline: Portfolio -> Statistical tests."""
     from ga_patterns.generator import generate_random_pattern
     from robustness.hansen_spa import hansen_spa_test
     from robustness.white_rc import whites_reality_check

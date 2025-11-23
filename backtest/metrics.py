@@ -69,7 +69,7 @@ def upi_ratio(equity_curve: pd.Series, periods_per_year: int) -> float:
     ui = ulcer_index(equity_curve)
 
     if ui == 0:
-        # Sin drawdowns → UPI infinito (o muy alto)
+        # Sin drawdowns -> UPI infinito (o muy alto)
         # Decisión: retornar 100 (cap alto)
         return 100.0 if cagr_val > 0 else 0.0
 
@@ -174,7 +174,7 @@ def calculate_all_metrics(equity_curve: pd.Series, periods_per_year: int,
 
     # SPRINT 14 FIX: Calculate win rate and profit factor from trades if available
     if trades is not None and len(trades) > 0:
-        # ✓ CORRECT: Calculate from trade outcomes
+        # [PASS] CORRECT: Calculate from trade outcomes
         winning_trades = [t for t in trades if t.get('pnl_pct', 0) > 0]
         losing_trades = [t for t in trades if t.get('pnl_pct', 0) < 0]
 

@@ -9,7 +9,7 @@ data:
   market_type: "future"   # "spot" o "future"
   timeframe: "15m"        # Ver TIME_MAP abajo
   start: "2023-01-01 00:00:00"
-  end: "2025-10-25 23:59:59"
+  end: "2025-11-21 23:59:59"
 
   # Paginación (Binance limit: 1000 candles/request)
   pagination:
@@ -54,7 +54,7 @@ walkforward:
 ga:
   population: 50       # Was 50 - doubled for more genetic diversity
   generations_max: 30       # Keep as is
-  patience_no_improve: 8   # SPRINT 14 FIX: Increased from 5 to 10 (fitness improves slowly)
+  patience_no_improve: 5   # SPRINT 14 FIX: Increased from 5 to 10 (fitness improves slowly)
   elitism: 8                # AUDIT: Increased from 5 to preserve more top patterns (especially SHORT)
   mutation_rate: 0.35       # Was 0.2 - more exploration
   crossover_rate: 0.8       # Was 0.7 - more recombination

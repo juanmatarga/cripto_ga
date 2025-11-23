@@ -109,7 +109,7 @@ def test_negative_cagr_zero_ui():
     equity = pd.Series([100, 95, 90, 85, 80])  # Monotonically decreasing
     upi_val = upi_ratio(equity, periods_per_year=35040)
 
-    # CAGR negativo con UI cercano a cero → UPI debe ser 0
+    # CAGR negativo con UI cercano a cero -> UPI debe ser 0
     # (aunque en este caso habrá drawdown, solo verificamos lógica)
     assert isinstance(upi_val, float)
 

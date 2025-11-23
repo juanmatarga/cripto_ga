@@ -460,9 +460,9 @@ class EvolutionAnalyzer:
         print(f"Results saved to: {output_dir.absolute()}")
         print("")
         print("Output files:")
-        print(f"  📊 fitness_evolution.png")
-        print(f"  📊 performance_metrics.png")
-        print(f"  📊 module_trends.png")
+        print(f"  [DATA] fitness_evolution.png")
+        print(f"  [DATA] performance_metrics.png")
+        print(f"  [DATA] module_trends.png")
         print(f"  📄 evolution_report.md")
         print("="*80)
         print("")
@@ -481,7 +481,7 @@ if __name__ == "__main__":
     df = analyzer.run_full_analysis(output_dir=output_dir)
 
     if df is not None:
-        print("✅ Analysis completed successfully!")
+        print("[OK] Analysis completed successfully!")
         print(f"   Open {output_dir}/evolution_report.md to view the report")
     else:
-        print("❌ Analysis failed - check snapshots directory")
+        print("[ERROR] Analysis failed - check snapshots directory")

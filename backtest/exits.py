@@ -185,6 +185,6 @@ def calculate_time_exit_bar(entry_bar_index: int, bars_hold: int) -> int:
         Exit bar index
 
     Example:
-        Entry at bar 100, hold 96 bars → exit at bar 196
+        Entry at bar 100, hold 96 bars -> exit at bar 196
     """
     return entry_bar_index + bars_hold

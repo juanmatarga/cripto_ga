@@ -18,8 +18,8 @@ def explain_predicate(node: PredicateNode) -> str:
         str: Descripción legible
     
     Examples:
-        close[0] > close[1] → "Current close is greater than previous close"
-        price_change_pct[0] > 0.02 → "Price change is above 2.00%"
+        close[0] > close[1] -> "Current close is greater than previous close"
+        price_change_pct[0] > 0.02 -> "Price change is above 2.00%"
     """
     predicate_name = node.predicate_name
     operator = node.operator

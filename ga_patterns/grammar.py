@@ -1,6 +1,6 @@
 """
 Pattern Grammar - Direct OHLCV Predicates
-Evolutionary approach: Direct comparisons → Ratios → Indicators
+Evolutionary approach: Direct comparisons -> Ratios -> Indicators
 """
 
 import pandas as pd

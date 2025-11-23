@@ -292,7 +292,7 @@ def generate_statistical_section(hansen_results: Optional[Dict],
         section += f"- **Test Statistic**: {hansen_results['test_statistic']:.4f}\n"
         section += f"- **P-value**: {hansen_results['p_value']:.4f}\n"
         section += f"- **Significance Level (α)**: {hansen_results['alpha']}\n"
-        section += f"- **Result**: {'✓ Reject null hypothesis (strategy has edge)' if hansen_results['reject_null'] else '✗ Fail to reject null (no significant edge)'}\n"
+        section += f"- **Result**: {'[PASS] Reject null hypothesis (strategy has edge)' if hansen_results['reject_null'] else '[FAIL] Fail to reject null (no significant edge)'}\n"
         section += f"- **Mean Outperformance**: {hansen_results['mean_outperformance']:.6f}\n\n"
 
     # White's RC
@@ -301,7 +301,7 @@ def generate_statistical_section(hansen_results: Optional[Dict],
         section += f"- **Test Statistic**: {white_results['test_statistic']:.4f}\n"
         section += f"- **P-value**: {white_results['p_value']:.4f}\n"
         section += f"- **Significance Level (α)**: {white_results['alpha']}\n"
-        section += f"- **Result**: {'✓ Reject null hypothesis (strategy has edge)' if white_results['reject_null'] else '✗ Fail to reject null (no significant edge)'}\n"
+        section += f"- **Result**: {'[PASS] Reject null hypothesis (strategy has edge)' if white_results['reject_null'] else '[FAIL] Fail to reject null (no significant edge)'}\n"
         section += f"- **Mean Outperformance**: {white_results['mean_outperformance']:.6f}\n\n"
 
     # Bootstrap CI

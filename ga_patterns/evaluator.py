@@ -33,7 +33,7 @@ def evaluate_expression(expression: str, data: pd.DataFrame, bar_index: int) -> 
     Process:
         1. Check bar_index has enough lookback (max offset in expression)
         2. Replace all tokens (C[n], V[n], etc.) with actual values
-        3. Replace 'AND' → 'and', 'OR' → 'or' (Python syntax)
+        3. Replace 'AND' -> 'and', 'OR' -> 'or' (Python syntax)
         4. Safely evaluate expression
 
     Example:
@@ -201,7 +201,7 @@ def parse_token(token: str, data: pd.DataFrame, bar_index: int) -> float:
 
     # Indicators (require preprocessing)
     elif token.startswith('RSI['):
-        # Extract: RSI[14][0] → period=14, offset=0
+        # Extract: RSI[14][0] -> period=14, offset=0
         period, offset = extract_indicator_params(token)
         column_name = f'RSI_{period}'
         if column_name not in data.columns:
@@ -209,7 +209,7 @@ def parse_token(token: str, data: pd.DataFrame, bar_index: int) -> float:
         return float(data.iloc[bar_index - offset][column_name])
 
     elif token.startswith('SMA_V['):
-        # SMA_V[20][0] → period=20, offset=0, apply to Volume
+        # SMA_V[20][0] -> period=20, offset=0, apply to Volume
         period, offset = extract_indicator_params(token)
         column_name = f'SMA_V_{period}'
         if column_name not in data.columns:
@@ -217,7 +217,7 @@ def parse_token(token: str, data: pd.DataFrame, bar_index: int) -> float:
         return float(data.iloc[bar_index - offset][column_name])
 
     elif token.startswith('SMA['):
-        # SMA[20][0] → period=20, offset=0, apply to Close
+        # SMA[20][0] -> period=20, offset=0, apply to Close
         period, offset = extract_indicator_params(token)
         column_name = f'SMA_{period}'
         if column_name not in data.columns:

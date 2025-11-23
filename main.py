@@ -46,7 +46,7 @@ warnings.filterwarnings('ignore')
 BANNER = """
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║     🧬  GENETIC ALGORITHM PATTERN DISCOVERY  🧬               ║
+║     [GA]  GENETIC ALGORITHM PATTERN DISCOVERY  [GA]               ║
 ║                                                              ║
 ║     Cryptocurrency Trading Pattern Evolution                ║
 ║     with Statistical Validation                             ║
@@ -178,7 +178,7 @@ def inject_immigrants(population: List, generation: int, config: dict, n_immigra
     new_population = population[n_replace:] + immigrants
 
     logger.info(f"[OK] Injected {len(immigrants)} immigrants, replacing worst {n_replace} patterns")
-    logger.info(f"     Population size: {len(population)} → {len(new_population)}")
+    logger.info(f"     Population size: {len(population)} -> {len(new_population)}")
 
     return new_population
 
@@ -218,6 +218,125 @@ def maintain_diversity(population, max_similarity: float = 0.8):
         logger.info(f"[DIVERSITY] Removed {removed} duplicate patterns, {len(diverse_population)} unique patterns remain")
 
     return diverse_population
+
+def manage_population_size(population: List, generation: int, config: dict) -> List:
+    """
+    SPRINT 16: Comprehensive population management.
+
+    Ensures population is always exactly target size with no duplicates.
+
+    Order of operations (CRITICAL):
+    1. Remove duplicates FIRST
+    2. Enforce direction quotas (LONG/SHORT balance)
+    3. Refill to exact target size
+
+    Args:
+        population: Current population (List of PatternChromosome)
+        generation: Current generation number
+        config: Config dict
+
+    Returns:
+        List of exactly config['ga']['population'] non-duplicate patterns
+    """
+    from ga_patterns.generator_v2 import generate_random_chromosome
+    from ga_patterns.chromosome_v2 import validate_chromosome
+
+    logger = logging.getLogger(__name__)
+
+    target_size = config['ga']['population']
+    min_long_pct = 0.40
+    min_short_pct = 0.40
+
+    # STEP 1: Remove duplicates FIRST
+    seen_signatures = set()
+    unique_patterns = []
+
+    for p in population:
+        signature = tuple(sorted(p.modules))
+        if signature not in seen_signatures:
+            seen_signatures.add(signature)
+            unique_patterns.append(p)
+
+    removed = len(population) - len(unique_patterns)
+    if removed > 0:
+        logger.info(f"[DIVERSITY] Removed {removed} duplicates, {len(unique_patterns)} unique remain")
+
+    # STEP 2: Enforce direction quotas
+    long_patterns = [p for p in unique_patterns if p.direction == 'LONG']
+    short_patterns = [p for p in unique_patterns if p.direction == 'SHORT']
+
+    min_long = int(target_size * min_long_pct)
+    min_short = int(target_size * min_short_pct)
+
+    # Generate missing LONG patterns
+    if len(long_patterns) < min_long:
+        shortage = min_long - len(long_patterns)
+        logger.info(f"[QUOTA] LONG shortage: {shortage} patterns. Generating...")
+
+        attempts = 0
+        max_attempts = shortage * 10
+
+        while len([p for p in unique_patterns if p.direction == 'LONG']) < min_long and attempts < max_attempts:
+            new_pattern = generate_random_chromosome(generation, config)
+            new_pattern.direction = 'LONG'  # Force LONG
+
+            if validate_chromosome(new_pattern):
+                signature = tuple(sorted(new_pattern.modules))
+                if signature not in seen_signatures:
+                    seen_signatures.add(signature)
+                    new_pattern.fitness = -999.0
+                    unique_patterns.append(new_pattern)
+            attempts += 1
+
+    # Generate missing SHORT patterns
+    if len(short_patterns) < min_short:
+        shortage = min_short - len(short_patterns)
+        logger.info(f"[QUOTA] SHORT shortage: {shortage} patterns. Generating...")
+
+        attempts = 0
+        max_attempts = shortage * 10
+
+        while len([p for p in unique_patterns if p.direction == 'SHORT']) < min_short and attempts < max_attempts:
+            new_pattern = generate_random_chromosome(generation, config)
+            new_pattern.direction = 'SHORT'  # Force SHORT
+
+            if validate_chromosome(new_pattern):
+                signature = tuple(sorted(new_pattern.modules))
+                if signature not in seen_signatures:
+                    seen_signatures.add(signature)
+                    new_pattern.fitness = -999.0
+                    unique_patterns.append(new_pattern)
+            attempts += 1
+
+    # STEP 3: Refill to exact target size
+    attempts = 0
+    max_attempts = target_size * 10
+
+    while len(unique_patterns) < target_size and attempts < max_attempts:
+        new_pattern = generate_random_chromosome(generation, config)
+
+        if validate_chromosome(new_pattern):
+            signature = tuple(sorted(new_pattern.modules))
+            if signature not in seen_signatures:
+                seen_signatures.add(signature)
+                new_pattern.fitness = -999.0
+                unique_patterns.append(new_pattern)
+        attempts += 1
+
+    # STEP 4: Trim if over (shouldn't happen, but safety)
+    if len(unique_patterns) > target_size:
+        unique_patterns.sort(key=lambda p: p.fitness, reverse=True)
+        unique_patterns = unique_patterns[:target_size]
+        logger.warning(f"[SIZE] Trimmed to {target_size} patterns")
+
+    # Final count
+    final_long = len([p for p in unique_patterns if p.direction == 'LONG'])
+    final_short = len([p for p in unique_patterns if p.direction == 'SHORT'])
+
+    logger.info(f"[SIZE] Final population: {len(unique_patterns)} patterns "
+               f"({final_long} LONG, {final_short} SHORT)")
+
+    return unique_patterns
 
 def main():
     """
@@ -458,93 +577,9 @@ def main():
 
         population = new_population
 
-        # SPRINT 12: Maintain diversity
-        population = maintain_diversity(population)
-
-        # AUDIT FIX: Direction quotas to ensure SHORT survival
-        # Target: 30% minimum for each direction (15 SHORT, 15 LONG out of 50)
-        min_quota_per_direction = int(population_size * 0.30)
-
-        long_count = sum(1 for p in population if p.direction == 'LONG')
-        short_count = sum(1 for p in population if p.direction == 'SHORT')
-
-        logger.debug(f"Direction distribution: {long_count} LONG, {short_count} SHORT")
-
-        from ga_patterns.generator_v2 import generate_random_chromosome
-        from ga_patterns.chromosome_v2 import PatternChromosome
-
-        # Enforce SHORT quota
-        if short_count < min_quota_per_direction:
-            shortage = min_quota_per_direction - short_count
-            logger.info(f"[QUOTA] SHORT shortage: {shortage} patterns. Generating SHORT patterns to meet quota...")
-
-            # Remove worst LONG patterns to make room
-            if long_count > min_quota_per_direction:
-                long_patterns = [p for p in population if p.direction == 'LONG']
-                long_sorted = sorted(long_patterns, key=lambda p: p.fitness)
-                to_remove = long_sorted[:shortage]
-                population = [p for p in population if p not in to_remove]
-                logger.debug(f"  Removed {len(to_remove)} worst LONG patterns to make room")
-
-            # Generate SHORT patterns
-            for _ in range(shortage):
-                # Generate random pattern and force SHORT direction
-                new_pattern = generate_random_chromosome(generation, config)
-                new_pattern.direction = 'SHORT'
-                # Re-filter modules to be SHORT-compatible
-                from ga_patterns.module_semantics import get_compatible_modules
-                compatible = get_compatible_modules('SHORT', new_pattern.modules)
-                if compatible:
-                    new_pattern.modules = compatible[:len(new_pattern.modules)]
-                population.append(new_pattern)
-
-            logger.info(f"[QUOTA] Added {shortage} SHORT patterns")
-
-        # Enforce LONG quota
-        if long_count < min_quota_per_direction:
-            shortage = min_quota_per_direction - long_count
-            logger.info(f"[QUOTA] LONG shortage: {shortage} patterns. Generating LONG patterns to meet quota...")
-
-            # Remove worst SHORT patterns to make room
-            if short_count > min_quota_per_direction:
-                short_patterns = [p for p in population if p.direction == 'SHORT']
-                short_sorted = sorted(short_patterns, key=lambda p: p.fitness)
-                to_remove = short_sorted[:shortage]
-                population = [p for p in population if p not in to_remove]
-                logger.debug(f"  Removed {len(to_remove)} worst SHORT patterns to make room")
-
-            # Generate LONG patterns
-            for _ in range(shortage):
-                new_pattern = generate_random_chromosome(generation, config)
-                new_pattern.direction = 'LONG'
-                from ga_patterns.module_semantics import get_compatible_modules
-                compatible = get_compatible_modules('LONG', new_pattern.modules)
-                if compatible:
-                    new_pattern.modules = compatible[:len(new_pattern.modules)]
-                population.append(new_pattern)
-
-            logger.info(f"[QUOTA] Added {shortage} LONG patterns")
-
-        # Refill if diversity maintenance removed too many patterns
-        if len(population) < population_size:
-            n_to_add = population_size - len(population)
-            logger.info(f"[DIVERSITY] Refilling {n_to_add} patterns to reach population size")
-            for _ in range(n_to_add):
-                new_pattern = generate_random_chromosome(generation, config)
-                population.append(new_pattern)
-
-        # SPRINT 14 FIX: ENFORCE EXACT POPULATION SIZE
-        while len(population) < population_size:
-            logger.warning(f"[SIZE] Population {len(population)} < {population_size}, adding pattern")
-            new_pattern = generate_random_chromosome(generation, config)
-            population.append(new_pattern)
-
-        while len(population) > population_size:
-            logger.warning(f"[SIZE] Population {len(population)} > {population_size}, removing worst")
-            population.sort(key=lambda p: p.fitness)
-            population.pop(0)  # Remove worst
-
-        logger.debug(f"[SIZE] Population size enforced: {len(population)}/{population_size}")
+        # SPRINT 16: Comprehensive population management
+        # Single function handles: duplicates removal, quotas, refill
+        population = manage_population_size(population, generation, config)
 
         # SPRINT 11: Evaluate new patterns only with unidirectional
         patterns_to_eval = [p for p in population if p.fitness == -999.0]
@@ -717,290 +752,12 @@ def main():
         else:
             logger.info(f"   {pattern.expression}")
 
-    # FASE 3: Pattern Selection
-    logger.info("\n" + "="*80)
-    logger.info("FASE 3: PORTFOLIO SELECTION")
-    logger.info("="*80)
-
-    from backtest.correlation import select_portfolio
-
-    # Select decorrelated portfolio from top patterns
-    portfolio = select_portfolio(top_patterns, data, config)
-
-    if len(portfolio) == 0:
-        logger.error("Portfolio selection failed - no patterns passed filters!")
-        logger.info("\n" + "="*80)
-        logger.info("EXPERIMENT STOPPED (No valid portfolio)")
-        logger.info("="*80)
-        return
-
-    logger.info(f"\n[OK] Selected {len(portfolio)} decorrelated patterns for validation")
-
-    # FASE 4: Statistical Validation
-    logger.info("\n" + "="*80)
-    logger.info("FASE 4: STATISTICAL VALIDATION")
-    logger.info("="*80)
-
-    if len(portfolio) > 0:
-        from robustness import run_robustness_tests
-
-        logger.info("Running robustness tests on final portfolio...")
-        logger.info("WARNING: This may take 10-20 minutes...")
-
-        robustness_results = run_robustness_tests(
-            portfolio_patterns=portfolio,
-            data=data,
-            config=config
-        )
-
-        # Guardar resultados
-        import json
-
-        output_dir = Path(config['output']['reports_dir'])
-        output_dir.mkdir(exist_ok=True)
-
-        # Guardar Hansen SPA
-        if robustness_results['hansen_spa']:
-            hansen_file = output_dir / 'hansen_spa_results.json'
-            with open(hansen_file, 'w') as f:
-                json.dump(robustness_results['hansen_spa'], f, indent=2)
-            logger.info(f"[OK] Saved Hansen SPA results to {hansen_file}")
-
-        # Guardar White RC
-        if robustness_results['white_rc']:
-            white_file = output_dir / 'white_rc_results.json'
-            with open(white_file, 'w') as f:
-                json.dump(robustness_results['white_rc'], f, indent=2)
-            logger.info(f"[OK] Saved White RC results to {white_file}")
-
-        # Guardar Bootstrap
-        if robustness_results['bootstrap']:
-            bootstrap_file = output_dir / 'bootstrap_results.json'
-            # Convertir a JSON-serializable (sin arrays numpy)
-            bootstrap_json = {}
-            for metric, stats in robustness_results['bootstrap'].items():
-                bootstrap_json[metric] = {
-                    'mean': float(stats['mean']),
-                    'median': float(stats['median']),
-                    'std': float(stats['std']),
-                    'ci_lower': float(stats['ci_lower']),
-                    'ci_upper': float(stats['ci_upper'])
-                }
-            with open(bootstrap_file, 'w') as f:
-                json.dump(bootstrap_json, f, indent=2)
-            logger.info(f"[OK] Saved Bootstrap results to {bootstrap_file}")
-
-        # Guardar equity curves para visualización
-        portfolio_equity = robustness_results['portfolio_equity']
-        benchmark_equity = robustness_results['benchmark_equity']
-
-        equity_df = pd.DataFrame({
-            'portfolio': portfolio_equity,
-            'benchmark': benchmark_equity
-        })
-        equity_file = output_dir / 'equity_curves.csv'
-        equity_df.to_csv(equity_file)
-        logger.info(f"[OK] Saved equity curves to {equity_file}")
-
-    else:
-        logger.warning("No portfolio to validate (empty)")
-
-    # FASE 5: Report Generation
-    logger.info("\n" + "="*80)
-    logger.info("FASE 5: REPORT GENERATION")
-    logger.info("="*80)
-
-    if len(portfolio) > 0 and robustness_results:
-        from reports import visualizations, report_generator, latex_exporter
-
-        output_dir = Path(config['output']['reports_dir'])
-
-        # Load evolution tracker data
-        evolution_dir = Path(config['output']['evolution_dir'])
-        evolution_file = evolution_dir / 'evolution_summary.json'
-
-        evolution_data = {}
-        if evolution_file.exists():
-            with open(evolution_file, 'r') as f:
-                evolution_data = json.load(f)
-            logger.info(f"[OK] Loaded evolution data from {evolution_file}")
-        else:
-            logger.warning("Evolution summary not found, skipping evolution plot")
-
-        # 1. Generate visualizations
-        logger.info("\n--- Generating Visualizations ---")
-
-        try:
-            # Equity curves
-            visualizations.plot_equity_curves(
-                portfolio_equity=portfolio_equity,
-                benchmark_equity=benchmark_equity,
-                output_path=output_dir / 'equity_performance.png'
-            )
-
-            # Drawdown analysis
-            visualizations.plot_drawdown_analysis(
-                equity=portfolio_equity,
-                output_path=output_dir / 'drawdown_analysis.png'
-            )
-
-            # Evolution fitness (if data available)
-            if evolution_data:
-                visualizations.plot_evolution_fitness(
-                    evolution_tracker_data=evolution_data,
-                    output_path=output_dir / 'evolution_fitness.png'
-                )
-
-            # Statistical tests
-            visualizations.plot_statistical_tests(
-                hansen_results=robustness_results['hansen_spa'],
-                white_results=robustness_results['white_rc'],
-                bootstrap_results=robustness_results['bootstrap'],
-                output_path=output_dir / 'statistical_tests.png'
-            )
-
-            # Returns distribution
-            returns = portfolio_equity.pct_change().dropna()
-            visualizations.plot_returns_distribution(
-                returns=returns,
-                output_path=output_dir / 'returns_distribution.png'
-            )
-
-            logger.info("[OK] All visualizations generated successfully")
-
-        except Exception as e:
-            logger.error(f"[FAIL] Visualization generation failed: {e}")
-
-        # 2. Generate Markdown report
-        logger.info("\n--- Generating Markdown Report ---")
-
-        try:
-            report_generator.generate_report(
-                portfolio=portfolio,
-                portfolio_equity=portfolio_equity,
-                benchmark_equity=benchmark_equity,
-                evolution_data=evolution_data,
-                final_generation=generation,
-                hansen_results=robustness_results['hansen_spa'],
-                white_results=robustness_results['white_rc'],
-                bootstrap_results=robustness_results['bootstrap'],
-                data=data,
-                config=config,
-                output_path=output_dir / 'experiment_report.md'
-            )
-
-            logger.info("[OK] Markdown report generated successfully")
-
-        except Exception as e:
-            logger.error(f"[FAIL] Report generation failed: {e}")
-
-        # 3. Export LaTeX tables
-        logger.info("\n--- Exporting LaTeX Tables ---")
-
-        try:
-            # Calculate metrics for tables
-            portfolio_metrics = calculate_all_metrics(portfolio_equity, periods_per_year)
-            benchmark_metrics = calculate_all_metrics(benchmark_equity, periods_per_year)
-
-            latex_exporter.export_all_latex_tables(
-                portfolio=portfolio,
-                portfolio_metrics=portfolio_metrics,
-                benchmark_metrics=benchmark_metrics,
-                hansen_results=robustness_results['hansen_spa'],
-                white_results=robustness_results['white_rc'],
-                bootstrap_results=robustness_results['bootstrap'],
-                output_dir=output_dir
-            )
-
-            logger.info("[OK] LaTeX tables exported successfully")
-
-        except Exception as e:
-            logger.error(f"[FAIL] LaTeX export failed: {e}")
-
-        # Summary of outputs
-        logger.info("\n--- Output Files Generated ---")
-        logger.info(f"Reports directory: {output_dir}")
-        logger.info(f"  - equity_performance.png")
-        logger.info(f"  - drawdown_analysis.png")
-        logger.info(f"  - evolution_fitness.png")
-        logger.info(f"  - statistical_tests.png")
-        logger.info(f"  - returns_distribution.png")
-        logger.info(f"  - experiment_report.md")
-        logger.info(f"  - patterns_table.tex")
-        logger.info(f"  - metrics_table.tex")
-        logger.info(f"  - statistical_tests_table.tex")
-        logger.info(f"  - hansen_spa_results.json")
-        logger.info(f"  - white_rc_results.json")
-        logger.info(f"  - bootstrap_results.json")
-        logger.info(f"  - equity_curves.csv")
-
-    else:
-        logger.warning("Skipping report generation (no portfolio or robustness results)")
+    # FASES 3, 4, 5 REMOVED - Replaced by SPRINT 16 Final Backtest System (see below)
 
     # ========================================================================
-    # FINAL SUMMARY
+    # FINAL SUMMARY (moved to end after all processing)
     # ========================================================================
-    logger.info(f"\n{'='*80}")
-    logger.info("EXPERIMENT COMPLETE")
-    logger.info(f"{'='*80}")
-
-    end_time = datetime.now()
-    total_runtime = (end_time - start_time).total_seconds() / 60
-
-    logger.info(f"\nExperiment Summary:")
-    logger.info(f"  Start time: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-    logger.info(f"  End time: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
-    logger.info(f"  Total runtime: {total_runtime:.1f} minutes ({total_runtime/60:.1f} hours)")
-
-    logger.info(f"\nData:")
-    logger.info(f"  Symbol: {config['data']['symbol']}")
-    logger.info(f"  Timeframe: {config['data']['timeframe']}")
-    logger.info(f"  Bars: {len(data):,}")
-
-    logger.info(f"\nGenetic Algorithm:")
-    logger.info(f"  Generations run: {generation}")
-    logger.info(f"  Final population: {len(population)}")
-    logger.info(f"  Best fitness: {best_pattern.fitness:.4f}")
-
-    logger.info(f"\nPortfolio:")
-    if len(portfolio) > 0:
-        # Extract patterns from portfolio tuples
-        if isinstance(portfolio[0], tuple):
-            portfolio_patterns = [p[0] for p in portfolio]
-        else:
-            portfolio_patterns = portfolio
-
-        logger.info(f"  Size: {len(portfolio)} patterns")
-        logger.info(f"  LONG count: {sum(1 for p in portfolio_patterns if p.direction == 'LONG')}")
-        logger.info(f"  SHORT count: {sum(1 for p in portfolio_patterns if p.direction == 'SHORT')}")
-    else:
-        logger.info(f"  Size: 0 patterns (empty)")
-
-    if 'robustness_results' in locals() and robustness_results:
-        logger.info(f"\nStatistical Validation:")
-        if robustness_results.get('hansen_spa'):
-            hansen = robustness_results['hansen_spa']
-            status = "✓ PASSED" if hansen['reject_null'] else "✗ FAILED"
-            logger.info(f"  Hansen SPA: {status} (p={hansen['p_value']:.4f})")
-
-        if robustness_results.get('white_rc'):
-            white = robustness_results['white_rc']
-            status = "✓ PASSED" if white['reject_null'] else "✗ FAILED"
-            logger.info(f"  White RC: {status} (p={white['p_value']:.4f})")
-
-    logger.info(f"\nOutputs:")
-    logger.info(f"  Reports directory: {Path(config['output']['reports_dir'])}")
-    evolution_dir = Path(config['output'].get('evolution_dir', 'output_evolution'))
-    if evolution_dir.exists():
-        logger.info(f"  Evolution snapshots: {evolution_dir}")
-
-    logger.info(f"\n{'='*80}")
-    logger.info("Next Steps:")
-    logger.info("  1. Review: output_reports/experiment_report.md")
-    logger.info("  2. Check visualizations: output_reports/*.png")
-    logger.info("  3. Import LaTeX tables into your paper")
-    logger.info("  4. Run validation: pytest tests/")
-    logger.info(f"{'='*80}\n")
+    # This section moved to after Sprint 15 Final Validation
 
     # ========================================================================
     # SPRINT 14: Auto-run Evolution Analytics
@@ -1051,9 +808,144 @@ def main():
         logger.error(f"Failed to generate analytics: {e}")
         logger.error("Continuing without analytics...")
 
+    # ========================================================================
+    # SPRINT 16: Final Portfolio Validation - TOP 5 PATTERNS
+    # ========================================================================
+    logger.info("")
+    logger.info("="*80)
+    logger.info("FINAL PORTFOLIO VALIDATION - TOP 5 PATTERNS")
+    logger.info("="*80)
+
+    # Get top 5 patterns by fitness
+    all_valid = [p for p in population if p.fitness > -999]
+
+    if len(all_valid) == 0:
+        logger.error("No valid patterns found! Cannot run final backtest.")
+    else:
+        top_5_patterns = sorted(all_valid, key=lambda p: p.fitness, reverse=True)[:5]
+
+        logger.info(f"Selected top {len(top_5_patterns)} patterns for final validation:")
+        for i, p in enumerate(top_5_patterns, 1):
+            logger.info(f"  {i}. {p.to_readable()} | Fitness: {p.fitness:.4f}")
+
+        # Import final backtest modules
+        from backtest.final_backtest import run_final_backtest
+        from analysis.monte_carlo import run_monte_carlo
+        from analysis.final_visualization import plot_equity_with_monte_carlo
+
+        # Create output directory
+        output_dir = Path("./final_results")
+        output_dir.mkdir(exist_ok=True)
+
+        # Process each pattern
+        for i, pattern in enumerate(top_5_patterns, 1):
+            logger.info("")
+            logger.info(f"[{i}/{len(top_5_patterns)}] Processing: {pattern.to_readable()}")
+
+            try:
+                # Run realistic futures backtest
+                logger.info("Running futures backtest with $1000 initial capital, 2% risk, 10x leverage...")
+                backtest_results = run_final_backtest(
+                    pattern=pattern,
+                    data=data,
+                    config=config,
+                    initial_capital=1000.0
+                )
+
+                n_trades = len(backtest_results['trades'])
+                final_equity = backtest_results['metrics']['final_equity']
+                total_return = backtest_results['metrics']['total_return_pct']
+
+                logger.info(f"Backtest complete: {n_trades} trades, ${final_equity:.2f} final ({total_return*100:+.1f}%)")
+
+                # Run Monte Carlo if enough trades
+                if n_trades >= 10:
+                    logger.info("Running Monte Carlo simulation (1000 iterations)...")
+                    mc_results = run_monte_carlo(
+                        trades=backtest_results['trades'],
+                        initial_capital=1000.0,
+                        n_simulations=1000
+                    )
+
+                    logger.info(f"Monte Carlo: Actual at {mc_results['actual_percentile']:.1f}th percentile, "
+                               f"P(profit)={mc_results['prob_profitable']*100:.1f}%")
+
+                    # Generate visualization
+                    plot_path = output_dir / f"pattern_{i}_{pattern.direction}_fitness_{pattern.fitness:.4f}.png"
+                    plot_equity_with_monte_carlo(
+                        backtest_results=backtest_results,
+                        mc_results=mc_results,
+                        output_path=str(plot_path)
+                    )
+
+                    logger.info(f"[OK] Visualization saved: {plot_path}")
+                else:
+                    logger.warning(f"[SKIP] Not enough trades ({n_trades}) for Monte Carlo simulation (min 10 required)")
+
+            except Exception as e:
+                logger.error(f"[ERROR] Failed to process pattern {i}: {e}")
+                import traceback
+                traceback.print_exc()
+
+        logger.info("")
+        logger.info("="*80)
+        logger.info("FINAL VALIDATION COMPLETE")
+        logger.info(f"Results saved to: {output_dir}/")
+        logger.info("="*80)
+
+    # ========================================================================
+    # FINAL SUMMARY
+    # ========================================================================
+    logger.info("")
+    logger.info("="*80)
+    logger.info("EXPERIMENT COMPLETE")
+    logger.info("="*80)
+
+    end_time = datetime.now()
+    total_runtime = (end_time - start_time).total_seconds() / 60
+
+    logger.info(f"\nExperiment Summary:")
+    logger.info(f"  Start time: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"  End time: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"  Total runtime: {total_runtime:.1f} minutes ({total_runtime/60:.1f} hours)")
+
+    logger.info(f"\nData:")
+    logger.info(f"  Symbol: {config['data']['symbol']}")
+    logger.info(f"  Timeframe: {config['data']['timeframe']}")
+    logger.info(f"  Bars: {len(data):,}")
+
+    logger.info(f"\nGenetic Algorithm:")
+    logger.info(f"  Generations run: {generation}")
+    logger.info(f"  Final population: {len(population)}")
+    logger.info(f"  Best fitness: {best_pattern.fitness:.4f}")
+
+    logger.info(f"\nTop 5 Patterns:")
+    if len(all_valid) > 0:
+        top_5 = sorted(all_valid, key=lambda p: p.fitness, reverse=True)[:5]
+        logger.info(f"  Total validated: {len(top_5)} patterns")
+        logger.info(f"  LONG count: {sum(1 for p in top_5 if p.direction == 'LONG')}")
+        logger.info(f"  SHORT count: {sum(1 for p in top_5 if p.direction == 'SHORT')}")
+    else:
+        logger.info(f"  No valid patterns (all fitness = -999)")
+
+    logger.info(f"\nOutputs:")
+    logger.info(f"  Final results: ./final_results/")
+    evolution_dir = Path(config['output'].get('evolution_dir', 'output_evolution'))
+    if evolution_dir.exists():
+        logger.info(f"  Evolution snapshots: {evolution_dir}")
+
+    logger.info("")
+    logger.info("="*80)
+    logger.info("Next Steps:")
+    logger.info("  1. Review final results: ./final_results/*.png")
+    logger.info("  2. Check evolution analytics: ./analysis_output/presentation.html")
+    logger.info("  3. Run validation: pytest tests/")
+    logger.info("="*80)
     logger.info("")
 
-    print(BANNER)
+    print("\n" + "="*80)
+    print("EXPERIMENT COMPLETE")
+    print("="*80)
     print(f"Completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Total time: {total_runtime:.1f} minutes\n")
 

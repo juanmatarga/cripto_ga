@@ -10,8 +10,8 @@ Key improvements:
     - Redundancy check: Prevents duplicate modules from same family
 
 Prevents patterns like:
-    - LONG: AND(momentum_down_strong, rsi_overbought_70) ❌
-    - SHORT: OR(momentum_up_2bar, rsi_oversold_30) ❌
+    - LONG: AND(momentum_down_strong, rsi_overbought_70) [ERROR]
+    - SHORT: OR(momentum_up_2bar, rsi_oversold_30) [ERROR]
 """
 
 import random

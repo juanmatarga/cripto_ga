@@ -100,7 +100,7 @@ def evaluate_fitness_bidirectional(pattern, data: pd.DataFrame,
 
         if len(trades) > 0:
             # CRITICAL: Extract returns from this window
-            # equity_curve goes from 100 → X
+            # equity_curve goes from 100 -> X
             # We want the % returns per bar
             window_returns = equity_curve.pct_change().fillna(0)
             all_returns_long.append(window_returns)
