@@ -1,0 +1,6 @@
+Portfolio,Method,N,CAGR,Max Drawdown,Sortino,Calmar,Final Equity
+AGGRESSIVE,Single_best,1,20.88%,-3.60%,0.209,5.8,109.40
+HIGH_RETURN,Top3_EW,3,19.99%,-2.77%,0.529,7.2,109.02
+RISK_ADJUSTED,Greedy_sortino_MS,10,9.86%,-0.85%,1.508,11.6,104.56
+CONSERVATIVE,Greedy_calmar_EW,8,9.28%,-0.42%,0.842,21.9,104.29
+Buy & Hold,-,1,-31.57%,-31.50%,-0.844,-1.0,83.54
