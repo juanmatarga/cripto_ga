@@ -30,3 +30,6 @@ data_cache/
 .env
 venv/
 env/
+
+# Live trading state (contains positions, not for version control)
+live_state.json
