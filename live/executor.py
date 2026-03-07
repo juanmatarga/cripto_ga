@@ -167,44 +167,54 @@ class Executor:
     def check_and_close_filled_exits(self):
         """
         Check if any SL/TP orders have been filled by the exchange.
-        If so, update state accordingly.
-        """
-        positions_to_close = []
 
+        Strategy: check actual exchange positions. If the bot thinks we have
+        a position but the exchange doesn't, the SL/TP must have filled.
+        This is more robust than tracking individual order IDs.
+        """
+        if not self.state.state.open_positions:
+            return
+
+        try:
+            exchange_positions = self.connector.get_positions()
+        except Exception as e:
+            logger.error(f"Failed to fetch exchange positions: {e}")
+            return
+
+        # Build set of exchange-side open positions by side
+        exchange_open = set()
+        for p in exchange_positions:
+            exchange_open.add(p['side'])  # 'long' or 'short'
+
+        # Check each bot-tracked position
         for key, pos_data in list(self.state.state.open_positions.items()):
             pos = OpenPosition(**pos_data)
+            expected_side = 'long' if pos.direction == 'LONG' else 'short'
 
-            # Check if SL/TP orders are still open
-            try:
-                open_orders = self.connector.get_open_orders()
-                open_ids = {o['id'] for o in open_orders}
+            if expected_side not in exchange_open:
+                # Position was closed by exchange (SL or TP filled)
+                try:
+                    price = self.connector.get_ticker_price()
 
-                sl_filled = pos.sl_order_id and pos.sl_order_id not in open_ids
-                tp_filled = pos.tp_order_id and pos.tp_order_id not in open_ids
+                    # Determine exit type by comparing price to SL/TP levels
+                    if pos.direction == 'LONG':
+                        exit_type = 'target' if (pos.take_profit and
+                            price >= pos.take_profit * 0.99) else 'stop'
+                    else:
+                        exit_type = 'target' if (pos.take_profit and
+                            price <= pos.take_profit * 1.01) else 'stop'
 
-                if sl_filled and tp_filled:
-                    # Both gone — check which one filled
-                    # The exchange cancels the other when one fills (OCO-like)
-                    # We need to check the position to determine
-                    positions_to_close.append((key, 'exchange_exit'))
-                elif sl_filled:
-                    positions_to_close.append((key, 'stop'))
-                elif tp_filled:
-                    positions_to_close.append((key, 'target'))
+                    logger.info(f"Position {key} closed by exchange ({exit_type})")
+                    self.state.close_position(key, price, exit_type)
 
-            except Exception as e:
-                logger.error(f"Error checking orders for {key}: {e}")
+                    # Cancel any remaining conditional orders
+                    if pos.sl_order_id:
+                        self.connector.cancel_order_by_id(pos.sl_order_id, is_trigger=True)
+                    if pos.tp_order_id:
+                        self.connector.cancel_order_by_id(pos.tp_order_id, is_trigger=True)
 
-        for key, exit_type in positions_to_close:
-            try:
-                # Get actual exit price from current state
-                price = self.connector.get_ticker_price()
-                self.state.close_position(key, price, exit_type)
-
-                # Cancel any remaining orders for this position
-                self.connector.cancel_all_orders()
-            except Exception as e:
-                logger.error(f"Error closing {key}: {e}")
+                except Exception as e:
+                    logger.error(f"Error reconciling closed position {key}: {e}")
 
     def update_trailing_stops(self, df):
         """
@@ -237,10 +247,19 @@ class Executor:
                 pos_data['stop_loss'] = new_sl
                 self.state.save()
 
-                # Update SL order on exchange
+                # Update SL order on exchange (cancel old, place new)
                 if pos.sl_order_id:
                     try:
-                        self.connector.cancel_all_orders()
+                        # Cancel old SL (trigger=True for algo orders)
+                        self.connector.cancel_order_by_id(
+                            pos.sl_order_id, is_trigger=True
+                        )
+                        # Cancel old TP too (must re-place both)
+                        if pos.tp_order_id:
+                            self.connector.cancel_order_by_id(
+                                pos.tp_order_id, is_trigger=True
+                            )
+
                         sl_side = 'sell' if pos.direction == 'LONG' else 'buy'
                         new_sl_order = self.connector.place_stop_loss(
                             sl_side, pos.quantity, new_sl

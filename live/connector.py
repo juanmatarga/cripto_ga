@@ -242,7 +242,11 @@ class BinanceConnector:
     def place_stop_loss(self, side: str, quantity: float,
                         stop_price: float) -> Dict:
         """
-        Place a stop-loss order (stop-market).
+        Place a stop-loss order via ccxt Algo endpoint.
+
+        In ccxt 4.x, Binance Futures SL/TP orders route through the
+        Algo Order endpoint (fapiPrivatePostAlgoOrder). Use 'market' type
+        with 'stopLossPrice' param — ccxt handles the conversion internally.
 
         Args:
             side: 'buy' (to close short) or 'sell' (to close long)
@@ -260,12 +264,11 @@ class BinanceConnector:
 
         order = self.exchange.create_order(
             symbol=self.config.symbol,
-            type='stop_market',
+            type='market',
             side=side,
             amount=quantity,
             params={
-                'stopPrice': stop_price,
-                'closePosition': False,
+                'stopLossPrice': stop_price,
                 'reduceOnly': True,
             }
         )
@@ -276,7 +279,7 @@ class BinanceConnector:
     def place_take_profit(self, side: str, quantity: float,
                           stop_price: float) -> Dict:
         """
-        Place a take-profit order (take-profit-market).
+        Place a take-profit order via ccxt Algo endpoint.
 
         Args:
             side: 'buy' (to close short) or 'sell' (to close long)
@@ -294,12 +297,11 @@ class BinanceConnector:
 
         order = self.exchange.create_order(
             symbol=self.config.symbol,
-            type='take_profit_market',
+            type='market',
             side=side,
             amount=quantity,
             params={
-                'stopPrice': stop_price,
-                'closePosition': False,
+                'takeProfitPrice': stop_price,
                 'reduceOnly': True,
             }
         )
@@ -307,14 +309,43 @@ class BinanceConnector:
         logger.info(f"TP placed: id={order['id']}")
         return {'id': order['id'], 'stop_price': stop_price, 'type': 'take_profit'}
 
+    def cancel_order_by_id(self, order_id: str, is_trigger: bool = True):
+        """
+        Cancel a specific order.
+
+        Args:
+            order_id: The order ID to cancel
+            is_trigger: True for SL/TP (algo) orders, False for regular orders
+        """
+        self._ensure_markets()
+        try:
+            params = {'trigger': True} if is_trigger else {}
+            self.exchange.cancel_order(order_id, self.config.symbol, params=params)
+            logger.info(f"Order cancelled: {order_id} (trigger={is_trigger})")
+        except ccxt.OrderNotFound:
+            logger.debug(f"Order {order_id} already filled or cancelled")
+        except ccxt.ExchangeError as e:
+            logger.warning(f"Cancel order {order_id} failed: {e}")
+
     def cancel_all_orders(self):
-        """Cancel all open orders for the symbol."""
+        """Cancel all open orders for the symbol (regular + algo/trigger)."""
         self._ensure_markets()
         try:
             self.exchange.cancel_all_orders(self.config.symbol)
-            logger.info(f"All orders cancelled for {self.config.symbol}")
+            logger.info(f"All regular orders cancelled for {self.config.symbol}")
         except ccxt.ExchangeError as e:
-            logger.warning(f"Cancel all orders failed: {e}")
+            logger.warning(f"Cancel regular orders failed: {e}")
+
+        # Also cancel algo/conditional orders
+        try:
+            open_orders = self.exchange.fetch_open_orders(self.config.symbol)
+            for o in open_orders:
+                try:
+                    self.cancel_order_by_id(o['id'], is_trigger=True)
+                except Exception:
+                    pass
+        except Exception as e:
+            logger.warning(f"Cancel algo orders failed: {e}")
 
     def close_position(self, side: str, quantity: float) -> Dict:
         """
