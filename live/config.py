@@ -27,7 +27,7 @@ class StrategyConfig:
 @dataclass
 class RiskConfig:
     """Risk management parameters."""
-    leverage: int = 5                   # Leverage multiplier
+    leverage: int = 10                  # Leverage multiplier
     max_portfolio_dd_pct: float = 10.0  # Circuit breaker: halt if portfolio DD > X%
     max_daily_loss_pct: float = 3.0     # Halt trading for the day if loss > X%
     max_position_pct: float = 33.3      # Max capital per strategy (%)

@@ -1,0 +1,24 @@
+[Unit]
+Description=CriptoGA Live Trading Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=juanma
+WorkingDirectory=/home/juanma/cripto_ga
+ExecStart=/usr/bin/python3 -m live
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+# Safety: stop cleanly on SIGTERM
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# Environment
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
