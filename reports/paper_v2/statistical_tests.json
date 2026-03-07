@@ -1,0 +1,237 @@
+{
+  "white_rc_vs_bh": {
+    "max_performance": 1.4649520239349179e-05,
+    "p_value": 0.34,
+    "reject_null": false,
+    "best_strategy_idx": 2,
+    "n_strategies_tested": 21,
+    "alpha": 0.05
+  },
+  "white_rc_vs_cash": {
+    "max_performance": 5.747717450771135e-06,
+    "p_value": 0.6985,
+    "reject_null": false,
+    "best_strategy_idx": 2,
+    "n_strategies_tested": 21,
+    "alpha": 0.05
+  },
+  "individual_tests": [
+    {
+      "key": "seed123_s0",
+      "direction": "LONG",
+      "cagr": 0.18946132144336336,
+      "n_trades": 50,
+      "p_vs_bh": 0.18663862415568205,
+      "p_vs_cash": 0.187335287750446,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed123_s1",
+      "direction": "LONG",
+      "cagr": 0.1773023907404332,
+      "n_trades": 44,
+      "p_vs_bh": 0.1913200775319347,
+      "p_vs_cash": 0.19709713653303917,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed123_s2",
+      "direction": "SHORT",
+      "cagr": 0.2088019800319243,
+      "n_trades": 26,
+      "p_vs_bh": 0.19847690421630332,
+      "p_vs_cash": 0.18867293843210992,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed123_s14",
+      "direction": "LONG",
+      "cagr": 0.039107495106416756,
+      "n_trades": 8,
+      "p_vs_bh": 0.25555141002908854,
+      "p_vs_cash": 0.1701085168595594,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed2024_s8",
+      "direction": "SHORT",
+      "cagr": 0.004691214985720116,
+      "n_trades": 5,
+      "p_vs_bh": 0.2774677101747029,
+      "p_vs_cash": 0.4596694959210751,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed2024_s11",
+      "direction": "SHORT",
+      "cagr": 0.056433509957633854,
+      "n_trades": 7,
+      "p_vs_bh": 0.2467467289708583,
+      "p_vs_cash": 0.12267451065699918,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed314_s0",
+      "direction": "LONG",
+      "cagr": 0.016609709934122696,
+      "n_trades": 82,
+      "p_vs_bh": 0.2727315770368426,
+      "p_vs_cash": 0.450637185929586,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed314_s3",
+      "direction": "LONG",
+      "cagr": 0.016928616866765944,
+      "n_trades": 86,
+      "p_vs_bh": 0.2724903579829451,
+      "p_vs_cash": 0.4491001151526767,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed314_s6",
+      "direction": "LONG",
+      "cagr": 0.05331404167339748,
+      "n_trades": 62,
+      "p_vs_bh": 0.2461496657501298,
+      "p_vs_cash": 0.3542140419830153,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed314_s11",
+      "direction": "LONG",
+      "cagr": 0.06614998979049513,
+      "n_trades": 12,
+      "p_vs_bh": 0.24091369109775157,
+      "p_vs_cash": 0.1623696450644358,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed314_s23",
+      "direction": "SHORT",
+      "cagr": 0.010515614918005012,
+      "n_trades": 90,
+      "p_vs_bh": 0.2814141795000461,
+      "p_vs_cash": 0.4586609764011743,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed42_s1",
+      "direction": "LONG",
+      "cagr": 0.07559591828061984,
+      "n_trades": 52,
+      "p_vs_bh": 0.2359912585470083,
+      "p_vs_cash": 0.28975369468336365,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed42_s6",
+      "direction": "LONG",
+      "cagr": 0.11205441732270716,
+      "n_trades": 17,
+      "p_vs_bh": 0.21651326582010222,
+      "p_vs_cash": 0.220557603272458,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed42_s10",
+      "direction": "LONG",
+      "cagr": 0.09898468673726946,
+      "n_trades": 7,
+      "p_vs_bh": 0.2235997372370675,
+      "p_vs_cash": 0.11451756968781511,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed42_s18",
+      "direction": "LONG",
+      "cagr": 0.05748291957536722,
+      "n_trades": 57,
+      "p_vs_bh": 0.24480590419772946,
+      "p_vs_cash": 0.3298214642751356,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed777_s0",
+      "direction": "LONG",
+      "cagr": 0.027130139454910385,
+      "n_trades": 15,
+      "p_vs_bh": 0.2626090764708583,
+      "p_vs_cash": 0.35190089838819916,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed777_s4",
+      "direction": "SHORT",
+      "cagr": 0.18148373482324276,
+      "n_trades": 45,
+      "p_vs_bh": 0.19356049373722445,
+      "p_vs_cash": 0.09407841276721912,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed777_s22",
+      "direction": "SHORT",
+      "cagr": 0.003060682522084468,
+      "n_trades": 68,
+      "p_vs_bh": 0.28051533952910945,
+      "p_vs_cash": 0.4773778394483987,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed999_s2",
+      "direction": "LONG",
+      "cagr": 0.016928616866765944,
+      "n_trades": 86,
+      "p_vs_bh": 0.2724903579829451,
+      "p_vs_cash": 0.4491001151526767,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed999_s17",
+      "direction": "SHORT",
+      "cagr": 0.08041878182352002,
+      "n_trades": 14,
+      "p_vs_bh": 0.23684471895455944,
+      "p_vs_cash": 0.23008956990124624,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    },
+    {
+      "key": "seed999_s19",
+      "direction": "LONG",
+      "cagr": 0.0135059964462112,
+      "n_trades": 67,
+      "p_vs_bh": 0.271028090036067,
+      "p_vs_cash": 0.45250068640515045,
+      "sig_bh": "False",
+      "sig_cash": "False"
+    }
+  ],
+  "trade_level": {
+    "n_trades": 900,
+    "mean_pnl": 0.0008057649081581619,
+    "median_pnl": -0.0032558494496656033,
+    "ttest_p": 0.013817987018117525,
+    "wilcoxon_p": 0.9999998307838712
+  }
+}

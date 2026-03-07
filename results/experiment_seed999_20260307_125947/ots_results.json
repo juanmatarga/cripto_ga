@@ -1,0 +1,287 @@
+[
+  {
+    "strategy_index": 0,
+    "expression": "LONG WHEN ROC(5) CROSSES_ABOVE 1.0 EXIT TP=6.0 SL=2.0",
+    "direction": "LONG",
+    "n_trades": 75,
+    "metrics": {
+      "sortino": -0.4894677546339696,
+      "upi": -3.3307230980146523,
+      "sharpe": -2.55241632170917,
+      "cagr": -0.40455171724800987,
+      "max_dd": -0.22812520800476094,
+      "ulcer_index": 0.12146062742025941,
+      "total_return": -0.2178756243436023,
+      "volatility": 0.1956838179985644,
+      "num_periods": 16609.0,
+      "win_rate": 0.0007827552986512524,
+      "profit_factor": 0.5961037102703662
+    }
+  },
+  {
+    "strategy_index": 1,
+    "expression": "LONG WHEN ROC(5) CROSSES_BELOW 1.0 EXIT TP=6.0 SL=2.0",
+    "direction": "LONG",
+    "n_trades": 71,
+    "metrics": {
+      "sortino": -0.7526361356955503,
+      "upi": -3.9438146020287097,
+      "sharpe": -3.5954550782843446,
+      "cagr": -0.4854061259537342,
+      "max_dd": -0.30159307648507516,
+      "ulcer_index": 0.1230803612583715,
+      "total_return": -0.27014952223888145,
+      "volatility": 0.1803034843341359,
+      "num_periods": 16609.0,
+      "win_rate": 0.0006021194605009633,
+      "profit_factor": 0.4731332498036798
+    }
+  },
+  {
+    "strategy_index": 2,
+    "expression": "LONG WHEN PRICE_POS(8) CROSSES_ABOVE 2.0 EXIT TP=8.0 SL=1.5",
+    "direction": "LONG",
+    "n_trades": 86,
+    "metrics": {
+      "sortino": 0.07444150351155547,
+      "upi": 0.26551722695652535,
+      "sharpe": 0.18583186260173679,
+      "cagr": 0.016928616866765944,
+      "max_dd": -0.11605182033469746,
+      "ulcer_index": 0.06375713192250898,
+      "total_return": 0.007988762698104779,
+      "volatility": 0.14803682435595825,
+      "num_periods": 16609.0,
+      "win_rate": 0.0007827552986512524,
+      "profit_factor": 1.0463780190855216
+    }
+  },
+  {
+    "strategy_index": 3,
+    "expression": "LONG WHEN ROC(5) CROSSES_ABOVE 1.5 EXIT TP=6.0 SL=2.0",
+    "direction": "LONG",
+    "n_trades": 29,
+    "metrics": {
+      "sortino": -0.19769292672961633,
+      "upi": -5.171865556637615,
+      "sharpe": -1.8572263272728617,
+      "cagr": -0.2579679123916483,
+      "max_dd": -0.14789867131309434,
+      "ulcer_index": 0.049879083198628424,
+      "total_return": -0.13187911362548388,
+      "volatility": 0.1542827471036655,
+      "num_periods": 16609.0,
+      "win_rate": 0.00030105973025048167,
+      "profit_factor": 0.5529208467311136
+    }
+  },
+  {
+    "strategy_index": 4,
+    "expression": "LONG WHEN PRICE_POS(8) CROSSES_ABOVE 2.0 EXIT TP=6.0 SL=1.5",
+    "direction": "LONG",
+    "n_trades": 89,
+    "metrics": {
+      "sortino": -0.1475741901424487,
+      "upi": -0.7664439856050428,
+      "sharpe": -0.44572269805639925,
+      "cagr": -0.05962711062796866,
+      "max_dd": -0.14103383532381397,
+      "ulcer_index": 0.0777970885646628,
+      "total_return": -0.028720512479477267,
+      "volatility": 0.1215882692595975,
+      "num_periods": 16609.0,
+      "win_rate": 0.0009633911368015414,
+      "profit_factor": 0.9089920351459805
+    }
+  },
+  {
+    "strategy_index": 5,
+    "expression": "LONG WHEN ROC(5) CROSSES_BELOW 2.0 AND STOCH_D(21) _LT_ MFI(14) EXIT SL=3.0 TRAIL=5.0",
+    "direction": "LONG",
+    "n_trades": 1,
+    "metrics": {
+      "sortino": 999.0,
+      "upi": 100.0,
+      "sharpe": 1.4525242130840286,
+      "cagr": 0.06853187061876298,
+      "max_dd": 0.0,
+      "ulcer_index": 0.0,
+      "total_return": 0.031918262441591905,
+      "volatility": 0.046362049035982775,
+      "num_periods": 16609.0,
+      "win_rate": 6.021194605009634e-05,
+      "profit_factor": 999.0
+    }
+  },
+  {
+    "strategy_index": 6,
+    "expression": "LONG WHEN ROC(5) CROSSES_BELOW 2.0 AND STOCH_D(14) _LT_ MFI(14) EXIT SL=2.5 TRAIL=5.0",
+    "direction": "LONG",
+    "n_trades": 1,
+    "metrics": {
+      "sortino": 999.0,
+      "upi": 100.0,
+      "sharpe": 1.4525242130840286,
+      "cagr": 0.06853187061876298,
+      "max_dd": 0.0,
+      "ulcer_index": 0.0,
+      "total_return": 0.031918262441591905,
+      "volatility": 0.046362049035982775,
+      "num_periods": 16609.0,
+      "win_rate": 6.021194605009634e-05,
+      "profit_factor": 999.0
+    }
+  },
+  {
+    "strategy_index": 7,
+    "expression": "LONG WHEN ROC(3) CROSSES_BELOW -0.5 AND MFI(21) _GT_ 70 EXIT SL=3.0 TRAIL=5.0",
+    "direction": "LONG",
+    "n_trades": 12,
+    "metrics": {
+      "sortino": -0.012947316970479527,
+      "upi": -0.9181016790763393,
+      "sharpe": -0.16629411685771503,
+      "cagr": -0.017520339560441966,
+      "max_dd": -0.03369282057785851,
+      "ulcer_index": 0.01908322352494594,
+      "total_return": -0.00834327234729304,
+      "volatility": 0.08488690657678222,
+      "num_periods": 16609.0,
+      "win_rate": 0.00024084778420038535,
+      "profit_factor": 0.9181963862829353
+    }
+  },
+  {
+    "strategy_index": 10,
+    "expression": "LONG WHEN ROC(21) _LT_ -2.0 AND STOCH_K(5) CROSSES_ABOVE STOCH_K(21) AND MFI(10) _GT_ RSI(low, 9) EXIT SL=2.5 TRAIL=5.0",
+    "direction": "LONG",
+    "n_trades": 12,
+    "metrics": {
+      "sortino": -0.1384408609006357,
+      "upi": -4.276841763390956,
+      "sharpe": -1.2955554229830633,
+      "cagr": -0.10116590672277159,
+      "max_dd": -0.054575515609617875,
+      "ulcer_index": 0.023654348774073124,
+      "total_return": -0.049298787707021785,
+      "volatility": 0.07988809049343377,
+      "num_periods": 16609.0,
+      "win_rate": 0.00024084778420038535,
+      "profit_factor": 0.5176975996518309
+    }
+  },
+  {
+    "strategy_index": 12,
+    "expression": "SHORT WHEN PRICE_POS(8) CROSSES_ABOVE -2.0 EXIT TP=6.0 SL=2.5",
+    "direction": "SHORT",
+    "n_trades": 80,
+    "metrics": {
+      "sortino": -0.18132176762720412,
+      "upi": -1.7796433261955331,
+      "sharpe": -0.6894109357272251,
+      "cagr": -0.12364249510490699,
+      "max_dd": -0.12772615449283028,
+      "ulcer_index": 0.06947599740068484,
+      "total_return": -0.06064256836072446,
+      "volatility": 0.17053283292112198,
+      "num_periods": 16609.0,
+      "win_rate": 0.0013246628131021194,
+      "profit_factor": 0.8826827338317057
+    }
+  },
+  {
+    "strategy_index": 14,
+    "expression": "LONG WHEN STOCH_D(5) _LT_ RSI(open, 21) AND PCT_B(10, 3.0) CROSSES_ABOVE ROC(3) EXIT TP=4.0 SL=2.5",
+    "direction": "LONG",
+    "n_trades": 16,
+    "metrics": {
+      "sortino": -0.07889045451170704,
+      "upi": -2.587987193049821,
+      "sharpe": -0.41933849841878706,
+      "cagr": -0.04192376090817307,
+      "max_dd": -0.0650865560686326,
+      "ulcer_index": 0.016199369541225545,
+      "total_return": -0.020095816692004442,
+      "volatility": 0.09206928165623042,
+      "num_periods": 16609.0,
+      "win_rate": 0.000361271676300578,
+      "profit_factor": 0.8596066795518116
+    }
+  },
+  {
+    "strategy_index": 17,
+    "expression": "SHORT WHEN PRICE_POS(34) _LT_ VOL_RATIO(5) AND ADX(7) CROSSES_ABOVE MFI(10) AND PRICE_POS(55) CROSSES_ABOVE -0.5 EXIT TP=6.0 SL=1.5",
+    "direction": "SHORT",
+    "n_trades": 14,
+    "metrics": {
+      "sortino": 0.26944524038497947,
+      "upi": 5.884182176300156,
+      "sharpe": 1.0727894764959447,
+      "cagr": 0.08041878182352002,
+      "max_dd": -0.02755893150264017,
+      "ulcer_index": 0.01366694290116041,
+      "total_return": 0.037343776440031506,
+      "volatility": 0.07464763889929574,
+      "num_periods": 16609.0,
+      "win_rate": 0.000180635838150289,
+      "profit_factor": 1.961140218326711
+    }
+  },
+  {
+    "strategy_index": 19,
+    "expression": "LONG WHEN PRICE_POS(5) CROSSES_BELOW 1.5 EXIT TP=6.0 SL=1.5",
+    "direction": "LONG",
+    "n_trades": 67,
+    "metrics": {
+      "sortino": 0.04746737866241883,
+      "upi": 0.25353792420611926,
+      "sharpe": 0.17335535972763896,
+      "cagr": 0.0135059964462112,
+      "max_dd": -0.09333691836890055,
+      "ulcer_index": 0.053270123152192414,
+      "total_return": 0.006379272794498458,
+      "volatility": 0.11510582436943458,
+      "num_periods": 16609.0,
+      "win_rate": 0.0007827552986512524,
+      "profit_factor": 1.0421144123762338
+    }
+  },
+  {
+    "strategy_index": 23,
+    "expression": "LONG WHEN ATR_PCT(10) CROSSES_BELOW 1.5 EXIT TP=8.0 SL=1.5",
+    "direction": "LONG",
+    "n_trades": 1,
+    "metrics": {
+      "sortino": 999.0,
+      "upi": -4.321677491273561,
+      "sharpe": -1.4525242130840283,
+      "cagr": -0.049683054816181405,
+      "max_dd": -0.023865570706055196,
+      "ulcer_index": 0.01149624304833081,
+      "total_return": -0.023865570706055217,
+      "volatility": 0.03466531930961409,
+      "num_periods": 16609.0,
+      "win_rate": 0.0,
+      "profit_factor": 0.0
+    }
+  },
+  {
+    "strategy_index": 25,
+    "expression": "LONG WHEN PCT_B(10, 1.5) _GT_ -1.5 AND MACD_NORM(8, 26, 9) CROSSES_BELOW 0.0 AND RSI(low, 9) CROSSES_BELOW STOCH_D(14) EXIT SL=1.0 TRAIL=4.0",
+    "direction": "LONG",
+    "n_trades": 41,
+    "metrics": {
+      "sortino": -0.4170428033941411,
+      "upi": -2.3209434648930345,
+      "sharpe": -1.984229850299451,
+      "cagr": -0.10447634026162489,
+      "max_dd": -0.0639154853575802,
+      "ulcer_index": 0.045014599382514425,
+      "total_return": -0.05096009522305267,
+      "volatility": 0.05486376144387674,
+      "num_periods": 16609.0,
+      "win_rate": 0.00030105973025048167,
+      "profit_factor": 0.5217364898214238
+    }
+  }
+]

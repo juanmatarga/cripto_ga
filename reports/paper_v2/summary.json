@@ -3,16 +3,16 @@
   "grammar_version": "v4 (scale-invariant + trailing stops + ADX/MFI)",
   "data_period": "2022-01-01 to 2025-11-21",
   "ots_period": "2025-06-01 to 2025-11-21",
-  "total_strategies_evolved": 84,
-  "passed_validation": 44,
-  "ots_positive_cagr": 11,
+  "total_strategies_evolved": 166,
+  "passed_validation": 87,
+  "ots_positive_cagr": 21,
   "ensemble": {
-    "n_strategies": 8,
+    "n_strategies": 10,
     "n_long": 5,
-    "n_short": 3,
-    "cagr": 0.13434884824801152,
-    "max_dd": -0.02205557297299175,
-    "sortino": 1.193781897822416
+    "n_short": 5,
+    "cagr": 0.12256905639632998,
+    "max_dd": -0.019226380578959576,
+    "sortino": 1.4976034044011013
   },
   "buy_and_hold": {
     "cagr": -0.315693122571332,
@@ -87,6 +87,17 @@
       "expression": "LONG WHEN MFI(14) _LT_ MFI(7) AND MFI(14) CROSSES_BELOW ADX(7) AND VOL_RATIO(10) CROSSES_BELOW ATR_P"
     },
     {
+      "seed": "seed999",
+      "direction": "SHORT",
+      "cagr": 0.08041878182352002,
+      "max_dd": -0.02755893150264017,
+      "sortino": 0.26944524038497947,
+      "profit_factor": 1.961140218326711,
+      "n_trades": 14,
+      "pbo": 0.23412698412698413,
+      "expression": "SHORT WHEN PRICE_POS(34) _LT_ VOL_RATIO(5) AND ADX(7) CROSSES_ABOVE MFI(10) AND PRICE_POS(55) CROSSE"
+    },
+    {
       "seed": "seed42",
       "direction": "LONG",
       "cagr": 0.07559591828061984,
@@ -98,6 +109,17 @@
       "expression": "LONG WHEN MFI(10) _GT_ 90 AND STOCH_K(5) _LT_ MFI(21) EXIT TP=5.0 SL=1.5"
     },
     {
+      "seed": "seed314",
+      "direction": "LONG",
+      "cagr": 0.06614998979049513,
+      "max_dd": -0.017224709046948523,
+      "sortino": 0.24208915189453012,
+      "profit_factor": 2.2044985687360366,
+      "n_trades": 12,
+      "pbo": 0.047619047619047616,
+      "expression": "LONG WHEN PRICE_POS(5) _GT_ BBWIDTH(20, 1.5) AND STOCH_K(14) _LT_ ADX(21) EXIT TP=8.0 SL=2.0"
+    },
+    {
       "seed": "seed42",
       "direction": "LONG",
       "cagr": 0.05748291957536722,
@@ -107,28 +129,6 @@
       "n_trades": 57,
       "pbo": 0.1349206349206349,
       "expression": "LONG WHEN MFI(7) _GT_ MFI(14) AND ROC(5) CROSSES_BELOW BBWIDTH(20, 1.5) AND STOCH_D(14) _LT_ 80 EXIT"
-    },
-    {
-      "seed": "seed123",
-      "direction": "LONG",
-      "cagr": 0.039107495106416756,
-      "max_dd": -0.007631620664205725,
-      "sortino": 0.12217293342216018,
-      "profit_factor": 2.1540610624203134,
-      "n_trades": 8,
-      "pbo": 0.05555555555555555,
-      "expression": "LONG WHEN STOCH_K(14) CROSSES_BELOW STOCH_D(5) AND ATR_PCT(21) _GT_ VOL_RATIO(50) AND ROC(8) CROSSES"
-    },
-    {
-      "seed": "seed777",
-      "direction": "LONG",
-      "cagr": 0.027130139454910385,
-      "max_dd": -0.02811633111533125,
-      "sortino": 0.1911649475669573,
-      "profit_factor": 1.3242458485547162,
-      "n_trades": 15,
-      "pbo": 0.047619047619047616,
-      "expression": "LONG WHEN ROC(3) CROSSES_ABOVE 1.0 AND STOCH_K(9) _LT_ RSI(high, 7) EXIT TP=4.0 SL=0.75"
     }
   ]
 }

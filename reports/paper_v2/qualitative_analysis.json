@@ -1,0 +1,74 @@
+[
+  {
+    "key": "seed123_s2",
+    "direction": "SHORT",
+    "cagr": 0.2088019800319243,
+    "profit_factor": 1.9768094794535138,
+    "n_trades": 26,
+    "expression": "SHORT WHEN RSI(close, 14) _LT_ 20 AND BBWIDTH(30, 1.5) _GT_ ROC(8) AND VOL_RATIO(50) _GT_ 1.0 EXIT TP=6.0 SL=1.0",
+    "explanation": "Oversold RSI (<20) as entry filter; Bollinger Band width \u2014 volatility expansion/squeeze; Above-average volume confirmation; Rate of change for momentum; CONTRARIAN: shorts after extreme oversold (expecting dead cat bounce failure); Multi-condition (3 filters) \u2014 highly selective"
+  },
+  {
+    "key": "seed123_s0",
+    "direction": "LONG",
+    "cagr": 0.18946132144336336,
+    "profit_factor": 1.3729456728647649,
+    "n_trades": 50,
+    "expression": "LONG WHEN STOCH_K(5) _GT_ RSI(low, 21) AND STOCH_K(5) CROSSES_ABOVE RSI(close, 14) AND PCT_B(20, 3.0) CROSSES_BELOW ROC(13) EXIT TP=6.0 SL=2.0",
+    "explanation": "Stochastic bullish crossover (momentum turning up); Rate of change crossover \u2014 momentum shift; Bollinger %B position within bands; Multi-condition (3 filters) \u2014 highly selective"
+  },
+  {
+    "key": "seed777_s4",
+    "direction": "SHORT",
+    "cagr": 0.18148373482324276,
+    "profit_factor": 1.6769150781839752,
+    "n_trades": 45,
+    "expression": "SHORT WHEN ROC(21) CROSSES_ABOVE -2.0 AND STOCH_K(21) _LT_ STOCH_D(5) EXIT TP=3.0 SL=0.75",
+    "explanation": "Stochastic bullish crossover (momentum turning up); Rate of change crossover \u2014 momentum shift; Fades upward momentum spikes (mean-reversion short)"
+  },
+  {
+    "key": "seed123_s1",
+    "direction": "LONG",
+    "cagr": 0.1773023907404332,
+    "profit_factor": 1.3810350270215848,
+    "n_trades": 44,
+    "expression": "LONG WHEN STOCH_K(5) _GT_ RSI(low, 9) AND STOCH_K(5) CROSSES_ABOVE RSI(close, 14) AND PCT_B(20, 3.0) CROSSES_BELOW ROC(13) EXIT TP=6.0 SL=2.0",
+    "explanation": "Stochastic bullish crossover (momentum turning up); Rate of change crossover \u2014 momentum shift; Bollinger %B position within bands; Multi-condition (3 filters) \u2014 highly selective"
+  },
+  {
+    "key": "seed42_s6",
+    "direction": "LONG",
+    "cagr": 0.11205441732270716,
+    "profit_factor": 1.5688007786001095,
+    "n_trades": 17,
+    "expression": "LONG WHEN MFI(14) _GT_ 90 AND STOCH_K(21) CROSSES_ABOVE STOCH_D(9) EXIT TP=8.0 SL=3.0",
+    "explanation": "Very high money flow (>90) \u2014 strong buying pressure; Stochastic bullish crossover (momentum turning up)"
+  },
+  {
+    "key": "seed42_s10",
+    "direction": "LONG",
+    "cagr": 0.09898468673726946,
+    "profit_factor": 3.829778085692521,
+    "n_trades": 7,
+    "expression": "LONG WHEN MFI(14) _LT_ MFI(7) AND MFI(14) CROSSES_BELOW ADX(7) AND VOL_RATIO(10) CROSSES_BELOW ATR_PCT(21) EXIT TP=4.0 SL=2.5 TRAIL=3.0",
+    "explanation": "Money flow index as momentum filter; ADX trend strength filter; Volume ratio filter; Uses trailing stop (rides trends); Multi-condition (3 filters) \u2014 highly selective"
+  },
+  {
+    "key": "seed999_s17",
+    "direction": "SHORT",
+    "cagr": 0.08041878182352002,
+    "profit_factor": 1.961140218326711,
+    "n_trades": 14,
+    "expression": "SHORT WHEN PRICE_POS(34) _LT_ VOL_RATIO(5) AND ADX(7) CROSSES_ABOVE MFI(10) AND PRICE_POS(55) CROSSES_ABOVE -0.5 EXIT TP=6.0 SL=1.5",
+    "explanation": "Money flow index as momentum filter; ADX trend strength filter; Volume ratio filter; Price position relative to moving average; Multi-condition (3 filters) \u2014 highly selective"
+  },
+  {
+    "key": "seed42_s1",
+    "direction": "LONG",
+    "cagr": 0.07559591828061984,
+    "profit_factor": 1.2277112845255174,
+    "n_trades": 52,
+    "expression": "LONG WHEN MFI(10) _GT_ 90 AND STOCH_K(5) _LT_ MFI(21) EXIT TP=5.0 SL=1.5",
+    "explanation": "Very high money flow (>90) \u2014 strong buying pressure; Stochastic oscillator for momentum"
+  }
+]

@@ -11,12 +11,22 @@ import pandas as pd
 from pathlib import Path
 from typing import List, Dict, Tuple
 
-# Experiment directories
-EXPERIMENTS = {
-    'seed42': 'results/experiment_seed42_20260307_112947',
-    'seed123': 'results/experiment_seed123_20260307_113512',
-    'seed777': 'results/experiment_seed777_20260307_112637',
-}
+# Auto-discover experiment directories
+def _find_experiments() -> dict:
+    """Find all experiment directories with OTS results (latest per seed)."""
+    from pathlib import Path as P
+    experiments = {}
+    results_dir = P('results')
+    if not results_dir.exists():
+        return experiments
+    for d in sorted(results_dir.iterdir()):
+        if d.is_dir() and (d / 'ots_results.json').exists():
+            if '_seed' in d.name:
+                seed_part = d.name.split('_seed')[1].split('_')[0]
+                experiments[f'seed{seed_part}'] = str(d)
+    return experiments
+
+EXPERIMENTS = _find_experiments()
 
 OUTPUT_DIR = Path('reports/paper_v2')
 
