@@ -203,10 +203,30 @@ class TradingBot:
             f"capital=${self.state.state.current_capital:,.2f}"
         )
 
+    def _seconds_until_next_candle(self, offset: int = 5) -> float:
+        """
+        Calculate seconds until next candle close + offset.
+
+        For 15m candles, closes happen at :00, :15, :30, :45.
+        We add `offset` seconds to ensure the candle is fully closed
+        and available on the exchange.
+        """
+        now = datetime.now(timezone.utc)
+        tf_seconds = self.connector._timeframe_to_seconds(self.config.timeframe)
+        # Current candle started at the last multiple of tf_seconds
+        epoch = now.timestamp()
+        current_candle_start = (epoch // tf_seconds) * tf_seconds
+        next_candle_close = current_candle_start + tf_seconds + offset
+        wait = next_candle_close - epoch
+        if wait <= 0:
+            wait = tf_seconds + wait  # Already past, wait for next one
+        return wait
+
     def run(self):
-        """Main loop — runs until interrupted."""
+        """Main loop — synchronized with candle closes."""
         self.startup()
 
+        # Run one cycle immediately on start
         while self.running:
             try:
                 self.run_cycle()
@@ -215,8 +235,13 @@ class TradingBot:
             except Exception as e:
                 self.logger.error(f"Cycle error: {e}", exc_info=True)
 
-            # Sleep until next check
-            time.sleep(self.config.poll_interval_seconds)
+            # Sleep until 2 seconds after next candle close
+            wait = self._seconds_until_next_candle(offset=2)
+            next_time = datetime.now(timezone.utc).timestamp() + wait
+            next_dt = datetime.fromtimestamp(next_time, tz=timezone.utc)
+            self.logger.info(f"Next check at {next_dt.strftime('%H:%M:%S')} UTC "
+                             f"(sleeping {wait:.0f}s)")
+            time.sleep(wait)
 
     def shutdown(self):
         """Graceful shutdown."""
