@@ -56,6 +56,7 @@ def setup_logging(log_dir: str, verbose: bool = True):
 def load_evolution_data(config: dict) -> pd.DataFrame:
     """
     Load OHLCV data for evolution period only (excludes OTS).
+    Optionally merges alternative data if enabled in config.
     """
     from data.loader import load_data
 
@@ -70,6 +71,11 @@ def load_evolution_data(config: dict) -> pd.DataFrame:
     df = df[df.index < pd.Timestamp(ots_start)]
     assert len(df) > 0, "No data before OTS boundary"
     logger.info(f"Evolution data: {len(df)} bars (up to {ots_start})")
+
+    # Merge alternative data if enabled
+    if config.get('data', {}).get('use_alternative_data', False):
+        df = _merge_alt_data(df, config, ots_start)
+
     return df
 
 
@@ -86,7 +92,33 @@ def load_ots_data(config: dict) -> pd.DataFrame:
     df = df[df.index >= pd.Timestamp(ots_start)]
     assert len(df) > 0, "No OTS data found"
     logger.info(f"OTS data: {len(df)} bars (from {ots_start})")
+
+    # Merge alternative data if enabled
+    if config.get('data', {}).get('use_alternative_data', False):
+        end = config.get('data', {}).get('end', '2025-11-21')
+        df = _merge_alt_data(df, config, end_date=end)
+
     return df
+
+
+def _merge_alt_data(df: pd.DataFrame, config: dict,
+                    end_date: str = None) -> pd.DataFrame:
+    """Merge alternative data into OHLCV DataFrame."""
+    try:
+        from data.alternative import merge_alternative_data
+        data_cfg = config.get('data', {})
+        symbol = data_cfg.get('symbol', 'BTC/USDT')
+        start = data_cfg.get('start', '2023-01-01')
+        end = end_date or data_cfg.get('end', '2025-11-21')
+
+        logger.info("Merging alternative data (funding, OI, L/S ratio, taker volume)...")
+        df = merge_alternative_data(df, symbol, start, end)
+        alt_cols = [c for c in df.columns if c not in ['Open', 'High', 'Low', 'Close', 'Volume']]
+        logger.info(f"Alternative data columns: {alt_cols}")
+        return df
+    except Exception as e:
+        logger.warning(f"Failed to merge alternative data: {e}. Continuing without it.")
+        return df
 
 
 # ============================================================================

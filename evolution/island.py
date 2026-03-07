@@ -25,6 +25,7 @@ from evolution.fitness import evaluate_strategy, FAIL_FITNESS
 from evolution.archive import MAPElitesArchive, TOTAL_CELLS
 from backtest.sampling import sample_evolution_windows
 from data.regime_detector import detect_regime
+from data.multi_timeframe import prepare_multi_tf_data
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +124,9 @@ class IslandModel:
             self.data, n_windows=self.n_windows, window_bars=self.window_bars
         )
 
+        # Pre-compute multi-TF data for each window (shared across all strategies)
+        windows_tf_data = [prepare_multi_tf_data(w) for w in windows]
+
         gen_stats = []
 
         for island_id in range(self.n_islands):
@@ -134,7 +138,8 @@ class IslandModel:
             for s in population:
                 s.fitness = FAIL_FITNESS
                 evaluate_strategy(s, windows, self.config,
-                                  regime_labels=self.regime_labels)
+                                  regime_labels=self.regime_labels,
+                                  windows_tf_data=windows_tf_data)
                 self.total_evaluations += 1
                 self.unique_phenotypes.add(s.expression_raw)
 

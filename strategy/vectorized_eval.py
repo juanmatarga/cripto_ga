@@ -1,15 +1,16 @@
 """
 Vectorized Strategy Evaluation.
 
-v3: Scale-invariant indicators. All indicators are normalized —
-no raw price/volume values in comparisons.
+v4: Scale-invariant indicators with:
+  - Alternative data: funding rate, OI, L/S ratio, taker volume
+  - Multi-timeframe: 15m, 1h, 4h (HTF aligned to 15m, no lookahead)
 """
 
 import numpy as np
 import pandas as pd
 import re
 import logging
-from typing import Dict
+from typing import Dict, Optional
 from strategy.phenotype import Strategy, Condition
 
 logger = logging.getLogger(__name__)
@@ -175,14 +176,84 @@ def compute_mfi(df: pd.DataFrame, period: int) -> pd.Series:
 
 
 # ============================================================================
+# ALTERNATIVE DATA INDICATORS (normalized, scale-invariant)
+# ============================================================================
+
+def compute_funding_zscore(df: pd.DataFrame, period: int) -> pd.Series:
+    """Z-score of funding rate over rolling window.
+    Positive = longs paying (crowded long), Negative = shorts paying.
+    Extreme values suggest crowded trade → potential reversal."""
+    if 'funding_rate' not in df.columns:
+        return pd.Series(np.nan, index=df.index)
+    fr = df['funding_rate']
+    mean = fr.rolling(window=period, min_periods=max(period // 2, 1)).mean()
+    std = fr.rolling(window=period, min_periods=max(period // 2, 1)).std()
+    return (fr - mean) / std.replace(0, np.nan)
+
+
+def compute_oi_change(df: pd.DataFrame, period: int) -> pd.Series:
+    """Open interest percentage change over N bars.
+    Rising OI + rising price = trend confirmation.
+    Rising OI + falling price = bearish pressure."""
+    if 'open_interest' not in df.columns:
+        return pd.Series(np.nan, index=df.index)
+    oi = df['open_interest']
+    return oi.pct_change(periods=period) * 100
+
+
+def compute_oi_price_divergence(df: pd.DataFrame, period: int) -> pd.Series:
+    """OI-price divergence: z-score of (OI_change - Price_change).
+    Positive = OI rising faster than price (potential bearish divergence).
+    Negative = price rising faster than OI (potential bullish divergence)."""
+    if 'open_interest' not in df.columns:
+        return pd.Series(np.nan, index=df.index)
+    oi_pct = df['open_interest'].pct_change(periods=period)
+    price_pct = df['Close'].pct_change(periods=period)
+    diff = oi_pct - price_pct
+    mean = diff.rolling(window=period * 4, min_periods=period).mean()
+    std = diff.rolling(window=period * 4, min_periods=period).std()
+    return (diff - mean) / std.replace(0, np.nan)
+
+
+def compute_ls_ratio_change(df: pd.DataFrame, period: int) -> pd.Series:
+    """Change in long/short ratio over N bars, normalized.
+    Positive = more longs entering. Negative = more shorts entering."""
+    if 'ls_ratio' not in df.columns:
+        return pd.Series(np.nan, index=df.index)
+    ls = df['ls_ratio']
+    change = ls.diff(periods=period)
+    mean = change.rolling(window=period * 4, min_periods=period).mean()
+    std = change.rolling(window=period * 4, min_periods=period).std()
+    return (change - mean) / std.replace(0, np.nan)
+
+
+def compute_taker_imbalance(df: pd.DataFrame, period: int) -> pd.Series:
+    """Taker buy/sell ratio minus its rolling mean, normalized by std.
+    Positive = aggressive buying. Negative = aggressive selling."""
+    if 'taker_buy_sell_ratio' not in df.columns:
+        return pd.Series(np.nan, index=df.index)
+    ratio = df['taker_buy_sell_ratio']
+    mean = ratio.rolling(window=period * 4, min_periods=period).mean()
+    std = ratio.rolling(window=period * 4, min_periods=period).std()
+    return (ratio - mean) / std.replace(0, np.nan)
+
+
+# ============================================================================
 # INDICATOR CACHE
 # ============================================================================
 
 class IndicatorCache:
-    """Cache computed indicators to avoid recomputation."""
+    """Cache computed indicators to avoid recomputation.
 
-    def __init__(self, df: pd.DataFrame):
+    Supports multi-timeframe: if tf_data dict is provided, indicators
+    with a timeframe suffix (e.g. RSI(close, 14, 1h)) are computed on
+    the appropriate timeframe and aligned to 15m with no lookahead.
+    """
+
+    def __init__(self, df: pd.DataFrame,
+                 tf_data: Optional[Dict[str, pd.DataFrame]] = None):
         self.df = df
+        self.tf_data = tf_data or {'15m': df}
         self._cache: Dict[str, pd.Series] = {}
 
     def get(self, indicator_str: str) -> pd.Series:
@@ -214,64 +285,108 @@ class IndicatorCache:
 
         return self._dispatch(func_name, args)
 
+    def _resolve_tf(self, args: list) -> tuple:
+        """
+        Check if last arg is a timeframe (15m, 1h, 4h).
+        Returns (actual_args, df_for_computation, timeframe_str).
+        """
+        tf = '15m'
+        actual_args = args
+        if args and args[-1] in ('15m', '1h', '4h'):
+            tf = args[-1]
+            actual_args = args[:-1]
+        df = self.tf_data.get(tf, self.df)
+        return actual_args, df, tf
+
+    def _align_to_15m(self, series: pd.Series, tf: str) -> pd.Series:
+        """Align a higher-TF series to 15m resolution (no lookahead)."""
+        if tf == '15m':
+            return series
+        from data.multi_timeframe import align_higher_tf_to_15m
+        return align_higher_tf_to_15m(series, self.df.index, tf)
+
     def _dispatch(self, func: str, args: list) -> pd.Series:
-        df = self.df
+        # Resolve timeframe from last argument
+        actual_args, df, tf = self._resolve_tf(args)
+
+        args = actual_args  # Use resolved args (timeframe stripped)
 
         # Oscillators (0-100)
         if func == 'RSI':
             source_name = args[0]
             source = df[source_name.capitalize()] if source_name != 'volume' else df['Volume']
             period = int(args[1])
-            return compute_rsi(source, period)
+            return self._align_to_15m(compute_rsi(source, period), tf)
 
         elif func == 'STOCH_K':
             period = int(args[0])
-            return compute_stoch(df, period, 'k')
+            return self._align_to_15m(compute_stoch(df, period, 'k'), tf)
 
         elif func == 'STOCH_D':
             period = int(args[0])
-            return compute_stoch(df, period, 'd')
+            return self._align_to_15m(compute_stoch(df, period, 'd'), tf)
 
         elif func == 'ADX':
             period = int(args[0])
-            return compute_adx(df, period)
+            return self._align_to_15m(compute_adx(df, period), tf)
 
         elif func == 'MFI':
             period = int(args[0])
-            return compute_mfi(df, period)
+            return self._align_to_15m(compute_mfi(df, period), tf)
 
         # Normalized indicators (dimensionless)
         elif func == 'PCT_B':
             period = int(args[0])
             num_std = float(args[1])
-            return compute_pct_b(df, period, num_std)
+            return self._align_to_15m(compute_pct_b(df, period, num_std), tf)
 
         elif func == 'MACD_NORM':
             fast = int(args[0])
             slow = int(args[1])
             signal = int(args[2])
-            return compute_macd_norm(df, fast, slow, signal)
+            return self._align_to_15m(compute_macd_norm(df, fast, slow, signal), tf)
 
         elif func == 'PRICE_POS':
             period = int(args[0])
-            return compute_price_pos(df, period)
+            return self._align_to_15m(compute_price_pos(df, period), tf)
 
         elif func == 'ROC':
             period = int(args[0])
-            return compute_roc(df, 'close', period)
+            return self._align_to_15m(compute_roc(df, 'close', period), tf)
 
         elif func == 'VOL_RATIO':
             period = int(args[0])
-            return compute_vol_ratio(df, period)
+            return self._align_to_15m(compute_vol_ratio(df, period), tf)
 
         elif func == 'BBWIDTH':
             period = int(args[0])
             num_std = float(args[1])
-            return compute_bbwidth(df, period, num_std)
+            return self._align_to_15m(compute_bbwidth(df, period, num_std), tf)
 
         elif func == 'ATR_PCT':
             period = int(args[0])
-            return compute_atr_pct(df, period)
+            return self._align_to_15m(compute_atr_pct(df, period), tf)
+
+        # Alternative data indicators (always on 15m — data is already at 15m)
+        elif func == 'FUNDING_ZSCORE':
+            period = int(args[0])
+            return compute_funding_zscore(self.df, period)
+
+        elif func == 'OI_CHANGE':
+            period = int(args[0])
+            return compute_oi_change(self.df, period)
+
+        elif func == 'OI_PRICE_DIV':
+            period = int(args[0])
+            return compute_oi_price_divergence(self.df, period)
+
+        elif func == 'LS_RATIO_CHANGE':
+            period = int(args[0])
+            return compute_ls_ratio_change(self.df, period)
+
+        elif func == 'TAKER_IMBALANCE':
+            period = int(args[0])
+            return compute_taker_imbalance(self.df, period)
 
         # Legacy support for old indicators (backwards compatibility)
         elif func == 'SMA':
@@ -343,7 +458,7 @@ class IndicatorCache:
 
         else:
             logger.warning(f"Unknown indicator function: {func}")
-            return pd.Series(np.nan, index=df.index)
+            return pd.Series(np.nan, index=self.df.index)
 
 
 def _split_args(args_str: str) -> list:
@@ -412,11 +527,12 @@ def evaluate_logic(condition_signals: list, logic: str) -> pd.Series:
         return combined
 
 
-def generate_signals(strategy: Strategy, df: pd.DataFrame) -> pd.Series:
+def generate_signals(strategy: Strategy, df: pd.DataFrame,
+                     tf_data: Optional[Dict[str, pd.DataFrame]] = None) -> pd.Series:
     if not strategy.conditions:
         return pd.Series(False, index=df.index)
 
-    cache = IndicatorCache(df)
+    cache = IndicatorCache(df, tf_data=tf_data)
 
     condition_signals = []
     for cond in strategy.conditions:

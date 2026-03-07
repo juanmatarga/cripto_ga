@@ -1,11 +1,14 @@
 """
 BNF Grammar for Grammatical Evolution of Trading Strategies.
 
-v4: Scale-invariant, type-safe grammar with trailing stops and trend indicators.
+v5b: Scale-invariant, type-safe grammar with:
+  - Trailing stops and trend indicators (v4)
+  - Multi-timeframe support: 15m (default), 1h, 4h
+  - Alternative data REMOVED (funding rate proven noise — PBO=1.0 in all tests)
 
 ALL indicators are normalized — no raw price/volume comparisons.
 Two types: oscillators (0-100) and normalized ratios (~-3 to +3).
-Comparisons are type-safe: oscillators only vs oscillators/thresholds.
+Comparisons are type-safe within each type.
 """
 
 MAX_DEPTH = 8
@@ -53,13 +56,19 @@ GRAMMAR = {
 
     # ================================================================
     # OSCILLATOR INDICATORS (0-100, already scale-invariant)
+    # Optionally on higher timeframes
     # ================================================================
     "<osc>": [
         "RSI(<rsi_source>, <rsi_period>)",
+        "RSI(<rsi_source>, <rsi_period>, <timeframe>)",
         "STOCH_K(<stoch_period>)",
+        "STOCH_K(<stoch_period>, <timeframe>)",
         "STOCH_D(<stoch_period>)",
+        "STOCH_D(<stoch_period>, <timeframe>)",
         "ADX(<adx_period>)",
+        "ADX(<adx_period>, <timeframe>)",
         "MFI(<mfi_period>)",
+        "MFI(<mfi_period>, <timeframe>)",
     ],
 
     # ================================================================
@@ -67,13 +76,25 @@ GRAMMAR = {
     # ================================================================
     "<norm>": [
         "PCT_B(<bb_period>, <bb_std>)",
+        "PCT_B(<bb_period>, <bb_std>, <timeframe>)",
         "MACD_NORM(<macd_fast>, <macd_slow>, <macd_signal>)",
+        "MACD_NORM(<macd_fast>, <macd_slow>, <macd_signal>, <timeframe>)",
         "PRICE_POS(<pos_period>)",
+        "PRICE_POS(<pos_period>, <timeframe>)",
         "ROC(<roc_period>)",
+        "ROC(<roc_period>, <timeframe>)",
         "VOL_RATIO(<vol_period>)",
+        "VOL_RATIO(<vol_period>, <timeframe>)",
         "BBWIDTH(<bb_period>, <bb_std>)",
+        "BBWIDTH(<bb_period>, <bb_std>, <timeframe>)",
         "ATR_PCT(<atr_period>)",
+        "ATR_PCT(<atr_period>, <timeframe>)",
     ],
+
+    # ================================================================
+    # TIMEFRAME PARAMETER (for multi-timeframe indicators)
+    # ================================================================
+    "<timeframe>": ["15m", "1h", "4h"],
 
     # ================================================================
     # PARAMETERS

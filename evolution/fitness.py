@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from typing import List, Dict, Tuple, Optional
 
+from typing import Optional as OptionalType
 from strategy.phenotype import Strategy
 from strategy.vectorized_eval import generate_signals
 from backtest.exits import calculate_atr, calculate_exit_levels, check_exit_conditions
@@ -17,6 +18,7 @@ from backtest.metrics import (
     calculate_returns, calculate_sortino_ratio, calculate_calmar_ratio,
     calculate_all_metrics, cagr, max_drawdown
 )
+from data.multi_timeframe import prepare_multi_tf_data
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +54,11 @@ def evaluate_strategy(strategy: Strategy, windows: List[pd.DataFrame],
 
     # Check signal rate before expensive backtest
     max_signal_rate = fitness_cfg.get('max_signal_rate', 0.30)
+    windows_tf_data = kwargs.get('windows_tf_data', None)
     try:
-        signals = generate_signals(strategy, windows[0] if windows else pd.DataFrame())
+        first_tf = windows_tf_data[0] if windows_tf_data else None
+        signals = generate_signals(strategy, windows[0] if windows else pd.DataFrame(),
+                                   tf_data=first_tf)
         signal_rate = float(signals.sum()) / len(signals) if len(signals) > 0 else 0
         if signal_rate > max_signal_rate:
             strategy.fitness = FAIL_FITNESS
@@ -68,10 +73,15 @@ def evaluate_strategy(strategy: Strategy, windows: List[pd.DataFrame],
     min_wr = fitness_cfg.get('min_win_rate', DEFAULT_MIN_WIN_RATE)
     parsimony = fitness_cfg.get('parsimony_coefficient', DEFAULT_PARSIMONY_COEFF)
 
-    for window_df in windows:
+    # Pre-computed multi-TF data per window (passed in via kwargs to avoid recompute)
+    windows_tf_data = kwargs.get('windows_tf_data', None)
+
+    for i_w, window_df in enumerate(windows):
         try:
+            tf_data = windows_tf_data[i_w] if windows_tf_data else None
             equity, trades = _run_single_window(
-                strategy, window_df, costs_config, atr_period
+                strategy, window_df, costs_config, atr_period,
+                tf_data=tf_data,
             )
             all_equity_curves.append(equity)
             all_trades.extend(trades)
@@ -194,17 +204,22 @@ def evaluate_strategy(strategy: Strategy, windows: List[pd.DataFrame],
 
 def _run_single_window(strategy: Strategy, df: pd.DataFrame,
                        costs_config: dict, atr_period: int,
-                       max_hold_bars: int = 960
+                       max_hold_bars: int = 960,
+                       tf_data: OptionalType[Dict[str, 'pd.DataFrame']] = None,
                        ) -> Tuple[pd.Series, List[dict]]:
     """
     Run backtest on a single window with trailing stop support.
 
     Args:
         max_hold_bars: Force-close after N bars (default 960 = 10 days of 15m).
+        tf_data: Optional pre-computed multi-TF data dict. If None, computed on the fly.
 
     Returns (equity_curve, trades_list).
     """
-    signals = generate_signals(strategy, df)
+    # Prepare multi-timeframe data if not provided
+    if tf_data is None:
+        tf_data = prepare_multi_tf_data(df)
+    signals = generate_signals(strategy, df, tf_data=tf_data)
     atr = calculate_atr(df, period=atr_period)
 
     direction = strategy.direction
