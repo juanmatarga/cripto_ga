@@ -112,13 +112,20 @@ def calculate_bootstrap_statistics(equity_curve: pd.Series,
         try:
             metrics = calculate_all_metrics(boot_equity, periods_per_year)
 
+            # Sanity check: reject obviously corrupt values
+            if abs(metrics['upi']) > 1e6 or abs(metrics['cagr']) > 1e6:
+                logger.debug(f"  Bootstrap iter {i}: rejecting corrupt metrics "
+                           f"(UPI={metrics['upi']:.0f}, CAGR={metrics['cagr']:.0f})")
+                continue
+
             bootstrap_metrics['upi'].append(metrics['upi'])
             bootstrap_metrics['sharpe'].append(metrics['sharpe'])
             bootstrap_metrics['cagr'].append(metrics['cagr'])
             bootstrap_metrics['max_dd'].append(metrics['max_dd'])
             bootstrap_metrics['ulcer_index'].append(metrics['ulcer_index'])
             bootstrap_metrics['volatility'].append(metrics['volatility'])
-        except:
+        except Exception as e:
+            logger.debug(f"  Bootstrap iter {i} failed: {e}")
             continue
 
         if (i + 1) % 100 == 0:

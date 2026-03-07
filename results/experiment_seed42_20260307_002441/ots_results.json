@@ -1,0 +1,128 @@
+[
+  {
+    "strategy_index": 4,
+    "expression": "LONG WHEN STOCH_K(14) _GT_ 50 AND MACD_LINE(16, 26) CROSSES_BELOW STOCH_D(5) AND RSI(high, 9) _LT_ ATR(14) EXIT TP=4.0 SL=2.0",
+    "direction": "LONG",
+    "n_trades": 79,
+    "metrics": {
+      "upi": -2.244884509888002,
+      "sharpe": -2.4781444462450026,
+      "cagr": -0.1640017777880064,
+      "max_dd": -0.11112620967390109,
+      "ulcer_index": 0.07305577505908689,
+      "total_return": -0.08140252156384231,
+      "volatility": 0.07126585522677575,
+      "num_periods": 16609.0,
+      "win_rate": 0.0012042389210019267,
+      "profit_factor": 0.6356878076443481
+    }
+  },
+  {
+    "strategy_index": 9,
+    "expression": "LONG WHEN BBAND_LOWER(open, 30, 1.5) CROSSES_ABOVE volume EXIT TP=2.5 SL=2.0",
+    "direction": "LONG",
+    "n_trades": 0,
+    "metrics": {
+      "upi": 0.0,
+      "sharpe": 0.0,
+      "cagr": 0.0,
+      "max_dd": 0.0,
+      "ulcer_index": 0.0,
+      "total_return": 0.0,
+      "volatility": 0.0,
+      "num_periods": 16609.0,
+      "win_rate": 0.0,
+      "profit_factor": 0.0
+    }
+  },
+  {
+    "strategy_index": 10,
+    "expression": "LONG WHEN BBAND_LOWER(open, 30, 1.5) CROSSES_ABOVE volume EXIT TP=2.5 SL=2.0",
+    "direction": "LONG",
+    "n_trades": 0,
+    "metrics": {
+      "upi": 0.0,
+      "sharpe": 0.0,
+      "cagr": 0.0,
+      "max_dd": 0.0,
+      "ulcer_index": 0.0,
+      "total_return": 0.0,
+      "volatility": 0.0,
+      "num_periods": 16609.0,
+      "win_rate": 0.0,
+      "profit_factor": 0.0
+    }
+  },
+  {
+    "strategy_index": 11,
+    "expression": "LONG WHEN BBAND_LOWER(open, 30, 1.5) CROSSES_ABOVE volume EXIT TP=2.5 SL=2.0",
+    "direction": "LONG",
+    "n_trades": 0,
+    "metrics": {
+      "upi": 0.0,
+      "sharpe": 0.0,
+      "cagr": 0.0,
+      "max_dd": 0.0,
+      "ulcer_index": 0.0,
+      "total_return": 0.0,
+      "volatility": 0.0,
+      "num_periods": 16609.0,
+      "win_rate": 0.0,
+      "profit_factor": 0.0
+    }
+  },
+  {
+    "strategy_index": 17,
+    "expression": "LONG WHEN open CROSSES_ABOVE BBAND_UPPER(close, 20, 2.5) EXIT TP=2.5 SL=1.25",
+    "direction": "LONG",
+    "n_trades": 67,
+    "metrics": {
+      "upi": -1.311707161906116,
+      "sharpe": -0.5213385238859987,
+      "cagr": -0.04029669530829838,
+      "max_dd": -0.06222127297562192,
+      "ulcer_index": 0.030720801470460045,
+      "total_return": -0.019307366718707586,
+      "volatility": 0.07371025291842305,
+      "num_periods": 16609.0,
+      "win_rate": 0.001083815028901734,
+      "profit_factor": 0.8994071691985562
+    }
+  },
+  {
+    "strategy_index": 18,
+    "expression": "LONG WHEN open CROSSES_ABOVE BBAND_UPPER(close, 20, 2.5) EXIT TP=2.5 SL=1.25",
+    "direction": "LONG",
+    "n_trades": 67,
+    "metrics": {
+      "upi": -1.311707161906116,
+      "sharpe": -0.5213385238859987,
+      "cagr": -0.04029669530829838,
+      "max_dd": -0.06222127297562192,
+      "ulcer_index": 0.030720801470460045,
+      "total_return": -0.019307366718707586,
+      "volatility": 0.07371025291842305,
+      "num_periods": 16609.0,
+      "win_rate": 0.001083815028901734,
+      "profit_factor": 0.8994071691985562
+    }
+  },
+  {
+    "strategy_index": 19,
+    "expression": "LONG WHEN open CROSSES_ABOVE BBAND_UPPER(close, 20, 2.5) EXIT TP=2.5 SL=1.25",
+    "direction": "LONG",
+    "n_trades": 67,
+    "metrics": {
+      "upi": -1.311707161906116,
+      "sharpe": -0.5213385238859987,
+      "cagr": -0.04029669530829838,
+      "max_dd": -0.06222127297562192,
+      "ulcer_index": 0.030720801470460045,
+      "total_return": -0.019307366718707586,
+      "volatility": 0.07371025291842305,
+      "num_periods": 16609.0,
+      "win_rate": 0.001083815028901734,
+      "profit_factor": 0.8994071691985562
+    }
+  }
+]

@@ -214,7 +214,10 @@ def calculate_all_metrics(equity_curve: pd.Series, periods_per_year: int,
         else:
             profit_factor = 0.0  # No trades
 
+    sortino = calculate_sortino_ratio(returns, periods_per_year)
+
     metrics = {
+        'sortino': sortino,
         'upi': upi_ratio(equity_curve, periods_per_year),
         'sharpe': sharpe_ratio(equity_curve, periods_per_year),
         'cagr': cagr(equity_curve, periods_per_year),

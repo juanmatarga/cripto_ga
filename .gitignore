@@ -23,6 +23,9 @@ evolution_snapshots/*.yaml
 # Jupyter
 .ipynb_checkpoints/
 
+# Data cache (large CSV files)
+data_cache/
+
 # Environment
 .env
 venv/

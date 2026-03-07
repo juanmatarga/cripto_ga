@@ -1,0 +1,53 @@
+costs:
+  fees_bps_long: 1.0
+  fees_bps_short: 1.0
+  slippage_bps_long: 1.0
+  slippage_bps_short: 1.0
+data:
+  end: '2025-11-21'
+  exchange: binance
+  market_type: future
+  ots_start: '2025-06-01'
+  start: '2023-01-01'
+  symbol: BTC/USDT
+  timeframe: 15m
+evolution:
+  crossover_rate: 0.8
+  elitism_pct: 0.05
+  generations_max: 150
+  genome_length: 50
+  mutation_rate: 0.1
+  n_windows_per_gen: 10
+  patience: 25
+  population: 300
+  seed: 42
+  tournament_k: 3
+  window_bars: 2880
+exits:
+  atr_period: 14
+fitness:
+  max_drawdown: 0.3
+  min_trades: 20
+  min_win_rate: 0.25
+  parsimony_coefficient: 0.01
+islands:
+  migration_interval: 10
+  migration_size: 5
+  n_islands: 3
+  selection_types:
+  - tournament
+  - lexicase
+  - random
+output:
+  logs_dir: ./logs
+  reports_dir: ./reports
+  results_dir: ./results
+validation:
+  cpcv_embargo_bars: 48
+  cpcv_groups: 10
+  cpcv_max_splits: 252
+  cpcv_purge_bars: 96
+  dsr_threshold: 0.95
+  pbo_threshold: 0.5
+  permutation_alpha: 0.05
+  permutation_n: 1000

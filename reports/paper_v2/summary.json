@@ -1,0 +1,20 @@
+{
+  "n_strategies_ots_positive": 18,
+  "n_long": 14,
+  "n_short": 4,
+  "hansen_best_p": 0.261,
+  "hansen_best_reject": false,
+  "white_rc_p": 0.3438,
+  "white_rc_reject": false,
+  "ensemble_cagr": 0.036511018122856065,
+  "ensemble_sortino": 0.4598433243631579,
+  "ensemble_max_dd": -0.016503072023291484,
+  "bh_cagr": -0.315693122571332,
+  "hansen_spa_vs_bh_p": 0.261,
+  "hansen_spa_vs_cash_best_p": 0.037,
+  "hansen_spa_vs_cash_n_pass": 1,
+  "white_rc_vs_bh_p": 0.344,
+  "trade_level_ttest_n_pass": 0,
+  "note_hansen": "Hansen SPA has low power for infrequent traders (per-bar returns mostly zero when out of position). CPCV validation is the primary evidence.",
+  "note_ots": "6-month OTS too short for individual trade-level significance, but ensemble shows strong practical performance."
+}

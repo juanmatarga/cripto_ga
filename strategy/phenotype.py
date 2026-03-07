@@ -1,0 +1,65 @@
+"""
+Strategy Phenotype — decoded representation of a GE genome.
+"""
+
+from dataclasses import dataclass, field
+from typing import List, Optional, Dict, Tuple
+
+
+@dataclass
+class Condition:
+    """A single condition in a strategy's entry rule."""
+    left: str           # e.g. "RSI(close, 14)" or "close"
+    comparator: str     # ">", "<", "CROSSES_ABOVE", "CROSSES_BELOW"
+    right: str          # e.g. "30" or "SMA(close, 50)"
+
+    def __str__(self):
+        return f"{self.left} {self.comparator} {self.right}"
+
+
+@dataclass
+class Strategy:
+    """
+    Phenotype decoded from a GE genome.
+
+    Created by grammar.mapper.decode(). Evaluated by strategy.vectorized_eval.
+    """
+    genome: List[int]
+    direction: str                              # "LONG" or "SHORT"
+    conditions: List[Condition]                  # Parsed entry conditions
+    logic: str                                   # Raw logic string: "c0 AND c1", "(c0 AND c1) OR c2", etc.
+    tp_atr_mult: float                           # Take profit in ATR multiples
+    sl_atr_mult: float                           # Stop loss in ATR multiples
+    expression_raw: str                          # Full decoded expression string
+    n_nodes: int = 0                             # Complexity (number of conditions)
+    codons_used: int = 0                         # How many codons were consumed
+    wrapping_count: int = 0                      # How many times genome was wrapped
+
+    # Filled post-evaluation
+    fitness: Tuple[float, float] = (-999.0, -999.0)  # (sortino, calmar)
+    metrics: Optional[Dict] = None
+    n_trades: int = 0
+
+    def __str__(self):
+        conds = " ; ".join(str(c) for c in self.conditions)
+        return f"{self.direction} | {conds} | TP={self.tp_atr_mult} SL={self.sl_atr_mult}"
+
+    def to_readable(self) -> str:
+        return f"{self.direction} when {self.logic} (TP={self.tp_atr_mult}xATR, SL={self.sl_atr_mult}xATR)"
+
+    def to_dict(self) -> dict:
+        return {
+            'genome': self.genome,
+            'direction': self.direction,
+            'conditions': [str(c) for c in self.conditions],
+            'logic': self.logic,
+            'tp_atr_mult': self.tp_atr_mult,
+            'sl_atr_mult': self.sl_atr_mult,
+            'n_nodes': self.n_nodes,
+            'codons_used': self.codons_used,
+            'wrapping_count': self.wrapping_count,
+            'fitness': list(self.fitness),
+            'n_trades': self.n_trades,
+            'expression_raw': self.expression_raw,
+            'metrics': self.metrics,
+        }

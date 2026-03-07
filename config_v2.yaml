@@ -1,0 +1,65 @@
+# ============================================================================
+# CriptoGA v2 — Configuration
+# ============================================================================
+
+data:
+  exchange: "binance"
+  symbol: "BTC/USDT"
+  market_type: "future"
+  timeframe: "15m"
+  start: "2022-01-01"        # Include 2022 bear market (-66%) for training
+  end: "2025-11-21"
+  ots_start: "2025-06-01"    # Sacred holdout — NEVER touched during evolution
+
+costs:
+  fees_bps_long: 1.0         # 0.01% taker fee
+  fees_bps_short: 1.0
+  slippage_bps_long: 1.0     # 0.01% for BTC
+  slippage_bps_short: 1.0
+
+evolution:
+  population: 300
+  generations_max: 150
+  patience: 25
+  genome_length: 50
+  mutation_rate: 0.15
+  crossover_rate: 0.7
+  elitism_pct: 0.03
+  tournament_k: 3
+  seed: 42
+
+  # Window rotation (anti-overfitting during evolution)
+  n_windows_per_gen: 12
+  window_bars: 5760           # ~2 months of 15m bars (more robust eval)
+
+islands:
+  n_islands: 3
+  migration_interval: 15
+  migration_size: 3
+  selection_types: ["tournament", "lexicase", "random"]
+
+fitness:
+  parsimony_coefficient: 0.01
+  min_trades: 30
+  max_drawdown: 0.30
+  min_win_rate: 0.25
+  max_signal_rate: 0.15
+
+exits:
+  atr_period: 14
+  # TP/SL multipliers come from the genome (evolved with the strategy)
+
+validation:
+  cpcv_groups: 10
+  cpcv_purge_bars: 96         # 24h of 15m bars
+  cpcv_embargo_bars: 48       # 12h of 15m bars
+  cpcv_max_splits: 252        # C(10, 5)
+  dsr_threshold: 0.95
+  pbo_threshold: 0.50
+  permutation_n: 1000
+  permutation_alpha: 0.05
+
+output:
+  results_dir: "./results"
+  reports_dir: "./reports"
+  logs_dir: "./logs"

@@ -100,9 +100,18 @@ def whites_reality_check(strategy_returns_list: List[pd.Series],
     # Centrar bajo H0 (restar mean de cada estrategia)
     centered_df = rel_perf_df - rel_perf_df.mean(axis=0)
 
+    # Block bootstrap to preserve autocorrelation (consistent with bootstrap.py)
+    block_size = 20  # Same default as robustness config
+
     for i in range(n_bootstrap):
-        # Resample períodos con reemplazo
-        boot_indices = np.random.choice(n_periods, size=n_periods, replace=True)
+        # Block bootstrap: resample contiguous blocks with replacement
+        n_blocks = int(np.ceil(n_periods / block_size))
+        boot_indices = []
+        for _ in range(n_blocks):
+            start = np.random.randint(0, max(1, n_periods - block_size + 1))
+            boot_indices.extend(range(start, min(start + block_size, n_periods)))
+        boot_indices = boot_indices[:n_periods]
+
         boot_sample = centered_df.iloc[boot_indices]
 
         # Max de las medias en esta muestra

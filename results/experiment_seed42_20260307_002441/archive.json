@@ -1,0 +1,12 @@
+{
+  "n_occupied": 34,
+  "coverage": 0.7555555555555555,
+  "total_cells": 45,
+  "best_fitness": 0.6491943497529483,
+  "mean_fitness": -58.6866073329884,
+  "regimes": {
+    "bull": 12,
+    "bear": 12,
+    "sideways": 10
+  }
+}
