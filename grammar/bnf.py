@@ -1,7 +1,7 @@
 """
 BNF Grammar for Grammatical Evolution of Trading Strategies.
 
-v3: Scale-invariant, type-safe grammar.
+v4: Scale-invariant, type-safe grammar with trailing stops and trend indicators.
 
 ALL indicators are normalized — no raw price/volume comparisons.
 Two types: oscillators (0-100) and normalized ratios (~-3 to +3).
@@ -22,20 +22,19 @@ GRAMMAR = {
         "SHORT",
     ],
 
-    # Entry rules: 1 to 4 conditions combined with logic
+    # Entry rules: biased toward multi-condition (more selective = less noise)
     "<entry_rule>": [
         "<condition>",
         "<condition> AND <condition>",
+        "<condition> AND <condition>",
         "<condition> AND <condition> AND <condition>",
-        "<condition> AND <condition> AND <condition> AND <condition>",
+        "<condition> AND <condition> AND <condition>",
         "<condition> OR <condition>",
         "(<condition> AND <condition>) OR <condition>",
         "<condition> AND (<condition> OR <condition>)",
     ],
 
     # Conditions: TYPE-SAFE comparisons
-    # Oscillators (0-100) only compare to oscillators or osc thresholds
-    # Normalized (~-3 to +3) only compare to normalized or norm thresholds
     "<condition>": [
         # Oscillator comparisons
         "<osc> <comparator> <osc>",
@@ -59,19 +58,21 @@ GRAMMAR = {
         "RSI(<rsi_source>, <rsi_period>)",
         "STOCH_K(<stoch_period>)",
         "STOCH_D(<stoch_period>)",
+        "ADX(<adx_period>)",
+        "MFI(<mfi_period>)",
     ],
 
     # ================================================================
     # NORMALIZED INDICATORS (dimensionless ratios, scale-invariant)
     # ================================================================
     "<norm>": [
-        "PCT_B(<bb_period>, <bb_std>)",         # Percent B: position within BBands (0-1)
-        "MACD_NORM(<macd_fast>, <macd_slow>, <macd_signal>)",  # MACD_HIST / ATR
-        "PRICE_POS(<pos_period>)",              # (Close - SMA) / ATR
-        "ROC(<roc_period>)",                     # % rate of change
-        "VOL_RATIO(<vol_period>)",              # Volume / SMA(Volume)
-        "BBWIDTH(<bb_period>, <bb_std>)",       # Band width as % of mid
-        "ATR_PCT(<atr_period>)",                # ATR / Close * 100
+        "PCT_B(<bb_period>, <bb_std>)",
+        "MACD_NORM(<macd_fast>, <macd_slow>, <macd_signal>)",
+        "PRICE_POS(<pos_period>)",
+        "ROC(<roc_period>)",
+        "VOL_RATIO(<vol_period>)",
+        "BBWIDTH(<bb_period>, <bb_std>)",
+        "ATR_PCT(<atr_period>)",
     ],
 
     # ================================================================
@@ -82,6 +83,10 @@ GRAMMAR = {
     "<rsi_period>": ["7", "9", "14", "21"],
 
     "<stoch_period>": ["5", "9", "14", "21"],
+
+    "<adx_period>": ["7", "10", "14", "21"],
+
+    "<mfi_period>": ["7", "10", "14", "21"],
 
     "<bb_period>": ["10", "14", "20", "30"],
 
@@ -121,17 +126,28 @@ GRAMMAR = {
         "_LT_",
     ],
 
-    # Exit parameters
+    # ================================================================
+    # EXIT PARAMETERS — now with trailing stops
+    # ================================================================
     "<exit_params>": [
         "TP=<tp_mult> SL=<sl_mult>",
+        "SL=<sl_mult> TRAIL=<trail_mult>",
+        "TP=<tp_mult> SL=<sl_mult> TRAIL=<trail_mult>",
     ],
 
+    # Wider TP range for trend-following
     "<tp_mult>": [
-        "0.5", "0.75", "1.0", "1.5", "2.0", "2.5", "3.0", "3.5", "4.0",
+        "1.0", "1.5", "2.0", "3.0", "4.0", "5.0", "6.0", "8.0",
     ],
 
+    # Wider SL range (trend-following needs wider stops)
     "<sl_mult>": [
-        "0.25", "0.5", "0.75", "1.0", "1.25", "1.5", "2.0",
+        "0.5", "0.75", "1.0", "1.5", "2.0", "2.5", "3.0",
+    ],
+
+    # Trailing stop distance in ATR multiples
+    "<trail_mult>": [
+        "1.0", "1.5", "2.0", "2.5", "3.0", "4.0", "5.0",
     ],
 }
 

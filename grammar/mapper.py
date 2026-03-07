@@ -95,12 +95,9 @@ def _parse_expression(expr: str, genome: List[int],
     if direction not in ('LONG', 'SHORT'):
         return None
 
-    tp_mult, sl_mult = _parse_exits(exit_str)
-    if tp_mult is None:
+    tp_mult, sl_mult, trail_mult = _parse_exits(exit_str)
+    if sl_mult is None:
         return None
-
-    # No R:R enforcement — the GA can discover both
-    # high-R:R and high-winrate profiles
 
     conditions, logic = _parse_conditions(conditions_str)
     if not conditions:
@@ -113,6 +110,7 @@ def _parse_expression(expr: str, genome: List[int],
         logic=logic,
         tp_atr_mult=tp_mult,
         sl_atr_mult=sl_mult,
+        trail_atr_mult=trail_mult,
         expression_raw=expr,
         n_nodes=len(conditions),
         codons_used=codons_used,
@@ -120,20 +118,33 @@ def _parse_expression(expr: str, genome: List[int],
     )
 
 
-def _parse_exits(exit_str: str) -> Tuple[Optional[float], Optional[float]]:
-    """Parse 'TP=2.0 SL=1.0' into (tp, sl) floats."""
+def _parse_exits(exit_str: str) -> Tuple[float, Optional[float], float]:
+    """Parse exit params into (tp, sl, trail).
+
+    Supports:
+      'TP=2.0 SL=1.0'              -> (2.0, 1.0, 0.0)
+      'SL=1.0 TRAIL=2.0'           -> (0.0, 1.0, 2.0)
+      'TP=4.0 SL=1.0 TRAIL=2.0'   -> (4.0, 1.0, 2.0)
+    """
     try:
-        tp = sl = None
+        tp = 0.0
+        sl = None
+        trail = 0.0
         for part in exit_str.split():
             if part.startswith('TP='):
                 tp = float(part[3:])
             elif part.startswith('SL='):
                 sl = float(part[3:])
-        if tp is None or sl is None:
-            return None, None
-        return tp, sl
+            elif part.startswith('TRAIL='):
+                trail = float(part[6:])
+        if sl is None:
+            return 0.0, None, 0.0
+        # Must have either TP or TRAIL (or both)
+        if tp == 0.0 and trail == 0.0:
+            return 0.0, None, 0.0
+        return tp, sl, trail
     except (ValueError, IndexError):
-        return None, None
+        return 0.0, None, 0.0
 
 
 def _parse_conditions(conditions_str: str) -> Tuple[List[Condition], str]:

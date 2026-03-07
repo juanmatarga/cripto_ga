@@ -1,5 +1,7 @@
-Metric,Ensemble,Buy & Hold
-CAGR (%),3.65,-31.57
-Max Drawdown (%),1.65,31.50
-Sortino,0.460,-
-N Members,8,-
+Metric,Ensemble,Buy&Hold
+CAGR,13.43%,-31.57%
+Max Drawdown,-2.21%,-31.50%
+Sortino,1.194,-1.143
+Final Equity,106.16,83.54
+Strategies,8,1
+Total Trades,309,1

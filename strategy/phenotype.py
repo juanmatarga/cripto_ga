@@ -28,9 +28,10 @@ class Strategy:
     direction: str                              # "LONG" or "SHORT"
     conditions: List[Condition]                  # Parsed entry conditions
     logic: str                                   # Raw logic string: "c0 AND c1", "(c0 AND c1) OR c2", etc.
-    tp_atr_mult: float                           # Take profit in ATR multiples
+    tp_atr_mult: float                           # Take profit in ATR multiples (0 = no fixed TP)
     sl_atr_mult: float                           # Stop loss in ATR multiples
-    expression_raw: str                          # Full decoded expression string
+    trail_atr_mult: float = 0.0                  # Trailing stop in ATR multiples (0 = no trail)
+    expression_raw: str = ""                     # Full decoded expression string
     n_nodes: int = 0                             # Complexity (number of conditions)
     codons_used: int = 0                         # How many codons were consumed
     wrapping_count: int = 0                      # How many times genome was wrapped
@@ -42,10 +43,14 @@ class Strategy:
 
     def __str__(self):
         conds = " ; ".join(str(c) for c in self.conditions)
-        return f"{self.direction} | {conds} | TP={self.tp_atr_mult} SL={self.sl_atr_mult}"
+        trail = f" TRAIL={self.trail_atr_mult}" if self.trail_atr_mult > 0 else ""
+        tp = f"TP={self.tp_atr_mult} " if self.tp_atr_mult > 0 else ""
+        return f"{self.direction} | {conds} | {tp}SL={self.sl_atr_mult}{trail}"
 
     def to_readable(self) -> str:
-        return f"{self.direction} when {self.logic} (TP={self.tp_atr_mult}xATR, SL={self.sl_atr_mult}xATR)"
+        trail = f", TRAIL={self.trail_atr_mult}xATR" if self.trail_atr_mult > 0 else ""
+        tp = f"TP={self.tp_atr_mult}xATR, " if self.tp_atr_mult > 0 else ""
+        return f"{self.direction} when {self.logic} ({tp}SL={self.sl_atr_mult}xATR{trail})"
 
     def to_dict(self) -> dict:
         return {
@@ -55,6 +60,7 @@ class Strategy:
             'logic': self.logic,
             'tp_atr_mult': self.tp_atr_mult,
             'sl_atr_mult': self.sl_atr_mult,
+            'trail_atr_mult': self.trail_atr_mult,
             'n_nodes': self.n_nodes,
             'codons_used': self.codons_used,
             'wrapping_count': self.wrapping_count,

@@ -12,7 +12,7 @@ from strategy.phenotype import Condition, Strategy
 from strategy.vectorized_eval import (
     generate_signals, evaluate_condition, evaluate_logic,
     IndicatorCache, compute_rsi, compute_sma, compute_ema,
-    compute_atr, compute_macd, compute_stoch
+    compute_atr, compute_stoch, compute_adx, compute_mfi
 )
 
 
@@ -56,17 +56,15 @@ class TestIndicators:
         valid = atr.dropna()
         assert (valid >= 0).all()
 
-    def test_macd_components(self, sample_df):
-        line = compute_macd(sample_df['Close'], 12, 26, 'line')
-        signal = compute_macd(sample_df['Close'], 12, 26, 'signal', 9)
-        hist = compute_macd(sample_df['Close'], 12, 26, 'histogram', 9)
-        assert len(line) == len(sample_df)
-        assert len(signal) == len(sample_df)
-        assert len(hist) == len(sample_df)
-        # Histogram should be line - signal (approximately, due to NaN handling)
-        valid_idx = line.notna() & signal.notna()
-        diff = (hist[valid_idx] - (line[valid_idx] - signal[valid_idx])).abs()
-        assert diff.max() < 1e-10
+    def test_adx_range(self, sample_df):
+        adx = compute_adx(sample_df, 14)
+        valid = adx.dropna()
+        assert (valid >= 0).all() and (valid <= 100).all()
+
+    def test_mfi_range(self, sample_df):
+        mfi = compute_mfi(sample_df, 14)
+        valid = mfi.dropna()
+        assert (valid >= 0).all() and (valid <= 100).all()
 
     def test_stoch_range(self, sample_df):
         k = compute_stoch(sample_df, 14, 'k')
@@ -81,11 +79,14 @@ class TestIndicators:
 
 
 class TestIndicatorCache:
-    def test_raw_sources_cached(self, sample_df):
+    def test_numeric_and_functions_cached(self, sample_df):
         cache = IndicatorCache(sample_df)
-        pd.testing.assert_series_equal(cache.get('close'), sample_df['Close'])
-        pd.testing.assert_series_equal(cache.get('open'), sample_df['Open'])
-        pd.testing.assert_series_equal(cache.get('volume'), sample_df['Volume'])
+        # Numeric constants should work
+        result = cache.get('50')
+        assert (result == 50.0).all()
+        # Function calls should work
+        rsi = cache.get('RSI(close, 14)')
+        assert len(rsi) == len(sample_df)
 
     def test_indicator_cached_on_second_call(self, sample_df):
         cache = IndicatorCache(sample_df)
@@ -109,10 +110,11 @@ class TestIndicatorCache:
 class TestConditionEvaluation:
     def test_gt_condition(self, sample_df):
         cache = IndicatorCache(sample_df)
-        cond = Condition(left='close', comparator='>', right='open')
+        cond = Condition(left='RSI(close, 14)', comparator='>', right='50')
         result = evaluate_condition(cond, cache)
-        expected = sample_df['Close'] > sample_df['Open']
-        pd.testing.assert_series_equal(result, expected)
+        rsi = compute_rsi(sample_df['Close'], 14)
+        expected = rsi > 50
+        np.testing.assert_array_equal(result.values, expected.values)
 
     def test_lt_condition(self, sample_df):
         cache = IndicatorCache(sample_df)

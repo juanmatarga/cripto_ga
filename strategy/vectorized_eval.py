@@ -128,6 +128,52 @@ def compute_atr_pct(df: pd.DataFrame, period: int) -> pd.Series:
     return atr / df['Close'].replace(0, np.nan) * 100
 
 
+def compute_adx(df: pd.DataFrame, period: int) -> pd.Series:
+    """Average Directional Index (0-100). Measures trend STRENGTH.
+    >25 = trending, <20 = ranging. Does not indicate direction."""
+    high = df['High']
+    low = df['Low']
+    close = df['Close']
+
+    # Directional movement
+    up_move = high.diff()
+    down_move = -low.diff()
+
+    plus_dm = up_move.copy()
+    plus_dm[(up_move <= down_move) | (up_move <= 0)] = 0.0
+
+    minus_dm = down_move.copy()
+    minus_dm[(down_move <= up_move) | (down_move <= 0)] = 0.0
+
+    atr = compute_atr(df, period)
+
+    plus_di = 100 * plus_dm.ewm(span=period, adjust=False).mean() / atr.replace(0, np.nan)
+    minus_di = 100 * minus_dm.ewm(span=period, adjust=False).mean() / atr.replace(0, np.nan)
+
+    di_sum = plus_di + minus_di
+    dx = 100 * (plus_di - minus_di).abs() / di_sum.replace(0, np.nan)
+    adx = dx.ewm(span=period, adjust=False).mean()
+
+    return adx.clip(0, 100)
+
+
+def compute_mfi(df: pd.DataFrame, period: int) -> pd.Series:
+    """Money Flow Index (0-100). Volume-weighted RSI.
+    Combines price momentum with volume — more reliable than RSI alone."""
+    typical_price = (df['High'] + df['Low'] + df['Close']) / 3
+    money_flow = typical_price * df['Volume']
+
+    delta = typical_price.diff()
+    pos_flow = money_flow.where(delta > 0, 0.0)
+    neg_flow = money_flow.where(delta < 0, 0.0)
+
+    pos_sum = pos_flow.rolling(window=period, min_periods=period).sum()
+    neg_sum = neg_flow.rolling(window=period, min_periods=period).sum()
+
+    mfi = 100 - (100 / (1 + pos_sum / neg_sum.replace(0, np.nan)))
+    return mfi.clip(0, 100)
+
+
 # ============================================================================
 # INDICATOR CACHE
 # ============================================================================
@@ -185,6 +231,14 @@ class IndicatorCache:
         elif func == 'STOCH_D':
             period = int(args[0])
             return compute_stoch(df, period, 'd')
+
+        elif func == 'ADX':
+            period = int(args[0])
+            return compute_adx(df, period)
+
+        elif func == 'MFI':
+            period = int(args[0])
+            return compute_mfi(df, period)
 
         # Normalized indicators (dimensionless)
         elif func == 'PCT_B':

@@ -54,20 +54,22 @@ class TestDecode:
         assert s is not None
         assert s.direction in ('LONG', 'SHORT')
         assert len(s.conditions) >= 1
-        assert s.tp_atr_mult > 0
+        assert s.tp_atr_mult >= 0  # 0 when pure trailing stop (no fixed TP)
         assert s.sl_atr_mult > 0
+        assert s.tp_atr_mult > 0 or s.trail_atr_mult > 0  # must have TP or trail
         assert s.n_nodes == len(s.conditions)
         assert s.codons_used > 0
         assert s.genome is not None
 
-    def test_favorable_rr_enforced(self):
-        """TP should always be >= SL."""
+    def test_exit_params_valid(self):
+        """Every strategy must have SL and either TP or trailing stop."""
         random.seed(42)
         for _ in range(200):
             s = decode(random_genome(50))
             if s is not None:
-                assert s.tp_atr_mult >= s.sl_atr_mult, \
-                    f"Unfavorable R:R: TP={s.tp_atr_mult} SL={s.sl_atr_mult}"
+                assert s.sl_atr_mult > 0, "Missing stop loss"
+                assert s.tp_atr_mult > 0 or s.trail_atr_mult > 0, \
+                    "Must have either TP or trailing stop"
 
     def test_high_validity_rate(self):
         """At least 60% of random genomes should produce valid strategies."""
