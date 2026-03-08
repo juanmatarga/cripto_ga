@@ -1,0 +1,55 @@
+costs:
+  fees_bps_long: 1.0
+  fees_bps_short: 1.0
+  slippage_bps_long: 1.0
+  slippage_bps_short: 1.0
+data:
+  end: '2025-11-21'
+  exchange: binance
+  market_type: future
+  ots_start: '2025-06-01'
+  start: '2022-01-01'
+  symbol: BNB/USDT
+  timeframe: 15m
+  use_alternative_data: true
+evolution:
+  crossover_rate: 0.7
+  elitism_pct: 0.03
+  generations_max: 150
+  genome_length: 50
+  mutation_rate: 0.15
+  n_windows_per_gen: 12
+  patience: 25
+  population: 300
+  seed: 42
+  tournament_k: 3
+  window_bars: 5760
+exits:
+  atr_period: 14
+fitness:
+  max_drawdown: 0.3
+  max_signal_rate: 0.3
+  min_trades: 50
+  min_win_rate: 0.2
+  parsimony_coefficient: 0.01
+islands:
+  migration_interval: 15
+  migration_size: 3
+  n_islands: 3
+  selection_types:
+  - tournament
+  - lexicase
+  - random
+output:
+  logs_dir: ./logs
+  reports_dir: ./reports
+  results_dir: ./results
+validation:
+  cpcv_embargo_bars: 48
+  cpcv_groups: 10
+  cpcv_max_splits: 252
+  cpcv_purge_bars: 96
+  dsr_threshold: 0.95
+  pbo_threshold: 0.5
+  permutation_alpha: 0.05
+  permutation_n: 1000

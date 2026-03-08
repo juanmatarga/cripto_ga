@@ -37,12 +37,15 @@ class LiveSignalEngine:
             self.decoded_strategies[sc.key] = strategy
             logger.info(f"Decoded {sc.key}: {sc.expression}")
 
-    def evaluate(self, df: pd.DataFrame) -> Dict[str, dict]:
+    def evaluate(self, df: pd.DataFrame,
+                 symbol: Optional[str] = None) -> Dict[str, dict]:
         """
-        Evaluate all strategies on the latest data.
+        Evaluate strategies on the latest data.
 
         Args:
             df: OHLCV DataFrame (200+ closed candles)
+            symbol: If provided, only evaluate strategies for this symbol.
+                    If None, evaluate all strategies.
 
         Returns:
             Dict mapping strategy_key -> {
@@ -57,7 +60,11 @@ class LiveSignalEngine:
         """
         results = {}
 
-        for sc in self.strategy_configs:
+        configs = self.strategy_configs
+        if symbol:
+            configs = [sc for sc in configs if sc.symbol == symbol]
+
+        for sc in configs:
             strategy = self.decoded_strategies[sc.key]
 
             try:

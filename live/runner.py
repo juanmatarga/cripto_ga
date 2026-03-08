@@ -80,23 +80,24 @@ class TradingBot:
         self.logger = logging.getLogger(__name__)
 
     def startup(self):
-        """Initialize: set leverage, check balance, load state."""
+        """Initialize: set leverage per symbol, check balance, load state."""
         mode = "TESTNET" if self.config.is_testnet else "LIVE"
         self.logger.info(f"{'='*60}")
         self.logger.info(f"CriptoGA Live Trading Bot — {mode}")
         self.logger.info(f"{'='*60}")
-        self.logger.info(f"Symbol: {self.config.symbol}")
+        self.logger.info(f"Symbols: {', '.join(self.config.symbols)}")
         self.logger.info(f"Timeframe: {self.config.timeframe}")
         self.logger.info(f"Strategies: {len(self.config.strategies)}")
 
         for sc in self.config.strategies:
-            self.logger.info(f"  {sc.key}: {sc.direction} | "
+            self.logger.info(f"  {sc.key} ({sc.symbol}): {sc.direction} | "
                               f"TP={sc.tp_atr_mult} SL={sc.sl_atr_mult} "
                               f"Trail={sc.trail_atr_mult} | w={sc.weight:.0%}")
 
-        # Set leverage
-        self.connector.set_leverage(self.config.risk.leverage)
-        self.logger.info(f"Leverage: {self.config.risk.leverage}x")
+        # Set leverage for each symbol
+        for symbol in self.config.symbols:
+            self.connector.set_leverage(self.config.risk.leverage, symbol)
+        self.logger.info(f"Leverage: {self.config.risk.leverage}x (all symbols)")
 
         # Get balance
         balance = self.connector.get_balance()
@@ -112,13 +113,14 @@ class TradingBot:
                           f"daily_max_loss={r.max_daily_loss_pct}%, "
                           f"max_position={r.max_position_pct}%")
 
-        # Check for existing positions
-        positions = self.connector.get_positions()
+        # Check for existing positions across all symbols
+        positions = self.connector.get_positions(self.config.symbols)
         if positions:
             self.logger.warning(f"Found {len(positions)} existing positions on exchange!")
             for p in positions:
+                base = p['symbol'].split('/')[0]
                 self.logger.warning(
-                    f"  {p['side'].upper()} {p['contracts']} BTC "
+                    f"  {p['symbol']} {p['side'].upper()} {p['contracts']} {base} "
                     f"@ ${p['entry_price']:,.2f} "
                     f"PnL=${p['unrealized_pnl']:+,.2f}"
                 )
@@ -128,31 +130,45 @@ class TradingBot:
 
     def run_cycle(self):
         """
-        Single trading cycle:
-        1. Fetch latest OHLCV data
+        Single trading cycle (multi-symbol):
+        1. Fetch OHLCV per symbol
         2. Check if new candle (avoid re-processing)
         3. Check circuit breakers
-        4. Evaluate signals
+        4. Evaluate signals per symbol
         5. Execute entries for new signals
         6. Check/update exits
         7. Update trailing stops
         """
-        # 1. Fetch data
-        try:
-            df = self.connector.fetch_ohlcv(self.config.lookback_bars)
-        except Exception as e:
-            self.logger.error(f"Data fetch failed: {e}")
+        # 1. Fetch data for each symbol
+        ohlcv_by_symbol = {}
+        for symbol in self.config.symbols:
+            try:
+                df = self.connector.fetch_ohlcv(symbol, self.config.lookback_bars)
+                ohlcv_by_symbol[symbol] = df
+            except Exception as e:
+                self.logger.error(f"Data fetch failed for {symbol}: {e}")
+
+        if not ohlcv_by_symbol:
+            self.logger.error("No data fetched for any symbol")
             return
 
-        # 2. Check for new candle
-        last_candle = str(df.index[-1])
+        # 2. Check for new candle (use first symbol as reference)
+        ref_symbol = self.config.symbols[0]
+        ref_df = ohlcv_by_symbol.get(ref_symbol)
+        if ref_df is None:
+            self.executor.check_and_close_filled_exits()
+            return
+
+        last_candle = str(ref_df.index[-1])
         if last_candle == self.state.state.last_candle_time:
             # Same candle, just check exits
             self.executor.check_and_close_filled_exits()
             return
 
-        self.logger.info(f"New candle: {last_candle} | "
-                          f"Close=${df['Close'].iloc[-1]:,.2f}")
+        self.logger.info(f"New candle: {last_candle}")
+        for sym, df in ohlcv_by_symbol.items():
+            base = sym.split('/')[0]
+            self.logger.info(f"  {base}: ${df['Close'].iloc[-1]:,.2f}")
         self.state.state.last_candle_time = last_candle
         self.state.save()
 
@@ -170,20 +186,26 @@ class TradingBot:
         # 4. Check for filled exits
         self.executor.check_and_close_filled_exits()
 
-        # 5. Evaluate signals on new candle
-        signals = self.signal_engine.evaluate(df)
+        # 5. Evaluate signals per symbol and execute entries
+        for symbol, df in ohlcv_by_symbol.items():
+            signals = self.signal_engine.evaluate(df, symbol=symbol)
 
-        # 6. Execute entries for new signals
-        for strategy_key, sig_data in signals.items():
-            if sig_data.get('new_signal', False):
-                if not self.state.has_position(strategy_key):
-                    self.logger.info(f"NEW SIGNAL: {strategy_key} → executing entry")
-                    self.executor.execute_entry(strategy_key, sig_data)
+            for strategy_key, sig_data in signals.items():
+                if sig_data.get('new_signal', False):
+                    if not self.state.has_position(strategy_key):
+                        self.logger.info(
+                            f"NEW SIGNAL: {strategy_key} ({symbol}) → executing entry"
+                        )
+                        self.executor.execute_entry(strategy_key, sig_data)
 
-        # 7. Update trailing stops
-        self.executor.update_trailing_stops(df)
+        # 6. Update trailing stops (pass last close per symbol)
+        prices_by_symbol = {
+            sym: float(df['Close'].iloc[-1])
+            for sym, df in ohlcv_by_symbol.items()
+        }
+        self.executor.update_trailing_stops(prices_by_symbol)
 
-        # 8. Log status summary
+        # 7. Log status summary
         self._log_status()
 
     def _log_status(self):
@@ -290,11 +312,10 @@ def show_status():
     print(f"  Daily PnL:    ${s.daily_pnl:+,.2f}")
     print(f"\nOpen Positions: {len(s.open_positions)}")
     for key, pos in s.open_positions.items():
-        print(f"  {key}: {pos['direction']} @ ${pos['entry_price']:,.2f} "
-              f"SL=${pos['stop_loss']:,.2f} "
-              f"TP=${pos['take_profit']:,.2f}" if pos.get('take_profit') else
-              f"  {key}: {pos['direction']} @ ${pos['entry_price']:,.2f} "
-              f"SL=${pos['stop_loss']:,.2f}")
+        sym = pos.get('symbol', '?')
+        tp_str = f" TP=${pos['take_profit']:,.2f}" if pos.get('take_profit') else ""
+        print(f"  {key} ({sym}): {pos['direction']} @ ${pos['entry_price']:,.2f} "
+              f"SL=${pos['stop_loss']:,.2f}{tp_str}")
     print()
 
 

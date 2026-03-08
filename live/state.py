@@ -21,9 +21,10 @@ STATE_FILE = Path(__file__).parent.parent / 'live_state.json'
 class OpenPosition:
     """An open position managed by the bot."""
     strategy_key: str
+    symbol: str                 # e.g. 'BTC/USDT:USDT'
     direction: str              # 'LONG' or 'SHORT'
     entry_price: float
-    quantity: float             # In base currency (BTC)
+    quantity: float             # In base currency
     entry_time: str             # ISO format
     entry_bar_time: str         # Candle time that triggered the signal
     atr_at_entry: float
@@ -41,6 +42,7 @@ class OpenPosition:
 class ClosedTrade:
     """A completed trade for logging."""
     strategy_key: str
+    symbol: str
     direction: str
     entry_price: float
     exit_price: float
@@ -171,6 +173,7 @@ class StateManager:
 
         trade = ClosedTrade(
             strategy_key=strategy_key,
+            symbol=getattr(pos, 'symbol', ''),
             direction=pos.direction,
             entry_price=pos.entry_price,
             exit_price=exit_price,

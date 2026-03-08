@@ -63,6 +63,7 @@ class Executor:
         """
         # Find strategy config
         sc = next(s for s in self.config.strategies if s.key == strategy_key)
+        symbol = sc.symbol
         direction = signal_data['direction']
         atr = signal_data['atr']
         entry_price = signal_data['last_close']
@@ -98,19 +99,19 @@ class Executor:
         )
 
         logger.info(
-            f"ENTRY {strategy_key}: {direction} "
+            f"ENTRY {strategy_key} ({symbol}): {direction} "
             f"@ ~${entry_price:,.2f} | "
             f"notional=${notional:,.2f} | "
             f"SL=${sl:,.2f} | "
             f"TP=${tp:,.2f}" if tp else
-            f"ENTRY {strategy_key}: {direction} "
+            f"ENTRY {strategy_key} ({symbol}): {direction} "
             f"@ ~${entry_price:,.2f} | notional=${notional:,.2f} | SL=${sl:,.2f}"
         )
 
         try:
             # Place market entry order
             side = 'buy' if direction == 'LONG' else 'sell'
-            order = self.connector.place_market_order(side, notional)
+            order = self.connector.place_market_order(symbol, side, notional)
 
             actual_price = order['price']
             quantity = order['quantity']
@@ -123,17 +124,20 @@ class Executor:
 
             # Place SL order on exchange
             sl_side = 'sell' if direction == 'LONG' else 'buy'
-            sl_order = self.connector.place_stop_loss(sl_side, quantity, sl)
+            sl_order = self.connector.place_stop_loss(symbol, sl_side, quantity, sl)
 
             # Place TP order if applicable
             tp_order = None
             if tp is not None:
-                tp_order = self.connector.place_take_profit(sl_side, quantity, tp)
+                tp_order = self.connector.place_take_profit(
+                    symbol, sl_side, quantity, tp
+                )
 
             # Record position in state
             now = datetime.now(timezone.utc).isoformat()
             pos = OpenPosition(
                 strategy_key=strategy_key,
+                symbol=symbol,
                 direction=direction,
                 entry_price=actual_price,
                 quantity=quantity,
@@ -152,10 +156,10 @@ class Executor:
             self.state.open_position(pos)
 
             logger.info(
-                f"ENTRY COMPLETE {strategy_key}: {direction} "
+                f"ENTRY COMPLETE {strategy_key} ({symbol}): {direction} "
                 f"@ ${actual_price:,.2f} qty={quantity:.6f} "
                 f"SL=${sl:,.2f} TP=${tp:,.2f}" if tp else
-                f"ENTRY COMPLETE {strategy_key}: {direction} "
+                f"ENTRY COMPLETE {strategy_key} ({symbol}): {direction} "
                 f"@ ${actual_price:,.2f} qty={quantity:.6f} SL=${sl:,.2f}"
             )
             return True
@@ -170,31 +174,32 @@ class Executor:
 
         Strategy: check actual exchange positions. If the bot thinks we have
         a position but the exchange doesn't, the SL/TP must have filled.
-        This is more robust than tracking individual order IDs.
+        Matches by (symbol, side) to handle multi-symbol portfolios correctly.
         """
         if not self.state.state.open_positions:
             return
 
         try:
-            exchange_positions = self.connector.get_positions()
+            exchange_positions = self.connector.get_positions(self.config.symbols)
         except Exception as e:
             logger.error(f"Failed to fetch exchange positions: {e}")
             return
 
-        # Build set of exchange-side open positions by side
+        # Build set of (symbol, side) pairs that are open on exchange
         exchange_open = set()
         for p in exchange_positions:
-            exchange_open.add(p['side'])  # 'long' or 'short'
+            exchange_open.add((p['symbol'], p['side']))  # ('BTC/USDT:USDT', 'long')
 
         # Check each bot-tracked position
         for key, pos_data in list(self.state.state.open_positions.items()):
             pos = OpenPosition(**pos_data)
             expected_side = 'long' if pos.direction == 'LONG' else 'short'
+            symbol = pos.symbol
 
-            if expected_side not in exchange_open:
+            if (symbol, expected_side) not in exchange_open:
                 # Position was closed by exchange (SL or TP filled)
                 try:
-                    price = self.connector.get_ticker_price()
+                    price = self.connector.get_ticker_price(symbol)
 
                     # Determine exit type by comparing price to SL/TP levels
                     if pos.direction == 'LONG':
@@ -204,31 +209,40 @@ class Executor:
                         exit_type = 'target' if (pos.take_profit and
                             price <= pos.take_profit * 1.01) else 'stop'
 
-                    logger.info(f"Position {key} closed by exchange ({exit_type})")
+                    logger.info(f"Position {key} ({symbol}) closed by exchange ({exit_type})")
                     self.state.close_position(key, price, exit_type)
 
                     # Cancel any remaining conditional orders
                     if pos.sl_order_id:
-                        self.connector.cancel_order_by_id(pos.sl_order_id, is_trigger=True)
+                        self.connector.cancel_order_by_id(
+                            pos.sl_order_id, symbol, is_trigger=True
+                        )
                     if pos.tp_order_id:
-                        self.connector.cancel_order_by_id(pos.tp_order_id, is_trigger=True)
+                        self.connector.cancel_order_by_id(
+                            pos.tp_order_id, symbol, is_trigger=True
+                        )
 
                 except Exception as e:
                     logger.error(f"Error reconciling closed position {key}: {e}")
 
-    def update_trailing_stops(self, df):
+    def update_trailing_stops(self, prices_by_symbol: dict):
         """
         Update trailing stops for open positions.
+
+        Args:
+            prices_by_symbol: {symbol: last_close_price} from latest candles
 
         For strategies with trail_atr_mult > 0, we move the stop loss
         to follow the price upward (for longs) or downward (for shorts).
         """
-        current_price = float(df['Close'].iloc[-1])
-
         for key, pos_data in list(self.state.state.open_positions.items()):
             pos = OpenPosition(**pos_data)
 
             if pos.trail_atr_mult <= 0:
+                continue
+
+            current_price = prices_by_symbol.get(pos.symbol)
+            if current_price is None:
                 continue
 
             # Update best price
@@ -247,35 +261,35 @@ class Executor:
                 pos_data['stop_loss'] = new_sl
                 self.state.save()
 
+                symbol = pos.symbol
+
                 # Update SL order on exchange (cancel old, place new)
                 if pos.sl_order_id:
                     try:
-                        # Cancel old SL (trigger=True for algo orders)
                         self.connector.cancel_order_by_id(
-                            pos.sl_order_id, is_trigger=True
+                            pos.sl_order_id, symbol, is_trigger=True
                         )
-                        # Cancel old TP too (must re-place both)
                         if pos.tp_order_id:
                             self.connector.cancel_order_by_id(
-                                pos.tp_order_id, is_trigger=True
+                                pos.tp_order_id, symbol, is_trigger=True
                             )
 
                         sl_side = 'sell' if pos.direction == 'LONG' else 'buy'
                         new_sl_order = self.connector.place_stop_loss(
-                            sl_side, pos.quantity, new_sl
+                            symbol, sl_side, pos.quantity, new_sl
                         )
                         pos_data['sl_order_id'] = new_sl_order['id']
 
                         # Re-place TP if it existed
                         if pos.take_profit:
                             new_tp_order = self.connector.place_take_profit(
-                                sl_side, pos.quantity, pos.take_profit
+                                symbol, sl_side, pos.quantity, pos.take_profit
                             )
                             pos_data['tp_order_id'] = new_tp_order['id']
 
                         self.state.save()
                         logger.info(
-                            f"TRAIL {key}: SL moved "
+                            f"TRAIL {key} ({symbol}): SL moved "
                             f"${pos.stop_loss:,.2f} → ${new_sl:,.2f} "
                             f"(best=${new_best:,.2f})"
                         )
@@ -286,19 +300,20 @@ class Executor:
         """Close all positions immediately (circuit breaker)."""
         logger.critical("EMERGENCY CLOSE ALL POSITIONS")
 
-        # Cancel all orders first
-        try:
-            self.connector.cancel_all_orders()
-        except Exception as e:
-            logger.error(f"Failed to cancel orders: {e}")
+        # Cancel all orders for all symbols
+        for symbol in self.config.symbols:
+            try:
+                self.connector.cancel_all_orders(symbol)
+            except Exception as e:
+                logger.error(f"Failed to cancel orders for {symbol}: {e}")
 
         # Close all positions
         for key, pos_data in list(self.state.state.open_positions.items()):
             pos = OpenPosition(**pos_data)
             try:
                 side = 'long' if pos.direction == 'LONG' else 'short'
-                self.connector.close_position(side, pos.quantity)
-                price = self.connector.get_ticker_price()
+                self.connector.close_position(pos.symbol, side, pos.quantity)
+                price = self.connector.get_ticker_price(pos.symbol)
                 self.state.close_position(key, price, 'circuit_breaker')
             except Exception as e:
                 logger.error(f"Failed to close {key}: {e}")

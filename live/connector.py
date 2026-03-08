@@ -63,9 +63,9 @@ class BinanceConnector:
     # DATA
     # ================================================================
 
-    def fetch_ohlcv(self, limit: int = 200) -> pd.DataFrame:
+    def fetch_ohlcv(self, symbol: str, limit: int = 200) -> pd.DataFrame:
         """
-        Fetch recent OHLCV candles.
+        Fetch recent OHLCV candles for a symbol.
 
         Returns DataFrame with columns: Open, High, Low, Close, Volume
         Index: DatetimeIndex (UTC)
@@ -75,7 +75,7 @@ class BinanceConnector:
         self._ensure_markets()
 
         raw = self.exchange.fetch_ohlcv(
-            self.config.symbol,
+            symbol,
             timeframe=self.config.timeframe,
             limit=limit + 1,  # +1 because we drop the forming candle
         )
@@ -124,10 +124,10 @@ class BinanceConnector:
             'used': float(usdt.get('used', 0)),
         }
 
-    def get_positions(self) -> List[Dict]:
-        """Get all open positions."""
+    def get_positions(self, symbols: Optional[List[str]] = None) -> List[Dict]:
+        """Get all open positions across given symbols (or all if None)."""
         self._ensure_markets()
-        positions = self.exchange.fetch_positions([self.config.symbol])
+        positions = self.exchange.fetch_positions(symbols)
         open_positions = []
         for p in positions:
             contracts = float(p.get('contracts', 0))
@@ -145,10 +145,10 @@ class BinanceConnector:
                 })
         return open_positions
 
-    def get_open_orders(self) -> List[Dict]:
-        """Get all open orders for the symbol."""
+    def get_open_orders(self, symbol: str) -> List[Dict]:
+        """Get all open orders for a symbol."""
         self._ensure_markets()
-        orders = self.exchange.fetch_open_orders(self.config.symbol)
+        orders = self.exchange.fetch_open_orders(symbol)
         return [{
             'id': o['id'],
             'type': o['type'],
@@ -163,33 +163,34 @@ class BinanceConnector:
     # LEVERAGE
     # ================================================================
 
-    def set_leverage(self, leverage: int):
-        """Set leverage for the trading symbol."""
+    def set_leverage(self, leverage: int, symbol: str):
+        """Set leverage for a trading symbol."""
         self._ensure_markets()
         try:
             # Binance requires setting margin mode first
             try:
-                self.exchange.set_margin_mode('isolated', self.config.symbol)
-                logger.info(f"Set margin mode to ISOLATED for {self.config.symbol}")
+                self.exchange.set_margin_mode('isolated', symbol)
+                logger.info(f"Set margin mode to ISOLATED for {symbol}")
             except ccxt.ExchangeError as e:
                 if 'No need to change margin type' not in str(e):
-                    logger.warning(f"Could not set margin mode: {e}")
+                    logger.warning(f"Could not set margin mode for {symbol}: {e}")
 
-            self.exchange.set_leverage(leverage, self.config.symbol)
-            logger.info(f"Leverage set to {leverage}x for {self.config.symbol}")
+            self.exchange.set_leverage(leverage, symbol)
+            logger.info(f"Leverage set to {leverage}x for {symbol}")
         except ccxt.ExchangeError as e:
-            logger.error(f"Failed to set leverage: {e}")
+            logger.error(f"Failed to set leverage for {symbol}: {e}")
             raise
 
     # ================================================================
     # ORDERS
     # ================================================================
 
-    def place_market_order(self, side: str, amount_usdt: float) -> Dict:
+    def place_market_order(self, symbol: str, side: str, amount_usdt: float) -> Dict:
         """
         Place a market order.
 
         Args:
+            symbol: Trading symbol (e.g. 'BTC/USDT:USDT')
             side: 'buy' or 'sell'
             amount_usdt: Notional value in USDT
 
@@ -199,15 +200,14 @@ class BinanceConnector:
         self._ensure_markets()
 
         # Get current price to calculate quantity
-        ticker = self.exchange.fetch_ticker(self.config.symbol)
+        ticker = self.exchange.fetch_ticker(symbol)
         price = ticker['last']
 
-        # Calculate quantity in BTC (or base currency)
-        # For futures, amount is in contracts (= base currency units)
+        # Calculate quantity in base currency
         quantity = amount_usdt / price
 
-        # Binance BTC futures: min 0.001 BTC, step 0.001
-        market = self.exchange.market(self.config.symbol)
+        # Apply market precision
+        market = self.exchange.market(symbol)
         precision = market.get('precision', {}).get('amount', 3)
         quantity = round(quantity, precision)
 
@@ -217,11 +217,12 @@ class BinanceConnector:
                 f"${quantity * price:.2f} < min ${self.config.risk.min_order_usdt}"
             )
 
-        logger.info(f"Placing {side.upper()} market order: {quantity} BTC "
+        base = symbol.split('/')[0]
+        logger.info(f"Placing {side.upper()} market order: {quantity} {base} "
                      f"(~${quantity * price:,.2f} notional, price ${price:,.2f})")
 
         order = self.exchange.create_order(
-            symbol=self.config.symbol,
+            symbol=symbol,
             type='market',
             side=side,
             amount=quantity,
@@ -239,31 +240,29 @@ class BinanceConnector:
             'timestamp': order.get('timestamp'),
         }
 
-    def place_stop_loss(self, side: str, quantity: float,
+    def place_stop_loss(self, symbol: str, side: str, quantity: float,
                         stop_price: float) -> Dict:
         """
         Place a stop-loss order via ccxt Algo endpoint.
 
-        In ccxt 4.x, Binance Futures SL/TP orders route through the
-        Algo Order endpoint (fapiPrivatePostAlgoOrder). Use 'market' type
-        with 'stopLossPrice' param — ccxt handles the conversion internally.
-
         Args:
+            symbol: Trading symbol
             side: 'buy' (to close short) or 'sell' (to close long)
             quantity: Amount in base currency
             stop_price: Trigger price
         """
         self._ensure_markets()
 
-        market = self.exchange.market(self.config.symbol)
+        market = self.exchange.market(symbol)
         price_precision = market.get('precision', {}).get('price', 2)
         stop_price = round(stop_price, price_precision)
 
-        logger.info(f"Placing SL: {side.upper()} stop-market {quantity} BTC "
+        base = symbol.split('/')[0]
+        logger.info(f"Placing SL: {side.upper()} stop-market {quantity} {base} "
                      f"@ ${stop_price:,.2f}")
 
         order = self.exchange.create_order(
-            symbol=self.config.symbol,
+            symbol=symbol,
             type='market',
             side=side,
             amount=quantity,
@@ -276,27 +275,29 @@ class BinanceConnector:
         logger.info(f"SL placed: id={order['id']}")
         return {'id': order['id'], 'stop_price': stop_price, 'type': 'stop_loss'}
 
-    def place_take_profit(self, side: str, quantity: float,
+    def place_take_profit(self, symbol: str, side: str, quantity: float,
                           stop_price: float) -> Dict:
         """
         Place a take-profit order via ccxt Algo endpoint.
 
         Args:
+            symbol: Trading symbol
             side: 'buy' (to close short) or 'sell' (to close long)
             quantity: Amount in base currency
             stop_price: Trigger price
         """
         self._ensure_markets()
 
-        market = self.exchange.market(self.config.symbol)
+        market = self.exchange.market(symbol)
         price_precision = market.get('precision', {}).get('price', 2)
         stop_price = round(stop_price, price_precision)
 
-        logger.info(f"Placing TP: {side.upper()} take-profit-market {quantity} BTC "
+        base = symbol.split('/')[0]
+        logger.info(f"Placing TP: {side.upper()} take-profit-market {quantity} {base} "
                      f"@ ${stop_price:,.2f}")
 
         order = self.exchange.create_order(
-            symbol=self.config.symbol,
+            symbol=symbol,
             type='market',
             side=side,
             amount=quantity,
@@ -309,59 +310,62 @@ class BinanceConnector:
         logger.info(f"TP placed: id={order['id']}")
         return {'id': order['id'], 'stop_price': stop_price, 'type': 'take_profit'}
 
-    def cancel_order_by_id(self, order_id: str, is_trigger: bool = True):
+    def cancel_order_by_id(self, order_id: str, symbol: str,
+                           is_trigger: bool = True):
         """
         Cancel a specific order.
 
         Args:
             order_id: The order ID to cancel
+            symbol: Trading symbol
             is_trigger: True for SL/TP (algo) orders, False for regular orders
         """
         self._ensure_markets()
         try:
             params = {'trigger': True} if is_trigger else {}
-            self.exchange.cancel_order(order_id, self.config.symbol, params=params)
+            self.exchange.cancel_order(order_id, symbol, params=params)
             logger.info(f"Order cancelled: {order_id} (trigger={is_trigger})")
         except ccxt.OrderNotFound:
             logger.debug(f"Order {order_id} already filled or cancelled")
         except ccxt.ExchangeError as e:
             logger.warning(f"Cancel order {order_id} failed: {e}")
 
-    def cancel_all_orders(self):
-        """Cancel all open orders for the symbol (regular + algo/trigger)."""
+    def cancel_all_orders(self, symbol: str):
+        """Cancel all open orders for a symbol (regular + algo/trigger)."""
         self._ensure_markets()
         try:
-            self.exchange.cancel_all_orders(self.config.symbol)
-            logger.info(f"All regular orders cancelled for {self.config.symbol}")
+            self.exchange.cancel_all_orders(symbol)
+            logger.info(f"All regular orders cancelled for {symbol}")
         except ccxt.ExchangeError as e:
-            logger.warning(f"Cancel regular orders failed: {e}")
+            logger.warning(f"Cancel regular orders failed for {symbol}: {e}")
 
         # Also cancel algo/conditional orders
         try:
-            open_orders = self.exchange.fetch_open_orders(self.config.symbol)
+            open_orders = self.exchange.fetch_open_orders(symbol)
             for o in open_orders:
                 try:
-                    self.cancel_order_by_id(o['id'], is_trigger=True)
+                    self.cancel_order_by_id(o['id'], symbol, is_trigger=True)
                 except Exception:
                     pass
         except Exception as e:
-            logger.warning(f"Cancel algo orders failed: {e}")
+            logger.warning(f"Cancel algo orders failed for {symbol}: {e}")
 
-    def close_position(self, side: str, quantity: float) -> Dict:
+    def close_position(self, symbol: str, side: str, quantity: float) -> Dict:
         """
         Close a position with a market order.
 
         Args:
+            symbol: Trading symbol
             side: Current position side ('long' or 'short')
             quantity: Amount to close
         """
-        # To close a long, we sell. To close a short, we buy.
         close_side = 'sell' if side == 'long' else 'buy'
+        base = symbol.split('/')[0]
 
-        logger.info(f"Closing {side} position: {close_side} {quantity} BTC")
+        logger.info(f"Closing {side} position: {close_side} {quantity} {base} ({symbol})")
 
         order = self.exchange.create_order(
-            symbol=self.config.symbol,
+            symbol=symbol,
             type='market',
             side=close_side,
             amount=quantity,
@@ -377,8 +381,8 @@ class BinanceConnector:
             'price': float(order.get('average', 0)),
         }
 
-    def get_ticker_price(self) -> float:
-        """Get current mark price."""
+    def get_ticker_price(self, symbol: str) -> float:
+        """Get current mark price for a symbol."""
         self._ensure_markets()
-        ticker = self.exchange.fetch_ticker(self.config.symbol)
+        ticker = self.exchange.fetch_ticker(symbol)
         return float(ticker['last'])
