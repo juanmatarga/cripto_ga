@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Tuple
 
 from grammar.mapper import decode
 from strategy.vectorized_eval import generate_signals, IndicatorCache, compute_atr
+from evolution.param_extractor import extract_params, rebuild_strategy
 from live.config import StrategyConfig
 
 logger = logging.getLogger(__name__)
@@ -34,8 +35,19 @@ class LiveSignalEngine:
             strategy = decode(sc.genome)
             if strategy is None:
                 raise ValueError(f"Failed to decode strategy {sc.key}. Genome invalid.")
+
+            # Apply CMA-ES parameter overrides if present
+            if sc.cmaes_params:
+                param_specs = extract_params(strategy)
+                param_vector = []
+                for ps in param_specs:
+                    param_vector.append(sc.cmaes_params.get(ps.name, ps.value))
+                strategy = rebuild_strategy(strategy, param_vector, param_specs)
+                logger.info(f"Decoded {sc.key} [CMA-ES]: {strategy.expression_raw[:80]}")
+            else:
+                logger.info(f"Decoded {sc.key}: {sc.expression}")
+
             self.decoded_strategies[sc.key] = strategy
-            logger.info(f"Decoded {sc.key}: {sc.expression}")
 
     def evaluate(self, df: pd.DataFrame,
                  symbol: Optional[str] = None) -> Dict[str, dict]:

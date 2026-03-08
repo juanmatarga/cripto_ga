@@ -1,0 +1,1557 @@
+[
+  {
+    "strategy_index": 0,
+    "original_expression": "LONG WHEN ATR_PCT(10) _GT_ 1.5 AND VOL_RATIO(5) _LT_ ATR_PCT(21, 15m) EXIT TP=3.0 SL=0.75",
+    "optimized_expression": "LONG WHEN ATR_PCT(10) _GT_ 1.5 AND VOL_RATIO(5) _LT_ ATR_PCT(21, 15m) EXIT TP=3.0 SL=0.75",
+    "n_params": 6,
+    "n_evals": 675,
+    "cma_improvement_pct": 0.0,
+    "param_changes": [
+      {
+        "name": "c0_left_ATR_PCT_period",
+        "original": 10.0,
+        "optimized": 10.0,
+        "type": "period"
+      },
+      {
+        "name": "c0_right_threshold",
+        "original": 1.5,
+        "optimized": 1.5,
+        "type": "norm_threshold"
+      },
+      {
+        "name": "c1_left_VOL_RATIO_period",
+        "original": 5.0,
+        "optimized": 5.0,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_ATR_PCT_period",
+        "original": 21.0,
+        "optimized": 21.0,
+        "type": "period"
+      },
+      {
+        "name": "tp_mult",
+        "original": 3.0,
+        "optimized": 3.0,
+        "type": "tp"
+      },
+      {
+        "name": "sl_mult",
+        "original": 0.75,
+        "optimized": 0.75,
+        "type": "sl"
+      }
+    ],
+    "validation_original": {
+      "cpcv_mean_sortino": 0.2591033222711841,
+      "cpcv_std_sortino": 0.24928835811830655,
+      "cpcv_pct_positive": 0.8571428571428571,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 160.78968253968253,
+      "pbo": 0.14285714285714285,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 4.137185009441542e-42,
+      "perm_p_value": 0.003,
+      "passes_all": "True"
+    },
+    "validation_optimized": {
+      "cpcv_mean_sortino": 0.2591033222711841,
+      "cpcv_std_sortino": 0.24928835811830655,
+      "cpcv_pct_positive": 0.8571428571428571,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 160.78968253968253,
+      "pbo": 0.14285714285714285,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 4.137185009441542e-42,
+      "perm_p_value": 0.003,
+      "passes_all": "True"
+    },
+    "ots_original": {
+      "n_trades": 11,
+      "metrics": {
+        "sortino": 0.8017454805821941,
+        "upi": 8.163046856049046,
+        "sharpe": 1.1357388882992483,
+        "cagr": 0.21883620113668534,
+        "max_dd": -0.047182510487957935,
+        "ulcer_index": 0.026808152028984324,
+        "total_return": 0.09834351865059743,
+        "volatility": 0.18920112897686897,
+        "num_periods": 16609.0,
+        "win_rate": 0.000180635838150289,
+        "profit_factor": 2.0405654423503785
+      }
+    },
+    "ots_optimized": {
+      "n_trades": 11,
+      "metrics": {
+        "sortino": 0.8017454805821941,
+        "upi": 8.163046856049046,
+        "sharpe": 1.1357388882992483,
+        "cagr": 0.21883620113668534,
+        "max_dd": -0.047182510487957935,
+        "ulcer_index": 0.026808152028984324,
+        "total_return": 0.09834351865059743,
+        "volatility": 0.18920112897686897,
+        "num_periods": 16609.0,
+        "win_rate": 0.000180635838150289,
+        "profit_factor": 2.0405654423503785
+      }
+    },
+    "optimized_strategy": {
+      "genome": [
+        155,
+        210,
+        226,
+        145,
+        208,
+        213,
+        168,
+        52,
+        244,
+        218,
+        28,
+        159,
+        195,
+        103,
+        234,
+        129,
+        3,
+        141,
+        66,
+        134,
+        171,
+        67,
+        216,
+        205,
+        138,
+        19,
+        200,
+        3,
+        28,
+        88,
+        36,
+        205,
+        220,
+        120,
+        147,
+        25,
+        41,
+        120,
+        30,
+        33,
+        144,
+        150,
+        16,
+        6,
+        94,
+        58,
+        242,
+        238,
+        191,
+        166
+      ],
+      "direction": "LONG",
+      "conditions": [
+        "ATR_PCT(10) > 1.5",
+        "VOL_RATIO(5) < ATR_PCT(21, 15m)"
+      ],
+      "logic": "c0 AND c1",
+      "tp_atr_mult": 3.0,
+      "sl_atr_mult": 0.75,
+      "trail_atr_mult": 0.0,
+      "expression_raw": "LONG WHEN ATR_PCT(10) _GT_ 1.5 AND VOL_RATIO(5) _LT_ ATR_PCT(21, 15m) EXIT TP=3.0 SL=0.75",
+      "n_nodes": 2
+    }
+  },
+  {
+    "strategy_index": 3,
+    "original_expression": "SHORT WHEN PCT_B(10, 1.5, 1h) _LT_ ATR_PCT(10) AND ATR_PCT(7, 15m) CROSSES_ABOVE MACD_NORM(8, 26, 9) EXIT TP=5.0 SL=2.0",
+    "optimized_expression": "SHORT WHEN PCT_B(9, 1.6, 1h) _LT_ ATR_PCT(10) AND ATR_PCT(7, 15m) CROSSES_ABOVE MACD_NORM(8, 28, 9) EXIT TP=4.7 SL=2.0",
+    "n_params": 9,
+    "n_evals": 750,
+    "cma_improvement_pct": 9.013102449974859,
+    "param_changes": [
+      {
+        "name": "c0_left_PCT_B_period",
+        "original": 10.0,
+        "optimized": 9.403095127776874,
+        "type": "period"
+      },
+      {
+        "name": "c0_left_PCT_B_std_dev",
+        "original": 1.5,
+        "optimized": 1.576319947999325,
+        "type": "std"
+      },
+      {
+        "name": "c0_right_ATR_PCT_period",
+        "original": 10.0,
+        "optimized": 10.365172631039984,
+        "type": "period"
+      },
+      {
+        "name": "c1_left_ATR_PCT_period",
+        "original": 7.0,
+        "optimized": 7.23379931271722,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_fast",
+        "original": 8.0,
+        "optimized": 7.908796243639418,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_slow",
+        "original": 26.0,
+        "optimized": 27.934624464317626,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_signal",
+        "original": 9.0,
+        "optimized": 9.495360992689713,
+        "type": "period"
+      },
+      {
+        "name": "tp_mult",
+        "original": 5.0,
+        "optimized": 4.710871159978763,
+        "type": "tp"
+      },
+      {
+        "name": "sl_mult",
+        "original": 2.0,
+        "optimized": 1.9550633991421211,
+        "type": "sl"
+      }
+    ],
+    "validation_original": {
+      "cpcv_mean_sortino": 0.30311713931457207,
+      "cpcv_std_sortino": 0.19614997456016217,
+      "cpcv_pct_positive": 0.9563492063492064,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 137.04761904761904,
+      "pbo": 0.04365079365079365,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 9.270065731548238e-69,
+      "perm_p_value": 0.0,
+      "passes_all": "True"
+    },
+    "validation_optimized": {
+      "cpcv_mean_sortino": 0.3815539117758226,
+      "cpcv_std_sortino": 0.14083929633194725,
+      "cpcv_pct_positive": 1.0,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 117.01984126984127,
+      "pbo": 0.0,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 6.688544026933936e-118,
+      "perm_p_value": 0.0,
+      "passes_all": "True"
+    },
+    "ots_original": {
+      "n_trades": 46,
+      "metrics": {
+        "sortino": 0.22510495463010713,
+        "upi": 3.7525014565841177,
+        "sharpe": 0.7731855595765044,
+        "cagr": 0.120423474664064,
+        "max_dd": -0.0798919854028746,
+        "ulcer_index": 0.03209151976550726,
+        "total_return": 0.055376012405189856,
+        "volatility": 0.1643320455466459,
+        "num_periods": 16609.0,
+        "win_rate": 0.0009633911368015414,
+        "profit_factor": 1.197115520201275
+      }
+    },
+    "ots_optimized": {
+      "n_trades": 37,
+      "metrics": {
+        "sortino": 0.2604579468927391,
+        "upi": 6.317016320096017,
+        "sharpe": 1.0028196256016952,
+        "cagr": 0.14808749471031213,
+        "max_dd": -0.05656461573116687,
+        "ulcer_index": 0.023442632915037526,
+        "total_return": 0.06764829802338546,
+        "volatility": 0.14860428847933488,
+        "num_periods": 16609.0,
+        "win_rate": 0.0008429672447013487,
+        "profit_factor": 1.294410843593725
+      }
+    },
+    "optimized_strategy": {
+      "genome": [
+        5,
+        107,
+        34,
+        244,
+        29,
+        16,
+        8,
+        154,
+        93,
+        152,
+        129,
+        246,
+        195,
+        228,
+        57,
+        2,
+        117,
+        130,
+        4,
+        54,
+        101,
+        53,
+        187,
+        85,
+        164,
+        254,
+        79,
+        137,
+        181,
+        245,
+        40,
+        108,
+        111,
+        155,
+        120,
+        191,
+        162,
+        198,
+        25,
+        176,
+        22,
+        201,
+        145,
+        145,
+        94,
+        247,
+        242,
+        237,
+        192,
+        66
+      ],
+      "direction": "SHORT",
+      "conditions": [
+        "PCT_B(9, 1.6, 1h) < ATR_PCT(10)",
+        "ATR_PCT(7, 15m) CROSSES_ABOVE MACD_NORM(8, 28, 9)"
+      ],
+      "logic": "c0 AND c1",
+      "tp_atr_mult": 4.71,
+      "sl_atr_mult": 1.96,
+      "trail_atr_mult": 0.0,
+      "expression_raw": "SHORT WHEN PCT_B(9, 1.6, 1h) _LT_ ATR_PCT(10) AND ATR_PCT(7, 15m) CROSSES_ABOVE MACD_NORM(8, 28, 9) EXIT TP=4.7 SL=2.0",
+      "n_nodes": 2
+    }
+  },
+  {
+    "strategy_index": 4,
+    "original_expression": "SHORT WHEN PCT_B(14, 1.5, 1h) _LT_ ATR_PCT(10) AND ATR_PCT(10, 15m) CROSSES_ABOVE MACD_NORM(8, 26, 9) EXIT TP=5.0 SL=2.5",
+    "optimized_expression": "SHORT WHEN PCT_B(13, 1.4, 1h) _LT_ ATR_PCT(10) AND ATR_PCT(10, 15m) CROSSES_ABOVE MACD_NORM(7, 28, 9) EXIT TP=4.5 SL=2.5",
+    "n_params": 9,
+    "n_evals": 750,
+    "cma_improvement_pct": 8.080176764365728,
+    "param_changes": [
+      {
+        "name": "c0_left_PCT_B_period",
+        "original": 14.0,
+        "optimized": 13.459778068079592,
+        "type": "period"
+      },
+      {
+        "name": "c0_left_PCT_B_std_dev",
+        "original": 1.5,
+        "optimized": 1.4370746484207169,
+        "type": "std"
+      },
+      {
+        "name": "c0_right_ATR_PCT_period",
+        "original": 10.0,
+        "optimized": 10.284626947963625,
+        "type": "period"
+      },
+      {
+        "name": "c1_left_ATR_PCT_period",
+        "original": 10.0,
+        "optimized": 9.982997538107597,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_fast",
+        "original": 8.0,
+        "optimized": 7.2170136192887355,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_slow",
+        "original": 26.0,
+        "optimized": 27.992881052815637,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_signal",
+        "original": 9.0,
+        "optimized": 8.737822449541937,
+        "type": "period"
+      },
+      {
+        "name": "tp_mult",
+        "original": 5.0,
+        "optimized": 4.505079243073163,
+        "type": "tp"
+      },
+      {
+        "name": "sl_mult",
+        "original": 2.5,
+        "optimized": 2.5110224289606182,
+        "type": "sl"
+      }
+    ],
+    "validation_original": {
+      "cpcv_mean_sortino": 0.28724141138786613,
+      "cpcv_std_sortino": 0.1366745131055313,
+      "cpcv_pct_positive": 0.9841269841269841,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 180.0515873015873,
+      "pbo": 0.015873015873015872,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 2.2839763584773333e-94,
+      "perm_p_value": 0.0,
+      "passes_all": "True"
+    },
+    "validation_optimized": {
+      "cpcv_mean_sortino": 0.4060685777342229,
+      "cpcv_std_sortino": 0.13085902478362174,
+      "cpcv_pct_positive": 1.0,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 214.27380952380952,
+      "pbo": 0.0,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 3.944194298516898e-131,
+      "perm_p_value": 0.0,
+      "passes_all": "True"
+    },
+    "ots_original": {
+      "n_trades": 49,
+      "metrics": {
+        "sortino": 0.18702849654886505,
+        "upi": 3.119004196215469,
+        "sharpe": 0.6742198744409266,
+        "cagr": 0.11339020732267113,
+        "max_dd": -0.07223785240769372,
+        "ulcer_index": 0.03635461839399136,
+        "total_return": 0.05223058093325639,
+        "volatility": 0.1842321879221208,
+        "num_periods": 16609.0,
+        "win_rate": 0.001083815028901734,
+        "profit_factor": 1.1588231859191682
+      }
+    },
+    "ots_optimized": {
+      "n_trades": 63,
+      "metrics": {
+        "sortino": 0.36859782164101845,
+        "upi": 8.712475511956576,
+        "sharpe": 1.2741552770757962,
+        "cagr": 0.26920009864844263,
+        "max_dd": -0.07898868183434843,
+        "ulcer_index": 0.030898233031358947,
+        "total_return": 0.11962705476461011,
+        "volatility": 0.2031694562080547,
+        "num_periods": 16609.0,
+        "win_rate": 0.0016257225433526012,
+        "profit_factor": 1.272630863179849
+      }
+    },
+    "optimized_strategy": {
+      "genome": [
+        5,
+        107,
+        33,
+        244,
+        29,
+        21,
+        8,
+        154,
+        93,
+        152,
+        129,
+        246,
+        195,
+        229,
+        57,
+        2,
+        117,
+        130,
+        7,
+        54,
+        101,
+        54,
+        187,
+        86,
+        164,
+        122,
+        254,
+        149,
+        180,
+        245,
+        40,
+        109,
+        102,
+        156,
+        119,
+        191,
+        163,
+        197,
+        24,
+        23,
+        175,
+        201,
+        145,
+        145,
+        94,
+        189,
+        216,
+        230,
+        116,
+        49
+      ],
+      "direction": "SHORT",
+      "conditions": [
+        "PCT_B(13, 1.4, 1h) < ATR_PCT(10)",
+        "ATR_PCT(10, 15m) CROSSES_ABOVE MACD_NORM(7, 28, 9)"
+      ],
+      "logic": "c0 AND c1",
+      "tp_atr_mult": 4.51,
+      "sl_atr_mult": 2.51,
+      "trail_atr_mult": 0.0,
+      "expression_raw": "SHORT WHEN PCT_B(13, 1.4, 1h) _LT_ ATR_PCT(10) AND ATR_PCT(10, 15m) CROSSES_ABOVE MACD_NORM(7, 28, 9) EXIT TP=4.5 SL=2.5",
+      "n_nodes": 2
+    }
+  },
+  {
+    "strategy_index": 6,
+    "original_expression": "SHORT WHEN PCT_B(10, 1.5, 1h) _LT_ ATR_PCT(7) AND ATR_PCT(7, 15m) CROSSES_ABOVE MACD_NORM(8, 26, 9) EXIT TP=5.0 SL=2.0",
+    "optimized_expression": "SHORT WHEN PCT_B(10, 1.5, 1h) _LT_ ATR_PCT(7) AND ATR_PCT(7, 15m) CROSSES_ABOVE MACD_NORM(8, 26, 9) EXIT TP=5.0 SL=2.0",
+    "n_params": 9,
+    "n_evals": 750,
+    "cma_improvement_pct": 0.0,
+    "param_changes": [
+      {
+        "name": "c0_left_PCT_B_period",
+        "original": 10.0,
+        "optimized": 10.0,
+        "type": "period"
+      },
+      {
+        "name": "c0_left_PCT_B_std_dev",
+        "original": 1.5,
+        "optimized": 1.5,
+        "type": "std"
+      },
+      {
+        "name": "c0_right_ATR_PCT_period",
+        "original": 7.0,
+        "optimized": 7.0,
+        "type": "period"
+      },
+      {
+        "name": "c1_left_ATR_PCT_period",
+        "original": 7.0,
+        "optimized": 7.0,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_fast",
+        "original": 8.0,
+        "optimized": 8.0,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_slow",
+        "original": 26.0,
+        "optimized": 26.0,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_signal",
+        "original": 9.0,
+        "optimized": 9.0,
+        "type": "period"
+      },
+      {
+        "name": "tp_mult",
+        "original": 5.0,
+        "optimized": 5.0,
+        "type": "tp"
+      },
+      {
+        "name": "sl_mult",
+        "original": 2.0,
+        "optimized": 2.0,
+        "type": "sl"
+      }
+    ],
+    "validation_original": {
+      "cpcv_mean_sortino": 0.26529956119712017,
+      "cpcv_std_sortino": 0.16187418060549466,
+      "cpcv_pct_positive": 0.9642857142857143,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 136.92460317460316,
+      "pbo": 0.03571428571428571,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 2.3171046220470852e-73,
+      "perm_p_value": 0.0,
+      "passes_all": "True"
+    },
+    "validation_optimized": {
+      "cpcv_mean_sortino": 0.26529956119712017,
+      "cpcv_std_sortino": 0.16187418060549466,
+      "cpcv_pct_positive": 0.9642857142857143,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 136.92460317460316,
+      "pbo": 0.03571428571428571,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 2.3171046220470852e-73,
+      "perm_p_value": 0.0,
+      "passes_all": "True"
+    },
+    "ots_original": {
+      "n_trades": 49,
+      "metrics": {
+        "sortino": 0.11299206422824162,
+        "upi": 1.2354672330978504,
+        "sharpe": 0.3837847649224535,
+        "cagr": 0.05199990730546711,
+        "max_dd": -0.10294293634258689,
+        "ulcer_index": 0.04208926462183935,
+        "total_return": 0.024319564141214833,
+        "volatility": 0.16880610788774023,
+        "num_periods": 16609.0,
+        "win_rate": 0.0009633911368015414,
+        "profit_factor": 1.0900514366885434
+      }
+    },
+    "ots_optimized": {
+      "n_trades": 49,
+      "metrics": {
+        "sortino": 0.11299206422824162,
+        "upi": 1.2354672330978504,
+        "sharpe": 0.3837847649224535,
+        "cagr": 0.05199990730546711,
+        "max_dd": -0.10294293634258689,
+        "ulcer_index": 0.04208926462183935,
+        "total_return": 0.024319564141214833,
+        "volatility": 0.16880610788774023,
+        "num_periods": 16609.0,
+        "win_rate": 0.0009633911368015414,
+        "profit_factor": 1.0900514366885434
+      }
+    },
+    "optimized_strategy": {
+      "genome": [
+        5,
+        107,
+        34,
+        244,
+        29,
+        16,
+        8,
+        55,
+        93,
+        152,
+        128,
+        246,
+        195,
+        228,
+        57,
+        2,
+        117,
+        130,
+        4,
+        54,
+        101,
+        53,
+        187,
+        85,
+        164,
+        254,
+        80,
+        39,
+        172,
+        250,
+        78,
+        5,
+        164,
+        137,
+        94,
+        214,
+        94,
+        69,
+        114,
+        237,
+        188,
+        115,
+        82,
+        104,
+        129,
+        243,
+        107,
+        168,
+        117,
+        10
+      ],
+      "direction": "SHORT",
+      "conditions": [
+        "PCT_B(10, 1.5, 1h) < ATR_PCT(7)",
+        "ATR_PCT(7, 15m) CROSSES_ABOVE MACD_NORM(8, 26, 9)"
+      ],
+      "logic": "c0 AND c1",
+      "tp_atr_mult": 5.0,
+      "sl_atr_mult": 2.0,
+      "trail_atr_mult": 0.0,
+      "expression_raw": "SHORT WHEN PCT_B(10, 1.5, 1h) _LT_ ATR_PCT(7) AND ATR_PCT(7, 15m) CROSSES_ABOVE MACD_NORM(8, 26, 9) EXIT TP=5.0 SL=2.0",
+      "n_nodes": 2
+    }
+  },
+  {
+    "strategy_index": 7,
+    "original_expression": "SHORT WHEN ROC(21) CROSSES_BELOW 1.5 AND STOCH_K(9, 15m) CROSSES_BELOW ADX(21) EXIT TP=3.0 SL=1.0",
+    "optimized_expression": "SHORT WHEN ROC(21) CROSSES_BELOW 1.5 AND STOCH_K(9, 15m) CROSSES_BELOW ADX(21) EXIT TP=3.0 SL=1.0",
+    "n_params": 6,
+    "n_evals": 675,
+    "cma_improvement_pct": 0.0,
+    "param_changes": [
+      {
+        "name": "c0_left_ROC_period",
+        "original": 21.0,
+        "optimized": 21.0,
+        "type": "period"
+      },
+      {
+        "name": "c0_right_threshold",
+        "original": 1.5,
+        "optimized": 1.5,
+        "type": "norm_threshold"
+      },
+      {
+        "name": "c1_left_STOCH_K_period",
+        "original": 9.0,
+        "optimized": 9.0,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_ADX_period",
+        "original": 21.0,
+        "optimized": 21.0,
+        "type": "period"
+      },
+      {
+        "name": "tp_mult",
+        "original": 3.0,
+        "optimized": 3.0,
+        "type": "tp"
+      },
+      {
+        "name": "sl_mult",
+        "original": 1.0,
+        "optimized": 1.0,
+        "type": "sl"
+      }
+    ],
+    "validation_original": {
+      "cpcv_mean_sortino": 0.11931742525525674,
+      "cpcv_std_sortino": 0.11155507610997123,
+      "cpcv_pct_positive": 0.8571428571428571,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 182.44444444444446,
+      "pbo": 0.14285714285714285,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 9.26056113228597e-44,
+      "perm_p_value": 0.028,
+      "passes_all": "True"
+    },
+    "validation_optimized": {
+      "cpcv_mean_sortino": 0.11931742525525674,
+      "cpcv_std_sortino": 0.11155507610997123,
+      "cpcv_pct_positive": 0.8571428571428571,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 182.44444444444446,
+      "pbo": 0.14285714285714285,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 9.26056113228597e-44,
+      "perm_p_value": 0.028,
+      "passes_all": "True"
+    },
+    "ots_original": {
+      "n_trades": 47,
+      "metrics": {
+        "sortino": 0.8256633605448487,
+        "upi": 12.738733142620829,
+        "sharpe": 1.6406746518022062,
+        "cagr": 0.19877366234564287,
+        "max_dd": -0.04149014312034275,
+        "ulcer_index": 0.015603879924338204,
+        "total_return": 0.08973655440594519,
+        "volatility": 0.11445304593996115,
+        "num_periods": 16609.0,
+        "win_rate": 0.0008429672447013487,
+        "profit_factor": 1.526553181053146
+      }
+    },
+    "ots_optimized": {
+      "n_trades": 47,
+      "metrics": {
+        "sortino": 0.8256633605448487,
+        "upi": 12.738733142620829,
+        "sharpe": 1.6406746518022062,
+        "cagr": 0.19877366234564287,
+        "max_dd": -0.04149014312034275,
+        "ulcer_index": 0.015603879924338204,
+        "total_return": 0.08973655440594519,
+        "volatility": 0.11445304593996115,
+        "num_periods": 16609.0,
+        "win_rate": 0.0008429672447013487,
+        "profit_factor": 1.526553181053146
+      }
+    },
+    "optimized_strategy": {
+      "genome": [
+        116,
+        107,
+        34,
+        29,
+        132,
+        244,
+        34,
+        93,
+        153,
+        81,
+        129,
+        96,
+        195,
+        57,
+        67,
+        2,
+        117,
+        29,
+        130,
+        100,
+        54,
+        235,
+        187,
+        164,
+        254,
+        59,
+        58,
+        123,
+        149,
+        78,
+        111,
+        126,
+        168,
+        113,
+        200,
+        25,
+        40,
+        220,
+        252,
+        136,
+        202,
+        137,
+        155,
+        95,
+        146,
+        93,
+        9,
+        186,
+        57,
+        251
+      ],
+      "direction": "SHORT",
+      "conditions": [
+        "ROC(21) CROSSES_BELOW 1.5",
+        "STOCH_K(9, 15m) CROSSES_BELOW ADX(21)"
+      ],
+      "logic": "c0 AND c1",
+      "tp_atr_mult": 3.0,
+      "sl_atr_mult": 1.0,
+      "trail_atr_mult": 0.0,
+      "expression_raw": "SHORT WHEN ROC(21) CROSSES_BELOW 1.5 AND STOCH_K(9, 15m) CROSSES_BELOW ADX(21) EXIT TP=3.0 SL=1.0",
+      "n_nodes": 2
+    }
+  },
+  {
+    "strategy_index": 8,
+    "original_expression": "SHORT WHEN ROC(21) CROSSES_BELOW 1.5 AND STOCH_K(9, 15m) CROSSES_BELOW ADX(14) EXIT TP=3.0 SL=1.0",
+    "optimized_expression": "SHORT WHEN ROC(22) CROSSES_BELOW 1.0 AND STOCH_K(10, 15m) CROSSES_BELOW ADX(14) EXIT TP=3.4 SL=1.0",
+    "n_params": 6,
+    "n_evals": 675,
+    "cma_improvement_pct": 6.765136783664757,
+    "param_changes": [
+      {
+        "name": "c0_left_ROC_period",
+        "original": 21.0,
+        "optimized": 21.505501520845158,
+        "type": "period"
+      },
+      {
+        "name": "c0_right_threshold",
+        "original": 1.5,
+        "optimized": 1.0196052311262565,
+        "type": "norm_threshold"
+      },
+      {
+        "name": "c1_left_STOCH_K_period",
+        "original": 9.0,
+        "optimized": 10.259047912142426,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_ADX_period",
+        "original": 14.0,
+        "optimized": 13.782367263140577,
+        "type": "period"
+      },
+      {
+        "name": "tp_mult",
+        "original": 3.0,
+        "optimized": 3.4496876272284283,
+        "type": "tp"
+      },
+      {
+        "name": "sl_mult",
+        "original": 1.0,
+        "optimized": 0.9621689368686847,
+        "type": "sl"
+      }
+    ],
+    "validation_original": {
+      "cpcv_mean_sortino": 0.1778771687356942,
+      "cpcv_std_sortino": 0.1284936310310252,
+      "cpcv_pct_positive": 0.9285714285714286,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 217.88888888888889,
+      "pbo": 0.07142857142857142,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 1.4235073398326249e-60,
+      "perm_p_value": 0.013,
+      "passes_all": "True"
+    },
+    "validation_optimized": {
+      "cpcv_mean_sortino": 0.2547800585687986,
+      "cpcv_std_sortino": 0.137127354152662,
+      "cpcv_pct_positive": 0.9603174603174603,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 295.2420634920635,
+      "pbo": 0.03968253968253968,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 1.1496269587233483e-83,
+      "perm_p_value": 0.007,
+      "passes_all": "True"
+    },
+    "ots_original": {
+      "n_trades": 71,
+      "metrics": {
+        "sortino": 0.269193272015978,
+        "upi": 2.5048479408225783,
+        "sharpe": 0.6208118770669917,
+        "cagr": 0.07389688173733133,
+        "max_dd": -0.0666151824962005,
+        "ulcer_index": 0.029501543999139523,
+        "total_return": 0.03437091160777017,
+        "volatility": 0.1278787132640051,
+        "num_periods": 16609.0,
+        "win_rate": 0.001083815028901734,
+        "profit_factor": 1.13536411856556
+      }
+    },
+    "ots_optimized": {
+      "n_trades": 90,
+      "metrics": {
+        "sortino": -0.5691687928901745,
+        "upi": -2.155048350895357,
+        "sharpe": -1.2240393537878902,
+        "cagr": -0.15139472597277714,
+        "max_dd": -0.11879899620380906,
+        "ulcer_index": 0.07025119687448184,
+        "total_return": -0.07486218521921595,
+        "volatility": 0.12754054258647216,
+        "num_periods": 16609.0,
+        "win_rate": 0.0009633911368015414,
+        "profit_factor": 0.7976793419410412
+      }
+    },
+    "optimized_strategy": {
+      "genome": [
+        116,
+        107,
+        34,
+        29,
+        132,
+        244,
+        34,
+        93,
+        153,
+        81,
+        129,
+        96,
+        194,
+        57,
+        67,
+        2,
+        117,
+        29,
+        65,
+        244,
+        131,
+        35,
+        77,
+        255,
+        41,
+        137,
+        142,
+        181,
+        137,
+        147,
+        40,
+        109,
+        110,
+        154,
+        120,
+        177,
+        144,
+        204,
+        37,
+        21,
+        177,
+        93,
+        155,
+        103,
+        92,
+        246,
+        190,
+        167,
+        119,
+        245
+      ],
+      "direction": "SHORT",
+      "conditions": [
+        "ROC(22) CROSSES_BELOW 1.0",
+        "STOCH_K(10, 15m) CROSSES_BELOW ADX(14)"
+      ],
+      "logic": "c0 AND c1",
+      "tp_atr_mult": 3.45,
+      "sl_atr_mult": 0.96,
+      "trail_atr_mult": 0.0,
+      "expression_raw": "SHORT WHEN ROC(22) CROSSES_BELOW 1.0 AND STOCH_K(10, 15m) CROSSES_BELOW ADX(14) EXIT TP=3.4 SL=1.0",
+      "n_nodes": 2
+    }
+  },
+  {
+    "strategy_index": 12,
+    "original_expression": "LONG WHEN ROC(3) CROSSES_ABOVE VOL_RATIO(5, 4h) EXIT TP=1.0 SL=2.5 TRAIL=5.0",
+    "optimized_expression": "LONG WHEN ROC(3) CROSSES_ABOVE VOL_RATIO(5, 4h) EXIT TP=1.0 SL=2.5 TRAIL=5.0",
+    "n_params": 5,
+    "n_evals": 720,
+    "cma_improvement_pct": 0.0,
+    "param_changes": [
+      {
+        "name": "c0_left_ROC_period",
+        "original": 3.0,
+        "optimized": 3.0,
+        "type": "period"
+      },
+      {
+        "name": "c0_right_VOL_RATIO_period",
+        "original": 5.0,
+        "optimized": 5.0,
+        "type": "period"
+      },
+      {
+        "name": "tp_mult",
+        "original": 1.0,
+        "optimized": 1.0,
+        "type": "tp"
+      },
+      {
+        "name": "sl_mult",
+        "original": 2.5,
+        "optimized": 2.5,
+        "type": "sl"
+      },
+      {
+        "name": "trail_mult",
+        "original": 5.0,
+        "optimized": 5.0,
+        "type": "trail"
+      }
+    ],
+    "validation_original": {
+      "cpcv_mean_sortino": 0.07415587022395208,
+      "cpcv_std_sortino": 0.08875595818427726,
+      "cpcv_pct_positive": 0.7936507936507936,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 1177.1944444444443,
+      "pbo": 0.20634920634920634,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 5.394725851091296e-31,
+      "perm_p_value": 0.0,
+      "passes_all": "True"
+    },
+    "validation_optimized": {
+      "cpcv_mean_sortino": 0.07415587022395208,
+      "cpcv_std_sortino": 0.08875595818427726,
+      "cpcv_pct_positive": 0.7936507936507936,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 1177.1944444444443,
+      "pbo": 0.20634920634920634,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 5.394725851091296e-31,
+      "perm_p_value": 0.0,
+      "passes_all": "True"
+    },
+    "ots_original": {
+      "n_trades": 366,
+      "metrics": {
+        "sortino": 0.07787887281781324,
+        "upi": 0.657452866400227,
+        "sharpe": 0.2670901885489051,
+        "cagr": 0.03609965990711195,
+        "max_dd": -0.11348229573457647,
+        "ulcer_index": 0.05490836187964254,
+        "total_return": 0.016951739101065844,
+        "volatility": 0.2762364404940663,
+        "num_periods": 16609.0,
+        "win_rate": 0.015354046242774566,
+        "profit_factor": 1.0231913586432508
+      }
+    },
+    "ots_optimized": {
+      "n_trades": 366,
+      "metrics": {
+        "sortino": 0.07787887281781324,
+        "upi": 0.657452866400227,
+        "sharpe": 0.2670901885489051,
+        "cagr": 0.03609965990711195,
+        "max_dd": -0.11348229573457647,
+        "ulcer_index": 0.05490836187964254,
+        "total_return": 0.016951739101065844,
+        "volatility": 0.2762364404940663,
+        "num_periods": 16609.0,
+        "win_rate": 0.015354046242774566,
+        "profit_factor": 1.0231913586432508
+      }
+    },
+    "optimized_strategy": {
+      "genome": [
+        71,
+        28,
+        104,
+        176,
+        132,
+        10,
+        65,
+        12,
+        8,
+        161,
+        168,
+        19,
+        34,
+        228,
+        118,
+        162,
+        91,
+        222,
+        111,
+        252,
+        114,
+        174,
+        152,
+        84,
+        225,
+        222,
+        242,
+        235,
+        219,
+        57,
+        166,
+        213,
+        97,
+        137,
+        2,
+        222,
+        56,
+        47,
+        70,
+        195,
+        93,
+        108,
+        8,
+        221,
+        28,
+        1,
+        107,
+        167,
+        221,
+        25
+      ],
+      "direction": "LONG",
+      "conditions": [
+        "ROC(3) CROSSES_ABOVE VOL_RATIO(5, 4h)"
+      ],
+      "logic": "c0",
+      "tp_atr_mult": 1.0,
+      "sl_atr_mult": 2.5,
+      "trail_atr_mult": 5.0,
+      "expression_raw": "LONG WHEN ROC(3) CROSSES_ABOVE VOL_RATIO(5, 4h) EXIT TP=1.0 SL=2.5 TRAIL=5.0",
+      "n_nodes": 1
+    }
+  },
+  {
+    "strategy_index": 23,
+    "original_expression": "SHORT WHEN PCT_B(10, 3.0, 1h) _LT_ ATR_PCT(7) AND ATR_PCT(7, 15m) CROSSES_BELOW MACD_NORM(8, 26, 13) EXIT TP=2.0 SL=2.5",
+    "optimized_expression": "SHORT WHEN PCT_B(10, 3.0, 1h) _LT_ ATR_PCT(7) AND ATR_PCT(7, 15m) CROSSES_BELOW MACD_NORM(8, 26, 13) EXIT TP=2.0 SL=2.5",
+    "n_params": 9,
+    "n_evals": 750,
+    "cma_improvement_pct": 0.0,
+    "param_changes": [
+      {
+        "name": "c0_left_PCT_B_period",
+        "original": 10.0,
+        "optimized": 10.0,
+        "type": "period"
+      },
+      {
+        "name": "c0_left_PCT_B_std_dev",
+        "original": 3.0,
+        "optimized": 3.0,
+        "type": "std"
+      },
+      {
+        "name": "c0_right_ATR_PCT_period",
+        "original": 7.0,
+        "optimized": 7.0,
+        "type": "period"
+      },
+      {
+        "name": "c1_left_ATR_PCT_period",
+        "original": 7.0,
+        "optimized": 7.0,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_fast",
+        "original": 8.0,
+        "optimized": 8.0,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_slow",
+        "original": 26.0,
+        "optimized": 26.0,
+        "type": "period"
+      },
+      {
+        "name": "c1_right_MACD_NORM_signal",
+        "original": 13.0,
+        "optimized": 13.0,
+        "type": "period"
+      },
+      {
+        "name": "tp_mult",
+        "original": 2.0,
+        "optimized": 2.0,
+        "type": "tp"
+      },
+      {
+        "name": "sl_mult",
+        "original": 2.5,
+        "optimized": 2.5,
+        "type": "sl"
+      }
+    ],
+    "validation_original": {
+      "cpcv_mean_sortino": 0.11754995220292325,
+      "cpcv_std_sortino": 0.13019548025322958,
+      "cpcv_pct_positive": 0.7817460317460317,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 264.44444444444446,
+      "pbo": 0.21825396825396826,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 1.1967247751930526e-34,
+      "perm_p_value": 0.0,
+      "passes_all": "True"
+    },
+    "validation_optimized": {
+      "cpcv_mean_sortino": 0.11754995220292325,
+      "cpcv_std_sortino": 0.13019548025322958,
+      "cpcv_pct_positive": 0.7817460317460317,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 264.44444444444446,
+      "pbo": 0.21825396825396826,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 1.1967247751930526e-34,
+      "perm_p_value": 0.0,
+      "passes_all": "True"
+    },
+    "ots_original": {
+      "n_trades": 97,
+      "metrics": {
+        "sortino": 0.18423520693354342,
+        "upi": 3.9163900157519707,
+        "sharpe": 0.9380265014062925,
+        "cagr": 0.16873706466519778,
+        "max_dd": -0.09653554252932907,
+        "ulcer_index": 0.04308484701128502,
+        "total_return": 0.07670777382473237,
+        "volatility": 0.18440490552629143,
+        "num_periods": 16609.0,
+        "win_rate": 0.0034320809248554913,
+        "profit_factor": 1.1488798121029542
+      }
+    },
+    "ots_optimized": {
+      "n_trades": 97,
+      "metrics": {
+        "sortino": 0.18423520693354342,
+        "upi": 3.9163900157519707,
+        "sharpe": 0.9380265014062925,
+        "cagr": 0.16873706466519778,
+        "max_dd": -0.09653554252932907,
+        "ulcer_index": 0.04308484701128502,
+        "total_return": 0.07670777382473237,
+        "volatility": 0.18440490552629143,
+        "num_periods": 16609.0,
+        "win_rate": 0.0034320809248554913,
+        "profit_factor": 1.1488798121029542
+      }
+    },
+    "optimized_strategy": {
+      "genome": [
+        5,
+        107,
+        34,
+        244,
+        29,
+        16,
+        7,
+        55,
+        93,
+        152,
+        128,
+        247,
+        195,
+        228,
+        57,
+        2,
+        117,
+        130,
+        5,
+        228,
+        26,
+        54,
+        153,
+        133,
+        101,
+        244,
+        72,
+        219,
+        236,
+        57,
+        78,
+        178,
+        138,
+        99,
+        2,
+        72,
+        84,
+        244,
+        124,
+        70,
+        166,
+        246,
+        20,
+        46,
+        246,
+        182,
+        16,
+        40,
+        229,
+        115
+      ],
+      "direction": "SHORT",
+      "conditions": [
+        "PCT_B(10, 3.0, 1h) < ATR_PCT(7)",
+        "ATR_PCT(7, 15m) CROSSES_BELOW MACD_NORM(8, 26, 13)"
+      ],
+      "logic": "c0 AND c1",
+      "tp_atr_mult": 2.0,
+      "sl_atr_mult": 2.5,
+      "trail_atr_mult": 0.0,
+      "expression_raw": "SHORT WHEN PCT_B(10, 3.0, 1h) _LT_ ATR_PCT(7) AND ATR_PCT(7, 15m) CROSSES_BELOW MACD_NORM(8, 26, 13) EXIT TP=2.0 SL=2.5",
+      "n_nodes": 2
+    }
+  },
+  {
+    "strategy_index": 26,
+    "original_expression": "SHORT WHEN RSI(close, 21) _LT_ 30 EXIT TP=5.0 SL=1.0",
+    "optimized_expression": "SHORT WHEN RSI(close, 21) _LT_ 28 EXIT TP=5.2 SL=1.1",
+    "n_params": 4,
+    "n_evals": 720,
+    "cma_improvement_pct": 1.6859794051150494,
+    "param_changes": [
+      {
+        "name": "c0_left_RSI_period",
+        "original": 21.0,
+        "optimized": 20.586161914674303,
+        "type": "period"
+      },
+      {
+        "name": "c0_right_threshold",
+        "original": 30.0,
+        "optimized": 28.26204713163322,
+        "type": "osc_threshold"
+      },
+      {
+        "name": "tp_mult",
+        "original": 5.0,
+        "optimized": 5.175888014907922,
+        "type": "tp"
+      },
+      {
+        "name": "sl_mult",
+        "original": 1.0,
+        "optimized": 1.080705232929211,
+        "type": "sl"
+      }
+    ],
+    "validation_original": {
+      "cpcv_mean_sortino": 0.3145517910269185,
+      "cpcv_std_sortino": 0.2023443423432212,
+      "cpcv_pct_positive": 0.9404761904761905,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 267.1746031746032,
+      "pbo": 0.05952380952380952,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 3.230672469654822e-69,
+      "perm_p_value": 0.019,
+      "passes_all": "True"
+    },
+    "validation_optimized": {
+      "cpcv_mean_sortino": 0.2501767351459821,
+      "cpcv_std_sortino": 0.12100149705097635,
+      "cpcv_pct_positive": 0.9920634920634921,
+      "cpcv_n_splits": 252,
+      "cpcv_mean_trades": 182.46825396825398,
+      "pbo": 0.007936507936507936,
+      "pbo_interpretation": "Strong evidence of real alpha (PBO < 0.30)",
+      "ttest_pval": 6.447380096193912e-93,
+      "perm_p_value": 0.044,
+      "passes_all": "True"
+    },
+    "ots_original": {
+      "n_trades": 66,
+      "metrics": {
+        "sortino": 0.14269685714716662,
+        "upi": 1.9029280052384285,
+        "sharpe": 0.5077012396754251,
+        "cagr": 0.10073284476279709,
+        "max_dd": -0.10471611401548495,
+        "ulcer_index": 0.05293570985633569,
+        "total_return": 0.04654348947672604,
+        "volatility": 0.24845471704696204,
+        "num_periods": 16609.0,
+        "win_rate": 0.000722543352601156,
+        "profit_factor": 1.1279094000728198
+      }
+    },
+    "ots_optimized": {
+      "n_trades": 45,
+      "metrics": {
+        "sortino": 0.27801032136685294,
+        "upi": 5.050757695986942,
+        "sharpe": 1.2222987295202468,
+        "cagr": 0.31267788269568064,
+        "max_dd": -0.11559908094168962,
+        "ulcer_index": 0.06190712394382283,
+        "total_return": 0.13764590122693487,
+        "volatility": 0.24689356627942305,
+        "num_periods": 16609.0,
+        "win_rate": 0.0006021194605009633,
+        "profit_factor": 1.4177057716611894
+      }
+    },
+    "optimized_strategy": {
+      "genome": [
+        15,
+        1,
+        56,
+        41,
+        210,
+        16,
+        151,
+        177,
+        164,
+        222,
+        125,
+        142,
+        30,
+        157,
+        18,
+        114,
+        121,
+        60,
+        64,
+        205,
+        146,
+        184,
+        60,
+        60,
+        44,
+        59,
+        110,
+        110,
+        182,
+        131,
+        87,
+        193,
+        97,
+        108,
+        3,
+        75,
+        40,
+        2,
+        69,
+        75,
+        153,
+        232,
+        106,
+        135,
+        153,
+        48,
+        7,
+        65,
+        69,
+        112
+      ],
+      "direction": "SHORT",
+      "conditions": [
+        "RSI(close, 21) < 28"
+      ],
+      "logic": "c0",
+      "tp_atr_mult": 5.18,
+      "sl_atr_mult": 1.08,
+      "trail_atr_mult": 0.0,
+      "expression_raw": "SHORT WHEN RSI(close, 21) _LT_ 28 EXIT TP=5.2 SL=1.1",
+      "n_nodes": 1
+    }
+  }
+]

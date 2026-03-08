@@ -14,6 +14,8 @@ from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
+N_STRATEGIES = 10
+
 
 @dataclass
 class StrategyConfig:
@@ -26,7 +28,10 @@ class StrategyConfig:
     sl_atr_mult: float          # Stop loss in ATR multiples
     trail_atr_mult: float       # Trailing stop (0 = no trail)
     expression: str             # Human-readable expression
-    weight: float = 1.0 / 7    # Portfolio weight (default equal across 7 strategies)
+    weight: float = 1.0 / N_STRATEGIES  # Portfolio weight (equal across strategies)
+    # CMA-ES parameter overrides: {param_name: optimized_value}
+    # Applied via rebuild_strategy() after genome decode. Empty = use original params.
+    cmaes_params: Dict[str, float] = field(default_factory=dict)
 
 
 @dataclass
@@ -91,10 +96,16 @@ class LiveConfig:
 # MULTI-ASSET PORTFOLIO DEFINITION
 # ============================================================================
 
-# Portfolio: 7 strategies across 3 assets (v5b grammar, multi-TF)
-# All strategies passed CPCV validation + signal permutation + OTS positive
+# Portfolio v2: 10 strategies across 3 assets (v5b grammar + CMA-ES optimization)
+# BTC: original GE strategies (CMA-ES doesn't help BTC — sharp fitness landscape)
+# ETH/BNB: best version per strategy (original or CMA-ES optimized)
+#
+# ROLLBACK: To revert any CMA-ES strategy, remove its 'cmaes_params' dict.
+# The genome is always the original GE genome, so decode() gives original params.
+# Previous portfolio (v1, 7 strategies) is in PORTFOLIO_V1_ROLLBACK below.
+
 PORTFOLIO = [
-    # --- BTC/USDT: 2 SHORT + 1 LONG ---
+    # --- BTC/USDT: 2 SHORT + 1 LONG (all original, NO CMA-ES) ---
     {
         'symbol': 'BTC/USDT:USDT',
         'results_dir': 'experiment_seed123_*',
@@ -119,7 +130,7 @@ PORTFOLIO = [
         'label': 'btc_seed42_s19',
         # LONG RSI(7,4h) < RSI(14) & STOCH_K(9) cross STOCH_D(5) → CAGR +15.3%
     },
-    # --- ETH/USDT: 1 LONG + 1 SHORT ---
+    # --- ETH/USDT: 1 LONG + 2 SHORT ---
     {
         'symbol': 'ETH/USDT:USDT',
         'results_dir': 'experiment_ETH_USDT_seed123_*',
@@ -135,18 +146,45 @@ PORTFOLIO = [
         'seed': 777,
         'strategy_index': 7,
         'label': 'eth_seed777_s7',
-        # SHORT ROC(21)×1.5 & STOCH_K(9)×ADX(21)
+        # SHORT ROC(21)×1.5 & STOCH_K(9)×ADX(21) — original (CMA-ES = SAME)
         # CAGR +19.9%, Sortino 0.826, 47 trades, Sharpe 1.64, PF 1.53
     },
-    # --- BNB/USDT: 1 LONG + 1 SHORT ---
     {
+        # NEW — CMA-ES optimized (OTS +10.1% → +31.3%, PBO 0.060 → 0.008)
+        'symbol': 'ETH/USDT:USDT',
+        'results_dir': 'experiment_ETH_USDT_seed777_*',
+        'seed': 777,
+        'strategy_index': 26,
+        'label': 'eth_seed777_s26_cmaes',
+        # SHORT RSI(close,21) < 28 EXIT TP=5.2 SL=1.1
+        # Original: RSI(close,21) < 30 EXIT TP=5.0 SL=1.0
+        'cmaes_params': {
+            'c0_left_RSI_period': 20.586,
+            'c0_right_threshold': 28.262,
+            'tp_mult': 5.176,
+            'sl_mult': 1.081,
+        },
+    },
+    # --- BNB/USDT: 3 LONG + 1 SHORT ---
+    {
+        # UPDATED — CMA-ES optimized (OTS +33.6% → +41.3%, PBO 0.226 → 0.000)
         'symbol': 'BNB/USDT:USDT',
         'results_dir': 'experiment_BNB_USDT_seed123_*',
         'seed': 123,
         'strategy_index': 18,
-        'label': 'bnb_seed123_s18',
-        # LONG RSI(7)×STOCH_D(14,1h) & ROC(21,1h)<-0.5 & STOCH_D(5)>ADX(7)
-        # CAGR +33.6%, Sortino 0.316, 70 trades, Sharpe 1.18, PF 1.37
+        'label': 'bnb_seed123_s18_cmaes',
+        # LONG RSI(7)×STOCH_D(13,1h) & ROC(22,1h)<-0.7 & STOCH_D(5)>ADX(6)
+        # Original: RSI(7)×STOCH_D(14,1h) & ROC(21,1h)<-0.5 & STOCH_D(5)>ADX(7)
+        'cmaes_params': {
+            'c0_left_RSI_period': 7.321,
+            'c0_right_STOCH_D_period': 12.802,
+            'c1_left_ROC_period': 22.189,
+            'c1_right_threshold': -0.749,
+            'c2_left_STOCH_D_period': 5.058,
+            'c2_right_ADX_period': 6.254,
+            'tp_mult': 3.214,
+            'sl_mult': 2.449,
+        },
     },
     {
         'symbol': 'BNB/USDT:USDT',
@@ -155,8 +193,61 @@ PORTFOLIO = [
         'strategy_index': 4,
         'label': 'bnb_seed777_s4',
         # SHORT ROC(5,1h)×1.0 & MACD_NORM(8,26,9,1h)>ROC(3,1h) & RSI(high,7,4h)>10
+        # Original (CMA-ES = WORSE, keep original)
         # CAGR +21.4%, Sortino 0.505, 37 trades, Sharpe 2.05, PF 1.88
     },
+    {
+        # NEW — CMA-ES optimized (OTS +11.7% → +64.6%, PBO 0.238 → 0.004)
+        'symbol': 'BNB/USDT:USDT',
+        'results_dir': 'experiment_BNB_USDT_seed42_*',
+        'seed': 42,
+        'strategy_index': 13,
+        'label': 'bnb_seed42_s13_cmaes',
+        # LONG ADX(21,4h) > MFI(19,1h) EXIT TP=3.3 SL=2.5
+        # Original: ADX(21,4h) > MFI(21,1h) EXIT TP=3.0 SL=2.5
+        'cmaes_params': {
+            'c0_left_ADX_period': 21.113,
+            'c0_right_MFI_period': 19.118,
+            'tp_mult': 3.256,
+            'sl_mult': 2.478,
+        },
+    },
+    {
+        # NEW — CMA-ES optimized (OTS +8.7% → +48.6%, PBO 0.139 → 0.000)
+        'symbol': 'BNB/USDT:USDT',
+        'results_dir': 'experiment_BNB_USDT_seed777_*',
+        'seed': 777,
+        'strategy_index': 25,
+        'label': 'bnb_seed777_s25_cmaes',
+        # LONG MACD_NORM(15,20,9)>-2.3 & STOCH_D(20,1h)×RSI(8) & PRICE_POS(59)>0.1
+        # Original: MACD_NORM(16,21,9)>-2.0 & STOCH_D(21,1h)×RSI(7) & PRICE_POS(55)>0.0
+        'cmaes_params': {
+            'c0_left_MACD_NORM_fast': 14.839,
+            'c0_left_MACD_NORM_slow': 19.800,
+            'c0_left_MACD_NORM_signal': 9.278,
+            'c0_right_threshold': -2.264,
+            'c1_left_STOCH_D_period': 20.253,
+            'c1_right_RSI_period': 7.730,
+            'c2_left_PRICE_POS_period': 58.737,
+            'c2_right_threshold': 0.090,
+            'tp_mult': 4.579,
+            'sl_mult': 1.222,
+        },
+    },
+]
+
+# ============================================================================
+# ROLLBACK: previous portfolio (v1) — 7 strategies, all original GE params
+# To rollback: set PORTFOLIO = PORTFOLIO_V1_ROLLBACK and N_STRATEGIES = 7
+# ============================================================================
+PORTFOLIO_V1_ROLLBACK = [
+    {'symbol': 'BTC/USDT:USDT', 'results_dir': 'experiment_seed123_*', 'seed': 123, 'strategy_index': 19, 'label': 'btc_seed123_s19'},
+    {'symbol': 'BTC/USDT:USDT', 'results_dir': 'experiment_seed123_*', 'seed': 123, 'strategy_index': 6, 'label': 'btc_seed123_s6'},
+    {'symbol': 'BTC/USDT:USDT', 'results_dir': 'experiment_seed42_*', 'seed': 42, 'strategy_index': 19, 'label': 'btc_seed42_s19'},
+    {'symbol': 'ETH/USDT:USDT', 'results_dir': 'experiment_ETH_USDT_seed123_*', 'seed': 123, 'strategy_index': 7, 'label': 'eth_seed123_s7'},
+    {'symbol': 'ETH/USDT:USDT', 'results_dir': 'experiment_ETH_USDT_seed777_*', 'seed': 777, 'strategy_index': 7, 'label': 'eth_seed777_s7'},
+    {'symbol': 'BNB/USDT:USDT', 'results_dir': 'experiment_BNB_USDT_seed123_*', 'seed': 123, 'strategy_index': 18, 'label': 'bnb_seed123_s18'},
+    {'symbol': 'BNB/USDT:USDT', 'results_dir': 'experiment_BNB_USDT_seed777_*', 'seed': 777, 'strategy_index': 4, 'label': 'bnb_seed777_s4'},
 ]
 
 
@@ -240,6 +331,7 @@ def load_strategies_from_results() -> List[StrategyConfig]:
             trail_atr_mult=sd.get('trail_atr_mult', 0),
             expression=expr,
             weight=1.0 / n_strategies,
+            cmaes_params=entry.get('cmaes_params', {}),
         ))
 
     return strategies
