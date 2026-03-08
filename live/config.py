@@ -321,17 +321,23 @@ def load_strategies_from_results() -> List[StrategyConfig]:
                 direction = r.get('direction', '')
                 break
 
+        cmaes = entry.get('cmaes_params', {})
+
+        # CMA-ES may override TP/SL — use optimized values for order placement
+        tp = cmaes.get('tp_mult', sd.get('tp_atr_mult', 0))
+        sl = cmaes.get('sl_mult', sd.get('sl_atr_mult', 1.0))
+
         strategies.append(StrategyConfig(
             key=entry['label'],
             symbol=entry['symbol'],
             genome=sd['genome'],
             direction=direction or sd.get('direction', 'LONG'),
-            tp_atr_mult=sd.get('tp_atr_mult', 0),
-            sl_atr_mult=sd.get('sl_atr_mult', 1.0),
+            tp_atr_mult=tp,
+            sl_atr_mult=sl,
             trail_atr_mult=sd.get('trail_atr_mult', 0),
             expression=expr,
             weight=1.0 / n_strategies,
-            cmaes_params=entry.get('cmaes_params', {}),
+            cmaes_params=cmaes,
         ))
 
     return strategies
