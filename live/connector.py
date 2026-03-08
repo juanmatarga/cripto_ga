@@ -147,12 +147,12 @@ class BinanceConnector:
                     'symbol': p['symbol'],
                     'side': p['side'],  # 'long' or 'short'
                     'contracts': contracts,
-                    'notional': float(p.get('notional', 0)),
-                    'entry_price': float(p.get('entryPrice', 0)),
-                    'mark_price': float(p.get('markPrice', 0)),
-                    'unrealized_pnl': float(p.get('unrealizedPnl', 0)),
-                    'leverage': int(p.get('leverage', 1)),
-                    'liquidation_price': float(p.get('liquidationPrice', 0) or 0),
+                    'notional': float(p.get('notional') or 0),
+                    'entry_price': float(p.get('entryPrice') or 0),
+                    'mark_price': float(p.get('markPrice') or 0),
+                    'unrealized_pnl': float(p.get('unrealizedPnl') or 0),
+                    'leverage': int(p.get('leverage') or 1),
+                    'liquidation_price': float(p.get('liquidationPrice') or 0),
                 })
         return open_positions
 
