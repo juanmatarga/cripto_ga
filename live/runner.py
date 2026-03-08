@@ -24,6 +24,7 @@ from live.connector import BinanceConnector
 from live.signals import LiveSignalEngine
 from live.state import StateManager
 from live.executor import Executor
+from data.regime_detector import detect_regime, detect_regime_with_confidence
 
 # ============================================================================
 # LOGGING
@@ -78,6 +79,11 @@ class TradingBot:
         self.executor = Executor(config, self.connector, self.signal_engine, self.state)
         self.running = True
         self.logger = logging.getLogger(__name__)
+        # Regime tracking per symbol: {symbol: 'bull'/'bear'/'sideways'}
+        self.current_regime = {}
+        # Regime-switching: only allow strategies matching current regime
+        # LONG in bull, SHORT in bear, ALL in sideways
+        self.regime_switching_enabled = True
 
     def startup(self):
         """Initialize: set leverage per symbol, check balance, load state."""
@@ -128,16 +134,51 @@ class TradingBot:
         self.logger.info(f"{'='*60}")
         self.logger.info("Bot started. Waiting for signals...")
 
+    def _classify_live_regime(self, df, symbol: str) -> dict:
+        """
+        Classify current market regime with confidence score.
+
+        Returns dict with 'regime', 'confidence', 'slope', etc.
+        """
+        result = detect_regime_with_confidence(df)
+        prev_regime = self.current_regime.get(symbol, {}).get('regime')
+        if result['regime'] != prev_regime:
+            self.logger.info(
+                f"REGIME CHANGE {symbol}: {prev_regime or '?'} → "
+                f"{result['regime']} (confidence={result['confidence']:.0%}, "
+                f"slope={result['slope']:.6f}, vol_ratio={result['vol_ratio']:.2f})"
+            )
+        self.current_regime[symbol] = result
+        return result
+
+    def _is_regime_allowed(self, strategy_direction: str,
+                           regime_info: dict) -> bool:
+        """Check if strategy direction is allowed in current regime."""
+        if not self.regime_switching_enabled:
+            return True
+        regime = regime_info.get('regime', 'sideways')
+        confidence = regime_info.get('confidence', 0)
+
+        if regime == 'sideways':
+            return True  # All strategies active in sideways
+        if regime == 'bull':
+            # Only block SHORT if confidence is moderate+
+            return strategy_direction == 'LONG' or confidence < 0.4
+        if regime == 'bear':
+            return strategy_direction == 'SHORT' or confidence < 0.4
+        return True
+
     def run_cycle(self):
         """
         Single trading cycle (multi-symbol):
         1. Fetch OHLCV per symbol
         2. Check if new candle (avoid re-processing)
         3. Check circuit breakers
-        4. Evaluate signals per symbol
-        5. Execute entries for new signals
-        6. Check/update exits
-        7. Update trailing stops
+        4. Classify regime per symbol
+        5. Evaluate signals per symbol (regime-gated)
+        6. Execute entries for new signals
+        7. Check/update exits
+        8. Update trailing stops
         """
         # 1. Fetch data for each symbol
         ohlcv_by_symbol = {}
@@ -186,26 +227,55 @@ class TradingBot:
         # 4. Check for filled exits
         self.executor.check_and_close_filled_exits()
 
-        # 5. Evaluate signals per symbol and execute entries
+        # 5. Classify regime per symbol
+        regime_by_symbol = {}
+        for symbol, df in ohlcv_by_symbol.items():
+            regime_info = self._classify_live_regime(df, symbol)
+            regime_by_symbol[symbol] = regime_info
+
+        if self.regime_switching_enabled:
+            regime_str = ', '.join(
+                f"{s.split('/')[0]}={r['regime']}({r['confidence']:.0%})"
+                for s, r in regime_by_symbol.items()
+            )
+            self.logger.info(f"Regimes: {regime_str}")
+
+        # 6. Evaluate signals per symbol and execute entries (regime-gated)
         for symbol, df in ohlcv_by_symbol.items():
             signals = self.signal_engine.evaluate(df, symbol=symbol)
+            regime_info = regime_by_symbol.get(
+                symbol, {'regime': 'sideways', 'confidence': 0})
 
             for strategy_key, sig_data in signals.items():
+                direction = sig_data.get('direction', 'LONG')
+
+                # Regime gate: skip signals that don't match current regime
+                if not self._is_regime_allowed(direction, regime_info):
+                    if sig_data.get('new_signal', False):
+                        self.logger.info(
+                            f"REGIME BLOCKED: {strategy_key} ({direction}) "
+                            f"in {regime_info['regime']} market "
+                            f"(conf={regime_info['confidence']:.0%}) — skipping"
+                        )
+                    continue
+
                 if sig_data.get('new_signal', False):
                     if not self.state.has_position(strategy_key):
                         self.logger.info(
-                            f"NEW SIGNAL: {strategy_key} ({symbol}) → executing entry"
+                            f"NEW SIGNAL: {strategy_key} ({symbol}) "
+                            f"{direction} [{regime_info['regime']}] → "
+                            f"executing entry"
                         )
                         self.executor.execute_entry(strategy_key, sig_data)
 
-        # 6. Update trailing stops (pass last close per symbol)
+        # 7. Update trailing stops (pass last close per symbol)
         prices_by_symbol = {
             sym: float(df['Close'].iloc[-1])
             for sym, df in ohlcv_by_symbol.items()
         }
         self.executor.update_trailing_stops(prices_by_symbol)
 
-        # 7. Log status summary
+        # 8. Log status summary
         self._log_status()
 
     def _log_status(self):
