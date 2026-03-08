@@ -1,0 +1,70 @@
+{
+  "timestamp": "2026-03-07T21:28:00.772179",
+  "assets": [
+    {
+      "symbol": "ETH/USDT",
+      "seed": 42,
+      "status": "complete",
+      "results_dir": "results/experiment_ETH_USDT_seed42_20260307_202814",
+      "n_strategies": 26,
+      "n_validated": 26,
+      "n_passed": 7,
+      "n_ots_tested": 7,
+      "n_ots_positive": 4,
+      "best_ots_cagr": 0.22008395942850045,
+      "best_ots_sortino": 0.2745609836511075
+    },
+    {
+      "symbol": "SOL/USDT",
+      "seed": 42,
+      "status": "complete",
+      "results_dir": "results/experiment_SOL_USDT_seed42_20260307_204953",
+      "n_strategies": 27,
+      "n_validated": 27,
+      "n_passed": 13,
+      "n_ots_tested": 13,
+      "n_ots_positive": 2,
+      "best_ots_cagr": 0.03317723179889076,
+      "best_ots_sortino": 999.0
+    },
+    {
+      "symbol": "BNB/USDT",
+      "seed": 42,
+      "status": "complete",
+      "results_dir": "results/experiment_BNB_USDT_seed42_20260307_211637",
+      "n_strategies": 30,
+      "n_validated": 30,
+      "n_passed": 13,
+      "n_ots_tested": 13,
+      "n_ots_positive": 5,
+      "best_ots_cagr": 0.28253189250807287,
+      "best_ots_sortino": 999.0
+    }
+  ],
+  "totals": {
+    "total_strategies": 83,
+    "total_passed_validation": 33,
+    "total_ots_tested": 33,
+    "total_ots_positive": 11
+  },
+  "best_per_asset": [
+    {
+      "symbol": "BNB/USDT",
+      "cagr": 0.28253189250807287,
+      "sortino": 999.0,
+      "results_dir": "results/experiment_BNB_USDT_seed42_20260307_211637"
+    },
+    {
+      "symbol": "ETH/USDT",
+      "cagr": 0.22008395942850045,
+      "sortino": 0.2745609836511075,
+      "results_dir": "results/experiment_ETH_USDT_seed42_20260307_202814"
+    },
+    {
+      "symbol": "SOL/USDT",
+      "cagr": 0.03317723179889076,
+      "sortino": 999.0,
+      "results_dir": "results/experiment_SOL_USDT_seed42_20260307_204953"
+    }
+  ]
+}

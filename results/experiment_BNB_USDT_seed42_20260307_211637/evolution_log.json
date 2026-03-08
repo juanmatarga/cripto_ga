@@ -1,0 +1,1582 @@
+[
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.8847130894512,
+      "mean_fitness": 3.8847130894512,
+      "valid_count": 1
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.344054943814766,
+      "mean_fitness": 2.9024777329921143,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 2.8354131439551766,
+      "mean_fitness": 2.8354131439551766,
+      "valid_count": 1
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.0586883294734197,
+      "mean_fitness": 3.0586883294734197,
+      "valid_count": 1
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.51164710957037,
+      "mean_fitness": 3.140962414288106,
+      "valid_count": 4
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": -999.0,
+      "mean_fitness": -999.0,
+      "valid_count": 0
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.117561626634395,
+      "mean_fitness": 2.411532227951555,
+      "valid_count": 2
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 1.6463361742840696,
+      "mean_fitness": 1.6463361742840696,
+      "valid_count": 1
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 2.3539661378963728,
+      "mean_fitness": 2.0985489422100603,
+      "valid_count": 2
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 1.091031876334814,
+      "mean_fitness": 1.091031876334814,
+      "valid_count": 1
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.506521864241607,
+      "mean_fitness": 2.041301550172907,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.2741400383800325,
+      "mean_fitness": 1.9435688295717963,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 2.870666839967566,
+      "mean_fitness": 1.2632129746461696,
+      "valid_count": 7
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.285464798555442,
+      "mean_fitness": 2.035838981881091,
+      "valid_count": 8
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.3133235653442363,
+      "mean_fitness": 2.5866508773603223,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.989756280797565,
+      "mean_fitness": 1.830850731953952,
+      "valid_count": 7
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.055250013695578,
+      "mean_fitness": 3.010277612645292,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.3904811595189286,
+      "mean_fitness": 1.9584022455980834,
+      "valid_count": 7
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.066072610916563,
+      "mean_fitness": 2.1559366212174695,
+      "valid_count": 6
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.380906647055412,
+      "mean_fitness": 2.503005297824179,
+      "valid_count": 4
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.112931393260419,
+      "mean_fitness": 3.889498448224578,
+      "valid_count": 2
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 2.7644246763547398,
+      "mean_fitness": 1.5884640103003993,
+      "valid_count": 4
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 1.7362504796556906,
+      "mean_fitness": 0.5643918021258967,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 6.054018719442067,
+      "mean_fitness": 4.728044017889083,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.2767392878383466,
+      "mean_fitness": 1.9803893101338292,
+      "valid_count": 5
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.217172006924793,
+      "mean_fitness": 2.339347555543973,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 6.617549074435248,
+      "mean_fitness": 3.5671275212203906,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.78472500968203,
+      "mean_fitness": 2.6304409874737704,
+      "valid_count": 4
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 1.324398698829023,
+      "mean_fitness": 0.7578584994499403,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.9674722952862265,
+      "mean_fitness": 2.601642550556783,
+      "valid_count": 8
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.203290739400095,
+      "mean_fitness": 2.510442830070287,
+      "valid_count": 5
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 2.875478384377625,
+      "mean_fitness": 1.6129829143605394,
+      "valid_count": 4
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.117449553137213,
+      "mean_fitness": 2.120281252137169,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.161451320215867,
+      "mean_fitness": 2.3751425309215866,
+      "valid_count": 5
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 2.4726330361309814,
+      "mean_fitness": 2.083043147930778,
+      "valid_count": 4
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.851747760354122,
+      "mean_fitness": 5.5148077966255205,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.126658522699675,
+      "mean_fitness": 2.1734794304776517,
+      "valid_count": 6
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.6234645928436806,
+      "mean_fitness": 2.527496560885081,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.256039441220383,
+      "mean_fitness": 3.4016479219423883,
+      "valid_count": 7
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.4300301727159574,
+      "mean_fitness": 2.8615612879746384,
+      "valid_count": 8
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.052053134022294,
+      "mean_fitness": 2.143726788851922,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.833383538623502,
+      "mean_fitness": 3.5396103722214756,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.4224412096749735,
+      "mean_fitness": 2.7462877585713623,
+      "valid_count": 7
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 2.226682362820896,
+      "mean_fitness": 1.3252017283823185,
+      "valid_count": 2
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.026699090218388,
+      "mean_fitness": 3.0383405751921444,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.797888685702494,
+      "mean_fitness": 3.3844137374662338,
+      "valid_count": 11
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.351071141301954,
+      "mean_fitness": 3.96236161609747,
+      "valid_count": 8
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.351071141301954,
+      "mean_fitness": 4.1536262150332215,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 8.772988678712327,
+      "mean_fitness": 4.742454659241128,
+      "valid_count": 14
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 8.772988678712327,
+      "mean_fitness": 7.272497229898784,
+      "valid_count": 4
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 8.772988678712327,
+      "mean_fitness": 5.4040085128120126,
+      "valid_count": 8
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.189714694229003,
+      "mean_fitness": 2.994789767516677,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.189714694229003,
+      "mean_fitness": 3.568126927939013,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.189714694229003,
+      "mean_fitness": 2.7728349030949087,
+      "valid_count": 8
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 8.518191165449297,
+      "mean_fitness": 6.053431720718071,
+      "valid_count": 9
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 8.934447180032166,
+      "mean_fitness": 4.557738149552496,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.244598160913277,
+      "mean_fitness": 4.7948741498951435,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.8794598241657003,
+      "mean_fitness": 3.7581690811226953,
+      "valid_count": 3
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.9858791615580453,
+      "mean_fitness": 2.959638210791218,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.4718913616369935,
+      "mean_fitness": 4.445743449120246,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.162050280905467,
+      "mean_fitness": 2.0651329516455963,
+      "valid_count": 5
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.626508069798497,
+      "mean_fitness": 5.420463884053964,
+      "valid_count": 4
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.626508069798497,
+      "mean_fitness": 4.901378083484731,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 7.58943531667421,
+      "mean_fitness": 3.162262615196727,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 8.372705329598533,
+      "mean_fitness": 7.062373648798612,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 8.372705329598533,
+      "mean_fitness": 5.046121167850169,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 7.55931087244558,
+      "mean_fitness": 4.9272303499920085,
+      "valid_count": 5
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 6.123595849175402,
+      "mean_fitness": 6.123595849175402,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 6.851297422679667,
+      "mean_fitness": 4.648037273718054,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.895181683057465,
+      "mean_fitness": 3.1948692058613224,
+      "valid_count": 4
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.429698125196447,
+      "mean_fitness": 5.0505585632810766,
+      "valid_count": 4
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.924178709309286,
+      "mean_fitness": 4.909680196183375,
+      "valid_count": 2
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 7.045011669495055,
+      "mean_fitness": 3.723254540576574,
+      "valid_count": 8
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 8.08853141125197,
+      "mean_fitness": 5.1016242834294445,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.899007859059989,
+      "mean_fitness": 6.113003728270325,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 8.27111575923766,
+      "mean_fitness": 3.7681809619837634,
+      "valid_count": 11
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 9.832026833013254,
+      "mean_fitness": 5.307469287846014,
+      "valid_count": 8
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 8.524199814672107,
+      "mean_fitness": 5.408070443284152,
+      "valid_count": 8
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.141768835952732,
+      "mean_fitness": 5.284740354714767,
+      "valid_count": 4
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 6.72409762514859,
+      "mean_fitness": 4.2847050145925465,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 6.305625125639446,
+      "mean_fitness": 5.526329755436753,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.65424880273614,
+      "mean_fitness": 3.9100848898921665,
+      "valid_count": 8
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.830307941126502,
+      "mean_fitness": 5.6134521704966565,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.505024285181732,
+      "mean_fitness": 4.543176860531203,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 2.4675063295978585,
+      "mean_fitness": 1.7613055060926686,
+      "valid_count": 2
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 2.3935356225696247,
+      "mean_fitness": 1.4635980767519288,
+      "valid_count": 2
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 2.2894716876332515,
+      "mean_fitness": 1.3545909986684268,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 8.10656616826272,
+      "mean_fitness": 4.61975829092268,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 9.077004864850881,
+      "mean_fitness": 2.464950918683125,
+      "valid_count": 10
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 10.243761659643816,
+      "mean_fitness": 3.202699314890488,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.850372794315994,
+      "mean_fitness": 3.16939315323462,
+      "valid_count": 13
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.050917114522389,
+      "mean_fitness": 3.092872369832125,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.050917114522389,
+      "mean_fitness": 2.837044716912522,
+      "valid_count": 8
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.323690930406057,
+      "mean_fitness": 3.194772597442677,
+      "valid_count": 15
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.541263581648243,
+      "mean_fitness": 2.602443329757692,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.541263581648243,
+      "mean_fitness": 2.4621365850814785,
+      "valid_count": 7
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.6978574323582185,
+      "mean_fitness": 4.764814140957875,
+      "valid_count": 12
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 6.6978574323582185,
+      "mean_fitness": 5.198462945253666,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 6.6978574323582185,
+      "mean_fitness": 5.178349335173297,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 10.144135571737824,
+      "mean_fitness": 4.637577968019385,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 8.932014807232433,
+      "mean_fitness": 4.580896786583052,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 8.932014807232433,
+      "mean_fitness": 4.507885343088635,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 7.346768083040914,
+      "mean_fitness": 4.540484104838242,
+      "valid_count": 5
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 7.258603937954536,
+      "mean_fitness": 3.514600236434795,
+      "valid_count": 7
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.258603937954536,
+      "mean_fitness": 3.942062742954448,
+      "valid_count": 7
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.343853124794598,
+      "mean_fitness": 2.3548472606967707,
+      "valid_count": 6
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.971474293239886,
+      "mean_fitness": 2.984946538099402,
+      "valid_count": 7
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 8.35219969033364,
+      "mean_fitness": 3.5935757749720048,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 10.15252085362029,
+      "mean_fitness": 4.813182066239037,
+      "valid_count": 7
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 6.69760286978174,
+      "mean_fitness": 4.139638389183294,
+      "valid_count": 7
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 6.69760286978174,
+      "mean_fitness": 3.8104795688923607,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.2549230279477515,
+      "mean_fitness": 1.5438785052564048,
+      "valid_count": 6
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 7.901938946690255,
+      "mean_fitness": 4.2649783592023836,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.452956423728561,
+      "mean_fitness": 3.881424448821529,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.755253420765283,
+      "mean_fitness": 3.01442925062459,
+      "valid_count": 5
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 7.368050835902614,
+      "mean_fitness": 4.626813880442834,
+      "valid_count": 4
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.812766945773689,
+      "mean_fitness": 7.139559928294254,
+      "valid_count": 2
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 2.251857008782561,
+      "mean_fitness": 1.991410760254362,
+      "valid_count": 7
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.08894693580683,
+      "mean_fitness": 2.554449216404384,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.611058817949262,
+      "mean_fitness": 2.742195747266078,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 10.530506614599977,
+      "mean_fitness": 3.7484765189986633,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 7.6847475699501615,
+      "mean_fitness": 4.0979302012713505,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.6847475699501615,
+      "mean_fitness": 2.8488396263628033,
+      "valid_count": 7
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 7.963936494271588,
+      "mean_fitness": 2.9963562403649115,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 6.058814495480474,
+      "mean_fitness": 3.0551426069481513,
+      "valid_count": 7
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.354724786880709,
+      "mean_fitness": 3.9507582359268882,
+      "valid_count": 2
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.506956164589129,
+      "mean_fitness": 3.8692873871833524,
+      "valid_count": 6
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 6.649965934158888,
+      "mean_fitness": 3.75957358503691,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 6.343019731502014,
+      "mean_fitness": 3.0944141880606466,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.985183266784004,
+      "mean_fitness": 3.077010496502292,
+      "valid_count": 9
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 7.437174584520702,
+      "mean_fitness": 2.99302149019255,
+      "valid_count": 7
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.723163559865895,
+      "mean_fitness": 5.1564362944283415,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.61091918493853,
+      "mean_fitness": 3.2425914372891156,
+      "valid_count": 5
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.61011782633452,
+      "mean_fitness": 3.1674342894799428,
+      "valid_count": 4
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.297379128073953,
+      "mean_fitness": 2.922333331628556,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.7855474769621145,
+      "mean_fitness": 4.776076339336763,
+      "valid_count": 9
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 6.7855474769621145,
+      "mean_fitness": 5.0357363971887406,
+      "valid_count": 11
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 9.32944844826974,
+      "mean_fitness": 5.0299479337038555,
+      "valid_count": 13
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.323050996271608,
+      "mean_fitness": 4.236039580195855,
+      "valid_count": 8
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.5286991731345125,
+      "mean_fitness": 5.5286991731345125,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 6.421736893608431,
+      "mean_fitness": 3.816880373127368,
+      "valid_count": 8
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 9.611950332678912,
+      "mean_fitness": 6.2668683522519535,
+      "valid_count": 9
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 9.611950332678912,
+      "mean_fitness": 5.320384369898396,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 9.611950332678912,
+      "mean_fitness": 5.835063941158773,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 8.538470352684225,
+      "mean_fitness": 5.748448306303516,
+      "valid_count": 7
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 8.538470352684225,
+      "mean_fitness": 6.118944642547117,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 8.538470352684225,
+      "mean_fitness": 4.926735103303297,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 7.680229971288285,
+      "mean_fitness": 4.753387537497796,
+      "valid_count": 11
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.49832850570168,
+      "mean_fitness": 5.498328505701681,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 8.077299413918904,
+      "mean_fitness": 5.12885999021665,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.353808506672845,
+      "mean_fitness": 3.7345251161182516,
+      "valid_count": 11
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.520667944490968,
+      "mean_fitness": 3.9096226038049227,
+      "valid_count": 7
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.554350171371022,
+      "mean_fitness": 4.981892930101137,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 7.162957853909305,
+      "mean_fitness": 4.756995071824814,
+      "valid_count": 9
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 6.611740762912517,
+      "mean_fitness": 4.29405952810556,
+      "valid_count": 8
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 9.038190174359283,
+      "mean_fitness": 4.787839284343123,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.243932167655731,
+      "mean_fitness": 3.116675443092593,
+      "valid_count": 7
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 8.897547375508179,
+      "mean_fitness": 6.373607100439512,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 11.16815579111063,
+      "mean_fitness": 6.152425796776283,
+      "valid_count": 7
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 2.830168096518458,
+      "mean_fitness": 1.6947448481378522,
+      "valid_count": 4
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.378397200166317,
+      "mean_fitness": 2.879230280460819,
+      "valid_count": 8
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 12.594492166197105,
+      "mean_fitness": 5.8332070455204015,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 7.538404780338955,
+      "mean_fitness": 3.1783871322169928,
+      "valid_count": 8
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 6.01219543639135,
+      "mean_fitness": 3.9890088140797246,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 8.656076148308735,
+      "mean_fitness": 3.1858775829210306,
+      "valid_count": 9
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.004595150178491,
+      "mean_fitness": 2.522694334910266,
+      "valid_count": 7
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.910879129303009,
+      "mean_fitness": 2.86519212038573,
+      "valid_count": 7
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.456047712483985,
+      "mean_fitness": 2.3384898627838733,
+      "valid_count": 8
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 2.864987698580924,
+      "mean_fitness": 2.4470333875074006,
+      "valid_count": 4
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.617140688864619,
+      "mean_fitness": 3.631229823446307,
+      "valid_count": 8
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.617140688864619,
+      "mean_fitness": 2.9997200557182633,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 8.269717416192417,
+      "mean_fitness": 2.9189734724576546,
+      "valid_count": 7
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.7091263455870696,
+      "mean_fitness": 3.32769651619299,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.7091263455870696,
+      "mean_fitness": 2.573431621317712,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.061530438757579,
+      "mean_fitness": 2.910510440388769,
+      "valid_count": 9
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 2.0518493990481232,
+      "mean_fitness": 1.2504679449757183,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.661641485865013,
+      "mean_fitness": 2.1589044285139605,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.865695552590988,
+      "mean_fitness": 2.680915026971747,
+      "valid_count": 14
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.146980834874308,
+      "mean_fitness": 1.749978561546481,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.6946134935501105,
+      "mean_fitness": 2.317991381066831,
+      "valid_count": 7
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 6.093624800904368,
+      "mean_fitness": 3.1298150403508265,
+      "valid_count": 17
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.549572119692152,
+      "mean_fitness": 3.1966713811849465,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.549572119692152,
+      "mean_fitness": 2.6031374673035534,
+      "valid_count": 8
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.5524311865898537,
+      "mean_fitness": 2.7740104762249542,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.3540209812150934,
+      "mean_fitness": 1.4479880380436165,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.6248849762141115,
+      "mean_fitness": 2.452064801409236,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.4099777521150183,
+      "mean_fitness": 2.5669661670888453,
+      "valid_count": 7
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 2.944882570711814,
+      "mean_fitness": 2.1432205701050173,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.161167189978665,
+      "mean_fitness": 2.389233343703375,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.284512688279099,
+      "mean_fitness": 3.5562042741681315,
+      "valid_count": 13
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 2.8784521838422945,
+      "mean_fitness": 2.1451712692191305,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.3384869198639118,
+      "mean_fitness": 2.003917459187302,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.363112155370304,
+      "mean_fitness": 3.335801587264868,
+      "valid_count": 5
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.062080956200588,
+      "mean_fitness": 3.4200143020127967,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.519123904521374,
+      "mean_fitness": 2.7229068245713055,
+      "valid_count": 9
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.529603479315262,
+      "mean_fitness": 2.495006258211475,
+      "valid_count": 12
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.3992282894483274,
+      "mean_fitness": 2.6970046673312678,
+      "valid_count": 7
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.2179214207106583,
+      "mean_fitness": 1.9784686543107826,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 2.819359210347352,
+      "mean_fitness": 1.383184502260448,
+      "valid_count": 12
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.4066552138756516,
+      "mean_fitness": 1.8305170501985084,
+      "valid_count": 9
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.774666411853316,
+      "mean_fitness": 3.454761359549758,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.606188108169421,
+      "mean_fitness": 2.938160620118408,
+      "valid_count": 8
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.024650623621521,
+      "mean_fitness": 2.728263389372506,
+      "valid_count": 8
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 7.761420168637931,
+      "mean_fitness": 3.0850184704705,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.57760774063254,
+      "mean_fitness": 2.5274442139277915,
+      "valid_count": 12
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.44073039188836,
+      "mean_fitness": 2.7214967014368137,
+      "valid_count": 10
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 6.239541421414277,
+      "mean_fitness": 3.1758313890597223,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.7682460284960175,
+      "mean_fitness": 3.4607776344451437,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.023241038407843,
+      "mean_fitness": 2.9895922684812715,
+      "valid_count": 8
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 6.170352644965169,
+      "mean_fitness": 4.360020802617619,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.710973270319335,
+      "mean_fitness": 1.4884128279025153,
+      "valid_count": 8
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.74099972838925,
+      "mean_fitness": 2.736797188694142,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.654571363904305,
+      "mean_fitness": 3.769396807241918,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.910282462722889,
+      "mean_fitness": 1.9201093062193209,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 4.66564391066266,
+      "mean_fitness": 2.798659680068886,
+      "valid_count": 6
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.753123066406302,
+      "mean_fitness": 3.7111974060432935,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 7.92553330297797,
+      "mean_fitness": 2.583446000509577,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.3558812102518174,
+      "mean_fitness": 2.1067471476809736,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.429697002914999,
+      "mean_fitness": 2.997141187560404,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.8310529093191703,
+      "mean_fitness": 3.2641422063926813,
+      "valid_count": 2
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.101776722772636,
+      "mean_fitness": 2.812618975126223,
+      "valid_count": 7
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 2.548454885124934,
+      "mean_fitness": 1.5989384489600635,
+      "valid_count": 5
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 4.169827915175219,
+      "mean_fitness": 2.6612022648225064,
+      "valid_count": 4
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.7751631670003825,
+      "mean_fitness": 2.7670806004785744,
+      "valid_count": 5
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.300600587036156,
+      "mean_fitness": 1.9549650306166588,
+      "valid_count": 3
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.907942241293558,
+      "mean_fitness": 3.1292485896878346,
+      "valid_count": 12
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 5.907942241293558,
+      "mean_fitness": 2.764113616395184,
+      "valid_count": 13
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 5.907942241293558,
+      "mean_fitness": 3.575599041861357,
+      "valid_count": 10
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.8676942992699015,
+      "mean_fitness": 2.7269046059620567,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 3.8676942992699015,
+      "mean_fitness": 2.9099868345087017,
+      "valid_count": 7
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 3.8676942992699015,
+      "mean_fitness": 2.446996517193982,
+      "valid_count": 4
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 3.541033379394067,
+      "mean_fitness": 2.1208545657453075,
+      "valid_count": 10
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 2.702238640822354,
+      "mean_fitness": 1.6139494849971583,
+      "valid_count": 4
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 2.702238640822354,
+      "mean_fitness": 1.2661963190415337,
+      "valid_count": 6
+    }
+  },
+  {
+    "island_0": {
+      "selection": "tournament",
+      "best_fitness": 5.234749212269527,
+      "mean_fitness": 2.580837604576072,
+      "valid_count": 9
+    },
+    "island_1": {
+      "selection": "lexicase",
+      "best_fitness": 6.7425167158366826,
+      "mean_fitness": 4.078432478475678,
+      "valid_count": 3
+    },
+    "island_2": {
+      "selection": "random",
+      "best_fitness": 4.046236927288291,
+      "mean_fitness": 1.644588432100005,
+      "valid_count": 7
+    }
+  }
+]
