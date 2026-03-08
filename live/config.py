@@ -39,7 +39,7 @@ class RiskConfig:
     """Risk management parameters."""
     leverage: int = 10                  # Leverage multiplier
     max_portfolio_dd_pct: float = 10.0  # Circuit breaker: halt if portfolio DD > X%
-    max_daily_loss_pct: float = 3.0     # Halt trading for the day if loss > X%
+    max_daily_loss_pct: float = 20.0    # Halt trading for the day if loss > X%
     max_position_pct: float = 100.0     # No per-strategy cap
     max_open_positions: int = 999       # No limit on simultaneous positions
     min_order_usdt: float = 10.0        # Minimum order size (Binance min)
