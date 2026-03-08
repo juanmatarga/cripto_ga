@@ -29,6 +29,17 @@ class BinanceConnector:
         self.exchange = self._create_exchange()
         self._markets_loaded = False
 
+    @staticmethod
+    def _precision_to_decimals(precision) -> int:
+        """Convert ccxt precision to decimal places for round().
+        ccxt 4.x may return precision as float step (0.001) or int decimals (3)."""
+        if isinstance(precision, int):
+            return precision
+        if isinstance(precision, float) and precision > 0:
+            import math
+            return max(0, -int(math.floor(math.log10(precision))))
+        return 3  # fallback
+
     def _create_exchange(self) -> ccxt.binance:
         """Initialize ccxt exchange instance."""
         params = {
@@ -208,8 +219,10 @@ class BinanceConnector:
 
         # Apply market precision
         market = self.exchange.market(symbol)
-        precision = market.get('precision', {}).get('amount', 3)
-        quantity = round(quantity, precision)
+        decimals = self._precision_to_decimals(
+            market.get('precision', {}).get('amount', 3)
+        )
+        quantity = round(quantity, decimals)
 
         if quantity * price < self.config.risk.min_order_usdt:
             raise ValueError(
@@ -254,8 +267,10 @@ class BinanceConnector:
         self._ensure_markets()
 
         market = self.exchange.market(symbol)
-        price_precision = market.get('precision', {}).get('price', 2)
-        stop_price = round(stop_price, price_precision)
+        price_decimals = self._precision_to_decimals(
+            market.get('precision', {}).get('price', 2)
+        )
+        stop_price = round(stop_price, price_decimals)
 
         base = symbol.split('/')[0]
         logger.info(f"Placing SL: {side.upper()} stop-market {quantity} {base} "
@@ -289,8 +304,10 @@ class BinanceConnector:
         self._ensure_markets()
 
         market = self.exchange.market(symbol)
-        price_precision = market.get('precision', {}).get('price', 2)
-        stop_price = round(stop_price, price_precision)
+        price_decimals = self._precision_to_decimals(
+            market.get('precision', {}).get('price', 2)
+        )
+        stop_price = round(stop_price, price_decimals)
 
         base = symbol.split('/')[0]
         logger.info(f"Placing TP: {side.upper()} take-profit-market {quantity} {base} "
