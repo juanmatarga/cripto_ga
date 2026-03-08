@@ -1,0 +1,124 @@
+\begin{thebibliography}{20}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Bailey and L{\'o}pez~de Prado(2014)]{bailey2014deflated}
+David~H. Bailey and Marcos L{\'o}pez~de Prado.
+\newblock The deflated {Sharpe} ratio: Correcting for selection bias, backtest
+  overfitting, and non-normality.
+\newblock \emph{Journal of Portfolio Management}, 40\penalty0 (5):\penalty0
+  94--107, 2014.
+
+\bibitem[Bailey et~al.(2016)Bailey, Borwein, and L{\'o}pez~de
+  Prado]{bailey2016cpcv}
+David~H. Bailey, Jonathan Borwein, and Marcos L{\'o}pez~de Prado.
+\newblock A note on the use of cross-validation in finance.
+\newblock \emph{Journal of Machine Learning Research}, 2016.
+
+\bibitem[Bailey et~al.(2017)Bailey, Borwein, L{\'o}pez~de Prado, and
+  Zhu]{bailey2017probability}
+David~H. Bailey, Jonathan~M. Borwein, Marcos L{\'o}pez~de Prado, and Qiji~Jim
+  Zhu.
+\newblock The probability of backtest overfitting.
+\newblock \emph{Journal of Computational Finance}, 20\penalty0 (4):\penalty0
+  39--69, 2017.
+
+\bibitem[Brabazon and O'Neill(2006)]{brabazon2006biologically}
+Anthony Brabazon and Michael O'Neill.
+\newblock Biologically inspired algorithms for financial modelling.
+\newblock In \emph{Natural Computing Series}. Springer, 2006.
+
+\bibitem[Chen et~al.(2002)Chen, Yeh, et~al.]{chen2002genetic}
+Shu-Heng Chen, Chia-Hsuan Yeh, et~al.
+\newblock Genetic programming for financial trading rule discovery.
+\newblock \emph{Computational Economics}, 2002.
+
+\bibitem[Fama(1970)]{fama1970efficient}
+Eugene~F. Fama.
+\newblock Efficient capital markets: A review of theory and empirical work.
+\newblock \emph{The Journal of Finance}, 25\penalty0 (2):\penalty0 383--417,
+  1970.
+
+\bibitem[Goldberg(1989)]{goldberg1989genetic}
+David~E. Goldberg.
+\newblock Genetic algorithms in search, optimization, and machine learning.
+\newblock 1989.
+
+\bibitem[Holland(1975)]{holland1975adaptation}
+John~H. Holland.
+\newblock Adaptation in natural and artificial systems.
+\newblock 1975.
+
+\bibitem[Koza(1992)]{koza1992genetic}
+John~R. Koza.
+\newblock \emph{Genetic Programming: On the Programming of Computers by Means
+  of Natural Selection}.
+\newblock MIT Press, 1992.
+
+\bibitem[L{\'o}pez~de Prado(2018)]{lopez2018advances}
+Marcos L{\'o}pez~de Prado.
+\newblock Advances in financial machine learning.
+\newblock 2018.
+
+\bibitem[Mouret and Clune(2015)]{mouret2015illuminating}
+Jean-Baptiste Mouret and Jeff Clune.
+\newblock Illuminating search spaces by mapping elites.
+\newblock \emph{arXiv preprint arXiv:1504.04909}, 2015.
+
+\bibitem[Nakamoto(2008)]{nakamoto2008bitcoin}
+Satoshi Nakamoto.
+\newblock Bitcoin: A peer-to-peer electronic cash system.
+\newblock 2008.
+
+\bibitem[O'Neill and Ryan(2003)]{oneill2003grammatical}
+Michael O'Neill and Conor Ryan.
+\newblock Grammatical evolution: Evolutionary automatic programming in an
+  arbitrary language.
+\newblock \emph{Genetic Programming and Evolvable Machines}, 4\penalty0
+  (4):\penalty0 349--370, 2003.
+
+\bibitem[Potvin et~al.(2004)Potvin, Soriano, and
+  Vall{\'e}e]{potvin2004generating}
+Jean-Yves Potvin, Patrick Soriano, and Maxime Vall{\'e}e.
+\newblock Generating trading rules on the stock markets with genetic
+  programming.
+\newblock \emph{Computers \& Operations Research}, 31\penalty0 (7):\penalty0
+  1033--1047, 2004.
+
+\bibitem[Pugh et~al.(2016)Pugh, Soros, and Stanley]{pugh2016quality}
+Justin~K. Pugh, Lisa~B. Soros, and Kenneth~O. Stanley.
+\newblock Quality diversity: A new frontier for evolutionary computation.
+\newblock \emph{Frontiers in Robotics and AI}, 3:\penalty0 40, 2016.
+
+\bibitem[Sharpe(1966)]{sharpe1966mutual}
+William~F. Sharpe.
+\newblock Mutual fund performance.
+\newblock \emph{The Journal of Business}, 39\penalty0 (1):\penalty0 119--138,
+  1966.
+
+\bibitem[Sortino and van~der Meer(1994)]{sortino1994performance}
+Frank~A. Sortino and Robert van~der Meer.
+\newblock Performance measurement in a downside risk framework.
+\newblock \emph{The Journal of Investing}, 3\penalty0 (3):\penalty0 59--64,
+  1994.
+
+\bibitem[Tran et~al.(2025)]{tran2025vectorial}
+Binh Tran et~al.
+\newblock Vectorial genetic programming for efficient financial strategy
+  discovery.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[White(2000)]{white2000reality}
+Halbert White.
+\newblock A reality check for data snooping.
+\newblock \emph{Econometrica}, 68\penalty0 (5):\penalty0 1097--1126, 2000.
+
+\bibitem[Young(1991)]{young1991calmar}
+Terry~W. Young.
+\newblock Calmar ratio: A smoother tool.
+\newblock \emph{Futures}, 20\penalty0 (1):\penalty0 40, 1991.
+
+\end{thebibliography}

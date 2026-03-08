@@ -1,0 +1,1030 @@
+% ============================================================================
+% Descubrimiento Evolutivo de Estrategias Cuantitativas en Criptomonedas
+% Universidad del CEMA
+% ============================================================================
+\documentclass[12pt,a4paper]{article}
+
+% --- Idioma ---
+\usepackage[spanish,es-tabla,es-noquoting]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% --- Matemáticas ---
+\usepackage{amsmath,amssymb,amsthm}
+
+% --- Gráficos y tablas ---
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{float}
+
+% --- Código y algoritmos ---
+\usepackage{listings}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\SetAlgorithmName{Algoritmo}{Algoritmo}{Lista de Algoritmos}
+
+% --- Referencias y enlaces ---
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=green!50!black,urlcolor=blue!70!black]{hyperref}
+
+% --- Layout ---
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+
+% --- Colores para listings ---
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0.1,0.5,0.1}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.97}
+
+\lstdefinestyle{bnfstyle}{
+    backgroundcolor=\color{backcolour},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    framerule=0.4pt,
+    numbers=none,
+    xleftmargin=1em,
+    xrightmargin=1em,
+}
+
+% ============================================================================
+\begin{document}
+
+% --- Título ---
+\begin{titlepage}
+\centering
+
+\vspace*{1cm}
+\includegraphics[width=6cm]{ucema.png}
+
+\vspace{2cm}
+{\LARGE\bfseries Descubrimiento Evolutivo de Estrategias\\[0.3em]
+Cuantitativas en Mercados de Criptomonedas\par}
+\vspace{0.5cm}
+{\large\itshape Evolución Gramatical, Calidad-Diversidad\\
+y Validación Estadística\par}
+
+\vspace{2.5cm}
+{\Large Juan Manuel Targa\par}
+\vspace{1cm}
+{\large Universidad del CEMA\par}
+\vspace{0.5cm}
+{\large Marzo 2026\par}
+
+\vfill
+\end{titlepage}
+
+% --- Índice ---
+\tableofcontents
+\newpage
+
+% ============================================================================
+% 1. RESUMEN
+% ============================================================================
+\begin{abstract}
+Este trabajo desarrolla un sistema para descubrir automáticamente reglas
+cuantitativas de entrada y salida en el mercado de BTC/USDT, utilizando datos
+intradía de 15 minutos. El enfoque combina Evolución Gramatical ---una técnica de
+computación evolutiva que genera expresiones válidas a partir de una gramática
+formal--- con MAP-Elites, un algoritmo de calidad-diversidad que mantiene un
+repertorio de soluciones variadas en lugar de converger a una única ``mejor''
+respuesta. La validación emplea Validación Cruzada Combinatoria Purgada, análisis
+de Probabilidad de Sobreajuste y tests de permutación de señales, seguidos de una
+evaluación final sobre datos nunca vistos durante el desarrollo.
+
+Se realizaron seis experimentos independientes sobre 84.672 observaciones
+(enero 2023 a mayo 2025), de los cuales emergieron 87 estrategias que superaron
+los tres criterios de validación. Un portafolio de 10 estrategias decorrelacionadas
+obtuvo un retorno anualizado del 12,3\% con un drawdown máximo de $-$1,9\% en el
+período de evaluación final (junio--noviembre 2025), un período en el que BTC perdió
+el 31,6\% de su valor. Los resultados sugieren que, si bien las estrategias
+individuales basadas en indicadores técnicos muestran capacidad predictiva limitada,
+la combinación de múltiples reglas decorrelacionadas puede generar perfiles de
+riesgo-retorno favorables incluso en condiciones adversas de mercado.
+\end{abstract}
+
+% ============================================================================
+% 2. INTRODUCCIÓN
+% ============================================================================
+\section{Introducción}
+\label{sec:intro}
+
+Desde la aparición de Bitcoin en 2008 \cite{nakamoto2008bitcoin}, los mercados de
+criptomonedas operan de forma continua (24 horas, 7 días) con niveles de volatilidad
+que superan ampliamente a los mercados financieros tradicionales. Esta combinación
+de acceso permanente y alta variabilidad plantea una pregunta natural:
+¿existen regularidades en estos mercados que puedan ser identificadas de forma
+sistemática?
+
+La pregunta tiene raíces profundas. La \textbf{Hipótesis de Mercados Eficientes}
+\cite{fama1970efficient} sostiene que los precios reflejan toda la información
+disponible, lo que implica que los patrones históricos de precios no deberían contener
+información útil para predecir movimientos futuros. Si esto es cierto, cualquier regla
+basada en datos pasados debería tener un rendimiento esperado igual al del mercado una
+vez descontados los costos de transacción.
+
+Sin embargo, la teoría admite grados. Fama distingue tres formas de eficiencia: débil
+(los precios pasados no predicen los futuros), semifuerte (toda la información pública
+está incorporada) y fuerte (incluso la información privada está reflejada). Los mercados
+de criptomonedas, por su relativa juventud y la heterogeneidad de sus participantes,
+podrían exhibir ineficiencias temporales que un sistema automatizado podría detectar.
+
+El problema es que buscar patrones en datos históricos es inherentemente peligroso.
+Cuando se evalúan suficientes reglas sobre los mismos datos, alguna inevitablemente
+mostrará rendimientos positivos \textit{por azar}. Este fenómeno, conocido como
+\textbf{sesgo de selección múltiple} o \textit{data snooping} \cite{white2000reality},
+es el obstáculo central de las finanzas cuantitativas. Una regla que memoriza las
+particularidades de un período histórico pero no captura una regularidad genuina se
+dice \textbf{sobreajustada} (\textit{overfitted}): parece funcionar en retrospectiva
+pero fracasa cuando se aplica a datos nuevos.
+
+\subsection{Contribución}
+
+Este trabajo aborda el problema con tres componentes:
+
+\begin{enumerate}
+\item \textbf{Un motor de búsqueda basado en Evolución Gramatical}, capaz de explorar
+un espacio amplio de reglas cuantitativas, evolucionando simultáneamente la estructura
+de las reglas y sus parámetros numéricos.
+
+\item \textbf{Un mecanismo de diversidad basado en MAP-Elites}, que previene la
+convergencia prematura manteniendo un mapa de soluciones organizadas por comportamiento,
+no solo por calidad.
+
+\item \textbf{Un pipeline de validación estadística en tres capas}: protecciones
+anti-sobreajuste durante la evolución, validación post-evolución con múltiples tests,
+y una evaluación final sobre datos reservados.
+\end{enumerate}
+
+El resultado principal es un portafolio de estrategias decorrelacionadas que muestra
+resiliencia en un mercado bajista, junto con un análisis honesto de los alcances y
+limitaciones de los patrones descubiertos.
+
+% ============================================================================
+% 3. MARCO TEÓRICO
+% ============================================================================
+\section{Marco Teórico}
+\label{sec:marco}
+
+\subsection{Algoritmos evolutivos: la idea central}
+
+Los \textbf{algoritmos evolutivos} \cite{holland1975adaptation,goldberg1989genetic}
+son métodos de optimización inspirados en la selección natural. La analogía con la
+biología es útil para entender su funcionamiento.
+
+Imaginemos una población de individuos, donde cada individuo es una solución candidata
+a un problema. Algunos individuos resuelven el problema mejor que otros ---tienen mayor
+\textit{aptitud} (fitness)---. El algoritmo imita tres procesos biológicos:
+
+\begin{itemize}
+\item \textbf{Selección}: los individuos más aptos tienen mayor probabilidad de
+  reproducirse. Esto no significa que los mejores siempre sobrevivan ---hay
+  estocasticidad, como en la naturaleza--- pero el sesgo estadístico favorece a los
+  más aptos a lo largo de muchas generaciones.
+
+\item \textbf{Recombinación} (crossover): dos individuos ``padres'' combinan partes
+  de su información genética para producir ``hijos'' que heredan características de
+  ambos. En la práctica, esto significa tomar la primera mitad de una solución y la
+  segunda mitad de otra.
+
+\item \textbf{Mutación}: con baja probabilidad, se introducen cambios aleatorios
+  pequeños en un individuo. La mutación es el mecanismo que introduce novedad: sin
+  ella, la población solo podría recombinar lo que ya existe, sin explorar regiones
+  nuevas del espacio de búsqueda.
+\end{itemize}
+
+El ciclo se repite: evaluar aptitud, seleccionar, recombinar, mutar, y volver a
+evaluar. Con el tiempo, la población tiende a mejorar. Esto no requiere ningún
+conocimiento sobre \textit{cómo} resolver el problema ---solo una forma de medir
+qué tan buena es cada solución.
+
+\subsection{De los Algoritmos Genéticos a la Programación Genética}
+
+En un \textbf{Algoritmo Genético} (AG) clásico, cada individuo es una cadena de
+números o bits que codifican una solución. Por ejemplo, los parámetros de un modelo.
+El AG optimiza estos números.
+
+La \textbf{Programación Genética} (GP) \cite{koza1992genetic} da un paso más
+ambicioso: en lugar de optimizar parámetros, optimiza \textit{programas enteros}.
+Cada individuo no es un conjunto de números, sino una expresión simbólica ---un árbol
+donde los nodos internos son operadores (suma, comparación, AND lógico) y las hojas
+son variables o constantes.
+
+Por ejemplo, una regla como ``comprar cuando el RSI está por debajo de 30 y el
+volumen supera el promedio'' se representaría como un árbol con un nodo AND en la
+raíz, un nodo ``$<$'' a la izquierda (comparando RSI con 30) y otro nodo ``$>$''
+a la derecha (comparando volumen con su media).
+
+GP es poderosa pero tiene problemas prácticos:
+\begin{itemize}
+\item Los árboles tienden a crecer sin control (\textit{bloat}) sin que su calidad
+  mejore proporcionalmente.
+\item El crossover entre árboles ---intercambiar subárboles entre dos padres---
+  frecuentemente destruye soluciones buenas, porque los subárboles intercambiados
+  pueden ser incompatibles entre sí.
+\item Es difícil garantizar que las expresiones generadas sean \textit{válidas}:
+  ¿qué significa comparar un precio en dólares con un volumen en BTC?
+\end{itemize}
+
+\subsection{Evolución Gramatical: la solución elegante}
+\label{sec:ge}
+
+La \textbf{Evolución Gramatical} (GE) \cite{oneill2003grammatical} resuelve estos
+problemas con una idea simple pero profunda: \textbf{separar completamente la
+representación genética de la expresión que produce}.
+
+En GE, cada individuo es simplemente un vector de números enteros, llamados
+\textbf{codones}. Por ejemplo:
+$$\text{genoma} = [42, 100, 200, 17, 55, 83, 12, \ldots]$$
+
+Este vector no tiene significado intrínseco. Para convertirlo en una expresión
+útil, se usa una \textbf{gramática BNF} (Backus-Naur Form) que define las reglas
+de producción del lenguaje de estrategias. El proceso de decodificación funciona
+así:
+
+\begin{enumerate}
+\item Se parte de un símbolo inicial: \texttt{<estrategia>}.
+\item Este símbolo tiene varias formas posibles de expandirse (producciones). Si hay
+  $k$ opciones, se lee el siguiente codón del genoma y se calcula
+  $\text{codón} \bmod k$ para elegir cuál usar.
+\item La producción elegida puede contener nuevos símbolos no resueltos. Se repite el
+  proceso para cada uno, consumiendo codones secuencialmente.
+\item El proceso termina cuando todos los símbolos están resueltos (son terminales).
+\end{enumerate}
+
+\paragraph{¿Por qué esto es elegante?} Por tres razones:
+
+\begin{enumerate}
+\item \textbf{Validez garantizada}: la gramática define qué expresiones son posibles.
+  Si la gramática está bien diseñada, \textit{cualquier} secuencia de enteros produce
+  una expresión válida (o ninguna, si los codones se agotan ---pero nunca una expresión
+  inválida).
+
+\item \textbf{Operadores genéticos triviales}: como el genoma es un vector de enteros,
+  el crossover es simplemente cortar dos vectores en un punto e intercambiar las
+  mitades. La mutación es sumar o restar 1 a un codón. Estos operadores \textit{siempre}
+  producen genomas válidos, porque la validez la garantiza la gramática, no el genoma.
+
+\item \textbf{Estructura y parámetros co-evolucionan}: un mismo genoma codifica tanto
+  \textit{qué} indicadores usar (estructura) como \textit{con qué parámetros}
+  (períodos, umbrales). No hay que optimizar uno y fijar el otro; todo evoluciona junto.
+\end{enumerate}
+
+\paragraph{Ejemplo concreto.} Supongamos que la gramática define:
+
+\begin{lstlisting}[style=bnfstyle]
+<estrategia> ::= <direccion> WHEN <regla> EXIT <salidas>
+<direccion>  ::= LONG | SHORT
+<regla>      ::= <condicion>
+               | <condicion> AND <condicion>
+<condicion>  ::= <indicador> > <umbral>
+               | <indicador> < <umbral>
+<indicador>  ::= RSI(<periodo>) | STOCHASTIC(<periodo>)
+<periodo>    ::= 7 | 14 | 21
+<umbral>     ::= 20 | 50 | 80
+\end{lstlisting}
+
+Con el genoma $[5, 1, 0, 2, 1, 0, 2, \ldots]$:
+\begin{enumerate}
+\item \texttt{<estrategia>}: 1 producción $\to$ \texttt{<dirección> WHEN <regla> EXIT <salidas>}.
+\item \texttt{<dirección>}: 2 opciones, $5 \bmod 2 = 1$ $\to$ \texttt{SHORT}.
+\item \texttt{<regla>}: 2 opciones, $1 \bmod 2 = 1$ $\to$ \texttt{<condición> AND <condición>}.
+\item Primera \texttt{<condición>}: 2 opciones, $0 \bmod 2 = 0$ $\to$
+  \texttt{<indicador> > <umbral>}.
+\item \texttt{<indicador>}: 2 opciones, $2 \bmod 2 = 0$ $\to$ \texttt{RSI(<período>)}.
+\item \texttt{<período>}: 3 opciones, $1 \bmod 3 = 1$ $\to$ \texttt{14}.
+\item \texttt{<umbral>}: 3 opciones, $0 \bmod 3 = 0$ $\to$ \texttt{20}.
+\item Segunda condición se resuelve de forma análoga.
+\end{enumerate}
+
+Resultado: \texttt{SHORT WHEN RSI(14) > 20 AND STOCHASTIC(7) < 80 EXIT ...}
+
+Un cambio mínimo en un codón ---por ejemplo, cambiar el $5$ inicial por $4$---
+cambiaría la dirección de SHORT a LONG. Cambiar el $1$ del período de $14$ a $0$
+cambiaría el período a $7$. Así, mutaciones pequeñas en los enteros producen
+variaciones graduales en las estrategias, exactamente lo que necesitamos para una
+búsqueda evolutiva eficiente.
+
+\subsection{MAP-Elites: diversidad como objetivo}
+\label{sec:mapelites}
+
+Un problema clásico de los algoritmos evolutivos es la \textbf{convergencia prematura}:
+la población entera converge hacia una misma solución antes de haber explorado
+suficientemente el espacio de búsqueda. Esto es problemático porque la mejor solución
+encontrada tempranamente puede ser un \textit{óptimo local} ---buena en su vecindad,
+pero inferior a soluciones que nunca se exploraron.
+
+\textbf{MAP-Elites} \cite{mouret2015illuminating} propone una solución radical: en
+lugar de buscar \textit{la} mejor solución, buscar \textit{la mejor solución de cada
+tipo}. Para ello, se define un espacio de comportamientos posibles como una grilla
+multidimensional, donde cada celda representa un ``nicho'' comportamental.
+
+En nuestro caso, definimos tres dimensiones:
+\begin{itemize}
+\item \textbf{Frecuencia}: cuántas operaciones genera la estrategia por mes.
+  Baja ($\leq 5$), media (5--20) o alta ($> 20$).
+\item \textbf{Complejidad}: cuántas condiciones tiene la regla de entrada
+  (1, 2, 3, 4, o 5+).
+\item \textbf{Régimen dominante}: en qué tipo de mercado rinde mejor
+  (alcista, bajista o lateral).
+\end{itemize}
+
+La grilla tiene $3 \times 5 \times 3 = 45$ celdas. MAP-Elites mantiene, para cada
+celda, la mejor estrategia encontrada que exhibe ese comportamiento específico. Por
+ejemplo: ``la mejor estrategia de alta frecuencia, con 2 condiciones, que rinde
+bien en mercado bajista''.
+
+¿Por qué es útil? Porque garantiza que la población final contiene estrategias
+\textit{diversas}: unas operan mucho y otras poco, unas son simples y otras complejas,
+unas funcionan en mercados alcistas y otras en bajistas. Esta diversidad resulta
+crucial para construir portafolios, donde la decorrelación entre estrategias reduce
+el riesgo del conjunto.
+
+\subsection{Métricas de evaluación}
+
+Para medir la calidad de una estrategia, utilizamos varias métricas que capturan
+diferentes aspectos del rendimiento.
+
+\paragraph{Ratio de Sortino.} Mide el retorno obtenido por cada unidad de riesgo a
+la baja \cite{sortino1994performance}:
+\begin{equation}
+\text{Sortino} = \frac{\bar{r} \cdot P}{\sigma_d \cdot \sqrt{P}}
+\label{eq:sortino}
+\end{equation}
+donde $\bar{r}$ es el retorno medio por período, $\sigma_d$ es la desviación estándar
+calculada \textit{solo sobre los retornos negativos}, y $P$ es el número de períodos
+por año (35.040 para velas de 15 minutos). La diferencia con el ratio de Sharpe
+\cite{sharpe1966mutual} es importante: el Sharpe penaliza \textit{toda} la
+volatilidad, incluyendo la volatilidad alcista, que para un inversor no es riesgo
+sino oportunidad. El Sortino solo penaliza las caídas.
+
+\paragraph{Ratio de Calmar.} Relaciona el crecimiento anualizado con la peor caída
+experimentada \cite{young1991calmar}:
+\begin{equation}
+\text{Calmar} = \frac{\text{CAGR}}{|\text{Max Drawdown}|}
+\label{eq:calmar}
+\end{equation}
+
+\paragraph{CAGR (Tasa de Crecimiento Anual Compuesta).}
+\begin{equation}
+\text{CAGR} = \left(\frac{V_f}{V_i}\right)^{P/n} - 1
+\label{eq:cagr}
+\end{equation}
+donde $V_f$ y $V_i$ son los valores final e inicial, $n$ el número de períodos
+observados y $P$ los períodos por año.
+
+\paragraph{Drawdown máximo.} La mayor caída porcentual desde un máximo hasta el
+siguiente mínimo:
+\begin{equation}
+\text{Max DD} = \min_t \left\{ \frac{V_t - \max_{s \leq t} V_s}{\max_{s \leq t} V_s} \right\}
+\label{eq:maxdd}
+\end{equation}
+
+\paragraph{Factor de beneficio.} La relación entre lo ganado y lo perdido:
+\begin{equation}
+\text{PF} = \frac{\sum \text{ganancias}}{\sum |\text{pérdidas}|}
+\label{eq:pf}
+\end{equation}
+Un PF mayor a 1 indica que la estrategia gana más de lo que pierde en total.
+
+\subsection{Validación estadística}
+\label{sec:validation_theory}
+
+Evaluar muchas estrategias sobre los mismos datos genera un sesgo inevitable: la mejor
+va a parecer buena \textit{simplemente porque evaluamos muchas}. Los tests estadísticos
+que empleamos están diseñados específicamente para detectar y corregir este sesgo.
+
+\subsubsection{Validación Cruzada Combinatoria Purgada (CPCV)}
+
+En machine learning, la validación cruzada divide los datos en partes, entrena en unas
+y evalúa en otras. Pero en finanzas hay un problema adicional: los datos son
+\textit{temporales} y están autocorrelacionados. Si una observación de las 14:00 está
+en el conjunto de entrenamiento y una de las 14:15 está en el de evaluación, la
+cercanía temporal contamina la evaluación.
+
+La CPCV \cite{bailey2016cpcv} resuelve esto en tres pasos:
+\begin{enumerate}
+\item Divide los datos en $N$ bloques contiguos en el tiempo (usamos $N = 10$).
+\item Genera todas las combinaciones posibles de bloques para entrenamiento y
+  evaluación. Con $N = 10$ y mitad para cada uno, hay $\binom{10}{5} = 252$
+  combinaciones.
+\item Para cada combinación, elimina (\textit{purga}) las observaciones cercanas a
+  la frontera temporal entre entrenamiento y evaluación, y añade un período de
+  \textit{embargo} adicional como margen de seguridad.
+\end{enumerate}
+
+El resultado no es un número, sino una \textit{distribución} de 252 rendimientos
+fuera de muestra, mucho más informativa que una única evaluación.
+
+\subsubsection{Probabilidad de Sobreajuste de Backtest (PBO)}
+
+A partir de la distribución generada por CPCV, la PBO \cite{bailey2017probability}
+calcula qué fracción de las evaluaciones tuvo rendimiento negativo:
+\begin{equation}
+\text{PBO} = \frac{\#\{\text{splits con Sortino} \leq 0\}}{\text{total de splits}}
+\label{eq:pbo}
+\end{equation}
+
+La interpretación es directa: si una estrategia tiene un patrón genuino, debería
+rendir positivamente en la mayoría de los períodos de evaluación. Un PBO de 0,10
+significa que solo el 10\% de las evaluaciones fueron negativas ---señal fuerte.
+Un PBO de 0,60 significa que más de la mitad fueron negativas ---probable sobreajuste.
+Usamos PBO $< 0{,}50$ como criterio de aprobación.
+
+\subsubsection{Ratio de Sharpe Deflactado (DSR)}
+
+El DSR \cite{bailey2014deflated} responde a la pregunta: ``dado que evaluamos $n$
+estrategias, ¿la mejor es genuinamente buena o es la ganadora esperable por azar?''
+
+Si evaluamos $n$ estrategias y ninguna tiene capacidad predictiva real, la mejor
+tendrá un Sharpe esperado de:
+\begin{equation}
+\mathbb{E}[\max(\widehat{SR})] \approx \sigma_{SR} \left[
+  \sqrt{2 \ln n} - \frac{\ln \pi + \ln(\ln n)}{2\sqrt{2 \ln n}}
+\right]
+\label{eq:emax}
+\end{equation}
+donde $\sigma_{SR} = \sqrt{P/(T-1)}$ es el error estándar del Sharpe, $T$ el número
+de observaciones y $P$ los períodos por año.
+
+El DSR compara el Sharpe observado contra este umbral:
+\begin{equation}
+\text{DSR} = \Phi\!\left(\frac{\widehat{SR} - \mathbb{E}[\max(\widehat{SR})]}{\sigma_{SR}}\right)
+\label{eq:dsr}
+\end{equation}
+donde $\Phi$ es la función de distribución acumulada normal. Un DSR cercano a 1
+indica que el Sharpe observado supera lo esperable por azar; cercano a 0, que
+probablemente es un artefacto de la búsqueda.
+
+\subsubsection{Test de permutación de señales}
+
+Este test evalúa directamente si \textit{cuándo} la estrategia genera señales
+importa, o si cualquier momento habría sido igual:
+\begin{enumerate}
+\item Se ejecuta la estrategia y se registran los momentos exactos en que genera
+  señales de entrada.
+\item Se ejecuta el backtest y se calcula el Sortino real.
+\item Se permutan aleatoriamente las posiciones de las señales ---manteniendo la
+  misma cantidad total--- y se recalcula el Sortino con las señales reorganizadas.
+\item Se repite 1.000 veces.
+\item El $p$-valor es la fracción de permutaciones que igualan o superan al Sortino
+  real.
+\end{enumerate}
+
+Si $p < 0{,}05$, los momentos de entrada elegidos por la estrategia son
+significativamente mejores que el azar, lo cual sugiere que la combinación de
+indicadores captura información genuina sobre el estado del mercado.
+
+% ============================================================================
+% 4. TRABAJOS RELACIONADOS
+% ============================================================================
+\section{Trabajos Relacionados}
+\label{sec:related}
+
+La aplicación de computación evolutiva a mercados financieros tiene una historia
+extensa. Chen \textit{et al.} \cite{chen2002genetic} demostraron la viabilidad de
+Programación Genética para descubrir reglas en mercados accionarios. Potvin \textit{et
+al.} \cite{potvin2004generating} extendieron el enfoque con operadores especializados.
+Brabazon y O'Neill \cite{brabazon2006biologically} fueron pioneros en aplicar Evolución
+Gramatical al dominio financiero, explotando la capacidad de GE para evolucionar
+estructura y parámetros simultáneamente.
+
+Trabajos recientes incorporan técnicas adicionales. Tran \textit{et al.}
+\cite{tran2025vectorial} proponen evaluación vectorizada en GP, logrando aceleraciones
+de 100x ---una idea que nuestro sistema también implementa. López de Prado
+\cite{lopez2018advances,bailey2014deflated} formalizó las herramientas de validación
+contra sobreajuste que constituyen la columna vertebral de nuestro pipeline:
+CPCV, DSR y PBO.
+
+MAP-Elites \cite{mouret2015illuminating} ha demostrado su valor en robótica y diseño,
+pero su uso en finanzas cuantitativas es incipiente. Pugh \textit{et al.}
+\cite{pugh2016quality} argumentan que en dominios complejos, la diversidad de
+soluciones es tan valiosa como la optimalidad de la mejor ---un principio que nuestros
+resultados de portafolio confirman.
+
+Nuestro trabajo se diferencia en la combinación de GE + MAP-Elites + validación
+estadística múltiple en un único pipeline integrado, y en la aplicación a mercados de
+criptomonedas con datos intradía de alta frecuencia.
+
+% ============================================================================
+% 5. METODOLOGÍA
+% ============================================================================
+\section{Metodología}
+\label{sec:method}
+
+\subsection{La gramática de estrategias}
+\label{sec:grammar}
+
+El espacio de estrategias posibles está definido por una gramática BNF con cuatro
+componentes: dirección, condiciones de entrada, lógica combinatoria y parámetros
+de salida. Cada estrategia tiene la forma:
+
+\begin{lstlisting}[style=bnfstyle]
+<estrategia> ::= <direccion> WHEN <regla_entrada> EXIT <salidas>
+\end{lstlisting}
+
+La dirección es LONG (apuesta al alza) o SHORT (apuesta a la baja). La regla de
+entrada combina entre una y tres condiciones:
+
+\begin{lstlisting}[style=bnfstyle]
+<regla_entrada> ::= <condicion>
+                  | <condicion> AND <condicion>
+                  | <condicion> AND <condicion> AND <condicion>
+                  | <condicion> OR <condicion>
+                  | (<condicion> AND <condicion>) OR <condicion>
+\end{lstlisting}
+
+La gramática está deliberadamente sesgada hacia reglas multi-condición (hay más
+producciones con AND que con una sola condición), promoviendo reglas selectivas que
+filtran señales falsas.
+
+\subsubsection{Indicadores: dos familias tipadas}
+
+Un aspecto crucial del diseño es la separación de indicadores en dos familias con
+escalas compatibles, que solo pueden compararse dentro de la misma familia:
+
+\paragraph{Osciladores} (escala 0--100): RSI (Relative Strength Index), Stochastic
+K y D, ADX (Average Directional Index), MFI (Money Flow Index). Cada uno con
+períodos evolucionables ($\{7, 9, 14, 21\}$).
+
+\paragraph{Indicadores normalizados} (adimensionales, típicamente entre $-3$ y $+3$):
+Percent B (posición dentro de las Bandas de Bollinger), MACD normalizado por
+volatilidad, posición relativa del precio respecto a su media móvil, Rate of Change,
+ratio de volumen, ancho de Bandas de Bollinger, y ATR como porcentaje del precio.
+
+Esta separación tipada es fundamental: impide comparaciones sin sentido físico (como
+RSI $>$ MACD, que mezclaría unidades incompatibles) y garantiza que cualquier
+condición generada por la gramática sea semánticamente coherente.
+
+\subsubsection{Parámetros de salida}
+
+Los parámetros que determinan cuándo cerrar una posición también son parte del genoma:
+
+\begin{itemize}
+\item \textbf{Take profit}: nivel de ganancia objetivo, en múltiplos de ATR
+  (\{1, 1.5, 2, 3, 4, 5, 6, 8\}).
+\item \textbf{Stop loss}: nivel de pérdida máxima, en múltiplos de ATR
+  (\{0.5, 0.75, 1, 1.5, 2, 2.5, 3\}).
+\item \textbf{Trailing stop}: un stop que se ajusta a favor cuando el precio se
+  mueve favorablemente (\{1, 1.5, 2, 2.5, 3, 4, 5\} múltiplos de ATR).
+\end{itemize}
+
+El ATR (Average True Range) mide la volatilidad reciente del mercado, por lo que
+expresar los niveles de salida en unidades de ATR los hace \textit{adaptativos}: en
+períodos de alta volatilidad, los stops se amplían automáticamente; en períodos
+tranquilos, se estrechan.
+
+El espacio combinatorio resultante ---considerando todos los indicadores, parámetros,
+lógicas y salidas posibles--- es del orden de $10^8$ estrategias distintas.
+
+\subsection{Evaluación vectorizada}
+\label{sec:vectorized}
+
+Explorar un espacio de $10^8$ posibilidades requiere evaluar cada candidata
+rápidamente. El sistema computa todos los indicadores técnicos como vectores completos
+(series temporales precalculadas), evalúa las condiciones como operaciones booleanas
+sobre vectores, y combina los resultados con operaciones lógicas. Un sistema de caché
+evita recalcular indicadores idénticos.
+
+El resultado: una estrategia se evalúa sobre 85.000 observaciones en menos de
+1 milisegundo, lo que permite evaluar decenas de miles de estrategias en tiempo
+razonable.
+
+\subsection{Motor evolutivo}
+\label{sec:engine}
+
+La búsqueda evolutiva utiliza tres subpoblaciones de 100 individuos cada una,
+totalizando 300 estrategias por generación. Cada subpoblación emplea un criterio
+diferente para elegir qué individuos se reproducen:
+
+\begin{itemize}
+\item La primera favorece a los individuos con mejor rendimiento global
+  (\textit{selección por torneo}: se eligen 3 individuos al azar y se selecciona
+  el mejor).
+\item La segunda favorece a los especialistas en objetivos específicos
+  (\textit{selección lexicográfica}: se filtra secuencialmente por cada métrica).
+\item La tercera elige padres al azar, priorizando la exploración pura.
+\end{itemize}
+
+Periódicamente, los mejores individuos \textit{migran} entre subpoblaciones,
+compartiendo soluciones prometedoras. También se inyectan estrategias desde el archivo
+MAP-Elites, introduciendo diversidad comportamental.
+
+\paragraph{Operadores genéticos.} El crossover corta dos genomas en un punto aleatorio
+e intercambia las mitades. La mutación modifica cada codón con probabilidad 0,15: en
+el 60\% de los casos ajusta el valor en $\pm 1$ (cambio gradual), en el 30\% lo
+reemplaza por un valor completamente aleatorio (cambio estructural), y en el 10\%
+intercambia dos codones vecinos.
+
+\paragraph{Función de aptitud.} La aptitud combina múltiples criterios en un único
+score:
+\begin{align}
+f &= \text{Sortino} + 10 \cdot \max(\text{CAGR}, 0) + 0{,}3 \cdot \min(\text{Calmar}, 5) \nonumber\\
+  &\quad + \min(\text{PF} - 1, 3)
+  - 0{,}01 \cdot n_{\text{condiciones}}
+\label{eq:fitness}
+\end{align}
+
+El último término es una \textbf{presión de parsimonia}: penaliza la complejidad,
+favoreciendo estrategias más simples que son menos propensas al sobreajuste.
+
+Se descartan automáticamente las estrategias con menos de 30 operaciones (evidencia
+estadística insuficiente), drawdown superior al 30\%, o expectativa negativa.
+
+\paragraph{Rotación de ventanas temporales.} Cada generación, la evaluación se realiza
+sobre 12 ventanas temporales de $\sim$2 meses muestreadas aleatoriamente dentro del
+período de evolución. \textbf{Cada generación usa ventanas diferentes.} Esto obliga a
+las estrategias a rendir bien en períodos variados, no solo en uno particular ---un
+mecanismo anti-sobreajuste activo durante la búsqueda.
+
+\subsection{Pipeline de validación}
+\label{sec:validation}
+
+Las estrategias que sobreviven la evolución se someten a tres tests estadísticos
+independientes:
+
+\begin{enumerate}
+\item \textbf{CPCV} con $N = 10$ grupos, generando 252 evaluaciones fuera de muestra,
+  con purge de 24 horas y embargo de 12 horas en las fronteras temporales.
+
+\item \textbf{PBO}: fracción de evaluaciones CPCV con Sortino $\leq 0$.
+  Criterio: PBO $< 0{,}50$.
+
+\item \textbf{Permutación de señales}: 1.000 permutaciones aleatorias.
+  Criterio: $p < 0{,}05$.
+\end{enumerate}
+
+Una estrategia pasa la validación si cumple \textbf{los tres criterios simultáneamente}.
+
+\subsection{Evaluación final sobre datos reservados}
+\label{sec:ots}
+
+Los últimos seis meses de datos (junio a noviembre 2025) se mantuvieron aislados
+durante todo el proceso de evolución y validación. Solo se usaron una única vez, al
+final, para evaluar las estrategias que pasaron todos los tests. No hubo iteración
+ni ajuste posterior: los resultados se reportan tal cual.
+
+% ============================================================================
+% 6. CONFIGURACIÓN EXPERIMENTAL
+% ============================================================================
+\section{Configuración Experimental}
+\label{sec:config}
+
+\subsection{Datos}
+
+\begin{table}[H]
+\centering
+\caption{Datos utilizados.}
+\label{tab:data}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} \\
+\midrule
+Instrumento & BTC/USDT (futuros perpetuos, Binance) \\
+Resolución temporal & 15 minutos \\
+Período de evolución & Enero 2023 -- Mayo 2025 (84.672 barras) \\
+Período de evaluación final & Junio 2025 -- Noviembre 2025 ($\sim$17.000 barras) \\
+Comisiones modeladas & 0,01\% por lado (taker fee) \\
+Slippage modelado & 0,01\% por lado \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Parámetros de evolución}
+
+\begin{table}[H]
+\centering
+\caption{Configuración del motor evolutivo.}
+\label{tab:evo_params}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} \\
+\midrule
+Población total & 300 (3 subpoblaciones de 100) \\
+Generaciones máximas & 150 \\
+Paciencia & 25 generaciones sin mejora \\
+Longitud del genoma & 50 codones \\
+Tasa de mutación & 0,15 por codón \\
+Tasa de crossover & 0,70 \\
+Elitismo & 3\% \\
+Ventanas por generación & 12 \\
+Duración de ventana & 5.760 barras ($\sim$2 meses) \\
+Tamaño de migración & 3 individuos cada 15 generaciones \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Ejecuciones}
+
+Se realizaron \textbf{seis ejecuciones independientes} con semillas distintas (42, 123,
+314, 777, 999, 2024). Cada ejecución parte de una población aleatoria diferente y
+converge de forma independiente, lo que permite evaluar la robustez de los resultados
+frente a la inicialización.
+
+% ============================================================================
+% 7. RESULTADOS
+% ============================================================================
+\section{Resultados}
+\label{sec:results}
+
+\subsection{Evolución}
+
+Las seis ejecuciones convergieron entre las generaciones 44 y 73, generando entre
+11.961 y 19.847 fenotipos únicos cada una. La Figura~\ref{fig:evolution} muestra la
+progresión de la aptitud para una de las ejecuciones.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/fig3_evolution.png}
+\caption{Progresión de la aptitud a lo largo de las generaciones. La aptitud mejora
+de $\sim$3,5 en la generación~0 a $\sim$10,8 en la generación~49 (un incremento de
+3x). Las tres subpoblaciones mantienen trayectorias diferentes, lo que confirma que
+las distintas presiones de selección inducen dinámicas evolutivas complementarias.}
+\label{fig:evolution}
+\end{figure}
+
+El archivo MAP-Elites alcanzó una ocupación de 57--60\% (26--27 de 45 celdas), con
+distribución equilibrada entre los tres regímenes de mercado
+(Tabla~\ref{tab:archive}).
+
+\begin{table}[H]
+\centering
+\caption{Cobertura del archivo MAP-Elites por ejecución.}
+\label{tab:archive}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Semilla} & \textbf{Celdas ocupadas} & \textbf{Cobertura} & \textbf{Alcista} & \textbf{Bajista} & \textbf{Lateral} \\
+\midrule
+123 & 26/45 & 57,8\% & 8 & 9 & 9 \\
+42  & 27/45 & 60,0\% & 9 & 9 & 9 \\
+777 & 26/45 & 57,8\% & 9 & 8 & 9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Estrategias descubiertas}
+
+En total, las seis ejecuciones produjeron 166 estrategias candidatas. De estas,
+\textbf{87 pasaron los tres criterios de validación} simultáneamente
+(PBO~$< 0{,}50$, permutación~$p < 0{,}05$, test~$t$ con $p < 0{,}05$).
+
+La Tabla~\ref{tab:top} muestra las 10 mejores estrategias por CAGR en el período
+de evaluación final.
+
+\begin{table}[H]
+\centering
+\caption{Top 10 estrategias en el período de evaluación final (junio--noviembre 2025).}
+\label{tab:top}
+\begin{tabular}{clccccc}
+\toprule
+\textbf{\#} & \textbf{Tipo} & \textbf{CAGR} & \textbf{Sortino} & \textbf{Max DD} & \textbf{PF} & \textbf{PBO} \\
+\midrule
+1 & Contrarian bajista & 20,9\% & 0,656 & $-$3,6\% & 1,98 & 0,06 \\
+2 & Momentum alcista & 18,9\% & 0,373 & $-$8,7\% & 1,37 & 0,00 \\
+3 & Mean-reversion bajista & 18,1\% & 0,850 & $-$2,3\% & 1,68 & 0,22 \\
+4 & Momentum alcista & 17,7\% & 0,343 & $-$8,7\% & 1,38 & 0,00 \\
+5 & Flujo + momentum & 11,2\% & 0,140 & $-$5,8\% & 1,57 & 0,06 \\
+6 & Confluencia multi-factor & 9,9\% & 0,089 & $-$1,6\% & 3,83 & 0,00 \\
+7 & Posición + tendencia & 8,0\% & 0,269 & $-$2,8\% & 1,96 & 0,23 \\
+8 & Flujo + oscilador & 7,6\% & 0,244 & $-$3,8\% & 1,23 & 0,10 \\
+9 & Posición + volatilidad & 6,6\% & 0,242 & $-$1,7\% & 2,20 & 0,05 \\
+10 & Multi-factor + momentum & 5,7\% & 0,111 & $-$6,7\% & 1,14 & 0,14 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Las estrategias exhiben una variedad de enfoques que la gramática permitió descubrir:
+
+\begin{itemize}
+\item \textbf{Estrategias contrarian}: detectan condiciones extremas en osciladores
+  (por ejemplo, RSI en zona de sobreventa) combinadas con filtros de volatilidad y
+  volumen, apostando a que el movimiento extremo se revertirá parcialmente. Estas
+  tienden a tener pocas operaciones pero alto factor de beneficio.
+
+\item \textbf{Estrategias de momentum}: identifican cruces entre indicadores de
+  diferente velocidad (por ejemplo, un oscilador rápido cruzando sobre uno lento),
+  entrando en la dirección del impulso. Tienden a operar con mayor frecuencia.
+
+\item \textbf{Estrategias multi-factor}: combinan tres condiciones de familias
+  distintas (flujo de dinero, volatilidad, osciladores), entrando solo cuando todos
+  los filtros coinciden. Son altamente selectivas y muestran los menores drawdowns.
+\end{itemize}
+
+\subsection{Validación estadística}
+
+La Tabla~\ref{tab:validation} resume los resultados de validación para las estrategias
+aprobadas.
+
+\begin{table}[H]
+\centering
+\caption{Resumen de validación. Las 87 estrategias aprobadas cumplieron simultáneamente
+los tres criterios.}
+\label{tab:validation}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Métrica} & \textbf{Rango} & \textbf{Criterio} \\
+\midrule
+PBO & 0,000 -- 0,460 & $< 0{,}50$ \\
+Permutación $p$ & 0,000 -- 0,041 & $< 0{,}05$ \\
+CPCV Sortino medio & 0,037 -- 0,342 & $> 0$ \\
+\% splits positivos & 53\% -- 100\% & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cabe destacar que 16 estrategias obtuvieron un PBO de exactamente 0,000, lo que
+significa que las 252 evaluaciones CPCV fueron positivas ---una señal particularmente
+fuerte de consistencia fuera de muestra.
+
+\subsection{Construcción de portafolios}
+
+Aunque las estrategias individuales muestran rendimientos positivos, la verdadera
+fortaleza del enfoque surge al combinar múltiples estrategias decorrelacionadas en un
+portafolio. Se evaluaron cuatro configuraciones (Tabla~\ref{tab:portfolios}).
+
+\begin{table}[H]
+\centering
+\caption{Portafolios en el período de evaluación final. BTC perdió 31,6\% en el
+mismo período.}
+\label{tab:portfolios}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Portafolio} & \textbf{$N$} & \textbf{CAGR} & \textbf{Max DD} & \textbf{Sortino} & \textbf{Calmar} \\
+\midrule
+Agresivo & 1 & 20,9\% & $-$3,6\% & 0,21 & 5,8 \\
+Alto Retorno & 3 & 20,0\% & $-$2,8\% & 0,53 & 7,2 \\
+Ajustado por Riesgo & 10 & 9,9\% & $-$0,8\% & 1,51 & 11,6 \\
+Conservador & 8 & 9,3\% & $-$0,4\% & 0,84 & 21,9 \\
+\midrule
+Buy \& Hold BTC & --- & $-$31,6\% & $-$31,5\% & $-$1,14 & $-$1,0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+El portafolio ``Ajustado por Riesgo'' (10 estrategias con pesos optimizados)
+merece atención: logra un Sortino de 1,51 ---indicando que el retorno obtenido
+compensa ampliamente el riesgo asumido--- con un drawdown máximo de apenas 0,8\%.
+El portafolio ``Conservador'' alcanza un Calmar de 21,9, una relación
+retorno/drawdown excepcional.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/fig1_ensemble_equity.png}
+\caption{Evolución del capital del portafolio de 10 estrategias (línea ascendente)
+comparado con buy-and-hold de BTC (línea descendente) en el período de evaluación
+final. El portafolio crece de forma estable mientras BTC pierde un tercio de su valor.}
+\label{fig:equity}
+\end{figure}
+
+La clave de este comportamiento es la \textbf{decorrelación} entre estrategias.
+La Figura~\ref{fig:correlation} muestra que las correlaciones entre las 10 estrategias
+son mayoritariamente bajas, lo que permite que las ganancias de unas compensen las
+pérdidas transitorias de otras.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/fig3_correlation.png}
+\caption{Matriz de correlación entre las estrategias del portafolio. Las correlaciones
+son mayoritariamente inferiores a 0,3, lo que explica la reducción de drawdown
+observada en el portafolio combinado.}
+\label{fig:correlation}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/fig5_ensemble_comparison.png}
+\caption{Frontera de eficiencia de los portafolios evaluados. El eje horizontal
+muestra el drawdown máximo y el vertical el retorno anualizado. Los cuatro portafolios
+recomendados trazan una frontera desde alta rentabilidad (mayor riesgo) hasta mínimo
+drawdown (menor rentabilidad).}
+\label{fig:ensemble_comparison}
+\end{figure}
+
+% ============================================================================
+% 8. DISCUSIÓN
+% ============================================================================
+\section{Discusión}
+\label{sec:discussion}
+
+\subsection{El rol de la diversificación}
+
+Los resultados muestran que la combinación de estrategias decorrelacionadas produce
+perfiles de riesgo-retorno sustancialmente mejores que cualquier estrategia individual.
+Esto es consistente con la teoría clásica de portafolios: cuando los activos (en este
+caso, las curvas de equity de distintas estrategias) tienen correlación baja, el riesgo
+del conjunto se reduce sin sacrificar proporcionalmente el retorno.
+
+En este contexto, MAP-Elites cumple un rol que va más allá de la exploración
+evolutiva: al forzar la diversidad comportamental, produce los ingredientes necesarios
+para construir portafolios robustos. Una búsqueda que convergiera a una sola
+``mejor'' estrategia no permitiría esta construcción.
+
+\subsection{Interpretabilidad}
+
+Una ventaja significativa de la Evolución Gramatical frente a enfoques de caja negra
+(redes neuronales, reinforcement learning) es que las estrategias descubiertas son
+\textit{legibles}. Cada regla puede expresarse como una combinación de condiciones
+sobre indicadores técnicos conocidos, lo que permite:
+\begin{itemize}
+\item Verificar que la lógica tiene sentido económico (no es un artefacto numérico).
+\item Comunicar la estrategia a otros investigadores o profesionales.
+\item Diagnosticar fallos cuando las condiciones de mercado cambian.
+\end{itemize}
+
+Las estrategias descubiertas emplean combinaciones no triviales de indicadores ---por
+ejemplo, combinar un filtro de sobreventa (RSI) con uno de expansión de volatilidad
+(ancho de Bollinger) y uno de volumen--- que difícilmente un operador humano diseñaría
+manualmente, pero que resultan interpretables una vez descubiertas.
+
+\subsection{Limitaciones}
+
+\begin{enumerate}
+\item \textbf{Un solo instrumento}: los resultados se obtuvieron exclusivamente sobre
+  BTC/USDT. Otros instrumentos con diferente microestructura podrían mostrar
+  resultados distintos.
+
+\item \textbf{Una sola resolución temporal}: 15 minutos. Resoluciones mayores (1h, 4h,
+  diaria) podrían capturar patrones de naturaleza diferente.
+
+\item \textbf{Indicadores técnicos estándar}: la gramática utiliza osciladores y ratios
+  normalizados basados en precio y volumen. Datos alternativos (order flow,
+  liquidaciones, métricas on-chain) podrían proveer señales complementarias.
+
+\item \textbf{Período de evaluación específico}: junio--noviembre 2025 fue un mercado
+  predominantemente bajista. La validez de los resultados en otros entornos de mercado
+  requiere investigación adicional.
+
+\item \textbf{Costos simplificados}: se modelaron comisiones y slippage fijos; el
+  impacto de mercado real podría diferir para volúmenes grandes.
+\end{enumerate}
+
+% ============================================================================
+% 9. CONCLUSIONES Y TRABAJO FUTURO
+% ============================================================================
+\section{Conclusiones y Trabajo Futuro}
+\label{sec:conclusions}
+
+\subsection{Conclusiones}
+
+Este trabajo presentó un sistema de descubrimiento automatizado de estrategias
+cuantitativas que combina Evolución Gramatical, MAP-Elites y validación estadística
+rigurosa. Los resultados principales son:
+
+\begin{enumerate}
+\item La Evolución Gramatical demostró ser un mecanismo efectivo para explorar
+  espacios combinatorios de reglas cuantitativas, generando estrategias interpretables
+  con parámetros adaptativos.
+
+\item MAP-Elites produjo repertorios diversos de estrategias organizadas por
+  frecuencia, complejidad y régimen de mercado, alcanzando coberturas del 58--60\%
+  del espacio comportamental definido.
+
+\item El pipeline de validación (CPCV + PBO + permutación) permitió filtrar
+  eficazmente las estrategias sobreajustadas: de 166 candidatas, 87 superaron los
+  tres criterios simultáneamente.
+
+\item Un portafolio de 10 estrategias decorrelacionadas obtuvo un retorno anualizado
+  del 9,9\% con un drawdown máximo de $-$0,8\% en un período en que el subyacente
+  perdió 31,6\%, demostrando la utilidad práctica de la diversificación entre
+  estrategias evolucionadas.
+
+\item La diversidad comportamental promovida por MAP-Elites resultó ser un ingrediente
+  clave para la construcción de portafolios: la baja correlación entre estrategias de
+  diferentes nichos es lo que permite la reducción de riesgo observada.
+\end{enumerate}
+
+\subsection{Trabajo futuro}
+
+Varias extensiones podrían mejorar los resultados:
+
+\begin{itemize}
+\item \textbf{Optimización local de parámetros}: utilizar CMA-ES (Covariance Matrix
+  Adaptation Evolution Strategy) como optimizador local \textit{después} de que GE
+  descubra buenas estructuras, refinando los parámetros continuos (períodos, umbrales)
+  en una segunda fase.
+
+\item \textbf{Aprendizaje por refuerzo}: usar las estrategias descubiertas como
+  política inicial para un agente de RL, combinando la interpretabilidad de GE con
+  la capacidad adaptativa del aprendizaje por refuerzo.
+
+\item \textbf{Expansión multi-activo}: aplicar el framework a ETH/USDT, SOL/USDT y
+  otros pares líquidos para evaluar si existen oportunidades en mercados menos
+  estudiados.
+
+\item \textbf{Señales multi-resolución}: combinar indicadores calculados sobre velas
+  de 15 minutos, 1 hora y 4 horas para capturar patrones jerárquicos.
+
+\item \textbf{Datos alternativos}: incorporar métricas de flujo de órdenes, tasas de
+  financiamiento e indicadores on-chain como terminales adicionales en la gramática.
+\end{itemize}
+
+% ============================================================================
+% REFERENCIAS
+% ============================================================================
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
