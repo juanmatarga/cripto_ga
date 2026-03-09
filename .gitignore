@@ -33,3 +33,6 @@ env/
 
 # Live trading state (contains positions, not for version control)
 live_state.json
+
+# Trained models (binary, deploy via rsync)
+models/*.pkl
