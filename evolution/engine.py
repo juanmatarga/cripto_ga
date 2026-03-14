@@ -67,6 +67,7 @@ class EvolutionEngine:
         self.generation: int = 0
         self.history: List[GenerationStats] = []
         self.total_evaluations: int = 0
+        self.max_generations: int = 100  # Updated by run()
 
         # Evolution params
         evo_cfg = config.get('evolution', {})
@@ -172,13 +173,17 @@ class EvolutionEngine:
                 c2_genome = None
 
             # Mutate
-            c1_genome = mutate(c1_genome, self.mutation_rate)
+            c1_genome = mutate(c1_genome, self.mutation_rate,
+                               generation=self.generation,
+                               max_generations=self.max_generations)
             s1 = decode(c1_genome)
             if s1 is not None and len(new_pop) < target_size:
                 new_pop.append(s1)
 
             if c2_genome is not None:
-                c2_genome = mutate(c2_genome, self.mutation_rate)
+                c2_genome = mutate(c2_genome, self.mutation_rate,
+                                   generation=self.generation,
+                                   max_generations=self.max_generations)
                 s2 = decode(c2_genome)
                 if s2 is not None and len(new_pop) < target_size:
                     new_pop.append(s2)
@@ -200,6 +205,7 @@ class EvolutionEngine:
         """
         best_fitness = -999.0
         stagnation = 0
+        self.max_generations = n_generations
 
         logger.info(f"Starting evolution: pop={len(self.population)}, "
                     f"max_gen={n_generations}, patience={patience}")

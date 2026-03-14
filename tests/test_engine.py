@@ -96,25 +96,25 @@ class TestMutate:
     def test_mutation_changes_genome(self):
         random.seed(42)
         genome = [100] * 50
-        mutated = mutate(genome, rate=1.0)  # 100% mutation rate
+        mutated = mutate(genome, rate=1.0, generation=0, max_generations=100)  # 100% mutation rate
         assert mutated != genome
 
     def test_zero_rate_no_change(self):
         genome = [100] * 50
-        mutated = mutate(genome, rate=0.0)
+        mutated = mutate(genome, rate=0.0, generation=0, max_generations=100)
         assert mutated == genome
 
     def test_values_in_range(self):
         random.seed(42)
         genome = [128] * 50
-        mutated = mutate(genome, rate=0.5)
+        mutated = mutate(genome, rate=0.5, generation=0, max_generations=100)
         for v in mutated:
             assert 0 <= v <= 255
 
     def test_original_unchanged(self):
         genome = [100] * 50
         original = genome[:]
-        mutate(genome, rate=1.0)
+        mutate(genome, rate=1.0, generation=0, max_generations=100)
         assert genome == original  # original not modified
 
 

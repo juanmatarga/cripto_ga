@@ -94,6 +94,7 @@ class IslandModel:
         self.archive = MAPElitesArchive()
         self.regime_labels = detect_regime(data)
         self.generation: int = 0
+        self.max_generations: int = 100  # Updated by run()
         self.total_evaluations: int = 0
         self.unique_phenotypes: set = set()  # Track unique expressions evaluated
         self.history: List[List[IslandStats]] = []
@@ -187,13 +188,17 @@ class IslandModel:
                     c1_genome = p1.genome[:]
                     c2_genome = None
 
-                c1_genome = mutate(c1_genome, self.mutation_rate)
+                c1_genome = mutate(c1_genome, self.mutation_rate,
+                                   generation=self.generation,
+                                   max_generations=self.max_generations)
                 s1 = decode(c1_genome)
                 if s1 is not None and len(new_pop) < target_size:
                     new_pop.append(s1)
 
                 if c2_genome is not None:
-                    c2_genome = mutate(c2_genome, self.mutation_rate)
+                    c2_genome = mutate(c2_genome, self.mutation_rate,
+                                       generation=self.generation,
+                                       max_generations=self.max_generations)
                     s2 = decode(c2_genome)
                     if s2 is not None and len(new_pop) < target_size:
                         new_pop.append(s2)
@@ -316,6 +321,7 @@ class IslandModel:
         """
         best_fitness = -999.0
         stagnation = 0
+        self.max_generations = n_generations
 
         total_pop = sum(len(island) for island in self.islands)
         logger.info(f"Starting island model: {self.n_islands} islands, "

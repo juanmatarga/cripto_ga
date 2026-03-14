@@ -1,8 +1,7 @@
 """
 Genetic operators for Grammatical Evolution.
 
-Operate on integer codon vectors (genomes). The grammar guarantees
-that any integer vector produces a valid derivation (or fails cleanly).
+v2: Two-point crossover + generation-dependent mutation schedule.
 """
 
 import random
@@ -11,46 +10,41 @@ from typing import List, Tuple
 
 def crossover(parent1: List[int], parent2: List[int]) -> Tuple[List[int], List[int]]:
     """
-    One-point crossover on codon vectors.
+    Two-point crossover on codon vectors.
 
-    Returns two children. If parents differ in length, crossover
-    point is chosen within the shorter length.
+    Exchanges an interior block between parents.
     """
     min_len = min(len(parent1), len(parent2))
-    if min_len <= 1:
+    if min_len <= 2:
         return parent1[:], parent2[:]
 
-    point = random.randint(1, min_len - 1)
-    child1 = parent1[:point] + parent2[point:]
-    child2 = parent2[:point] + parent1[point:]
+    p1, p2 = sorted(random.sample(range(1, min_len), 2))
+    child1 = parent1[:p1] + parent2[p1:p2] + parent1[p2:]
+    child2 = parent2[:p1] + parent1[p1:p2] + parent2[p2:]
     return child1, child2
 
 
-def mutate(genome: List[int], rate: float = 0.1) -> List[int]:
+def mutate(genome: List[int], rate: float = 0.1,
+           generation: int = 0, max_generations: int = 100) -> List[int]:
     """
-    Mutate individual codons.
+    Mutate with generation-dependent exploration schedule.
 
-    Three mutation types applied per-codon:
-    - increment (60%): ±1 (fine-tune parameters)
-    - random (30%): new random value (structural exploration)
-    - swap (10%): swap with neighbor (reorder conditions)
+    Early generations: high exploration (random jumps).
+    Later generations: high exploitation (fine-tuning ±1..3).
     """
     result = genome[:]
+
+    progress = min(generation / max(max_generations, 1), 1.0)
+    explore_ratio = 0.6 - 0.4 * progress
+
     for i in range(len(result)):
         if random.random() >= rate:
             continue
 
-        r = random.random()
-        if r < 0.60:
-            # Increment: ±1 for fine parameter tuning
-            result[i] = (result[i] + random.choice([-1, 1])) % 256
-        elif r < 0.90:
-            # Random: new value for structural change
+        if random.random() < explore_ratio:
             result[i] = random.randint(0, 255)
         else:
-            # Swap with neighbor
-            j = i + 1 if i < len(result) - 1 else i - 1
-            if 0 <= j < len(result):
-                result[i], result[j] = result[j], result[i]
+            delta = random.choice([-3, -2, -1, 1, 2, 3])
+            result[i] = (result[i] + delta) % 256
 
     return result
