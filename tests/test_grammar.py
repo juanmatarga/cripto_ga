@@ -1,8 +1,11 @@
 """Tests for grammar/bnf.py"""
 
 import re
+import random
 import pytest
 from grammar.bnf import GRAMMAR, START_SYMBOL, MAX_DEPTH, validate_grammar
+from grammar.mapper import decode
+from strategy.parameters import random_genome
 
 
 def test_grammar_validates():
@@ -81,3 +84,52 @@ def test_derivation_terminates():
     non_terminating = set(GRAMMAR.keys()) - can_terminate
     assert non_terminating == set(), \
         f"Non-terminals that can't terminate: {non_terminating}"
+
+
+def test_entry_rule_distribution():
+    """New grammar: ~25% per structural family."""
+    random.seed(42)
+    families = {'simple': 0, 'binary': 0, 'ternary': 0, 'grouped': 0}
+    total = 0
+
+    for _ in range(10000):
+        genome = random_genome()
+        s = decode(genome)
+        if s is None:
+            continue
+        total += 1
+        n = len(s.conditions)
+        has_parens = '(' in s.logic
+        if n == 1:
+            families['simple'] += 1
+        elif n == 2 and not has_parens:
+            families['binary'] += 1
+        elif n == 3 and not has_parens:
+            families['ternary'] += 1
+        elif has_parens:
+            families['grouped'] += 1
+
+    for family, count in families.items():
+        pct = count / total * 100
+        assert 18 < pct < 35, f"{family}: {pct:.1f}% — expected ~25% (±7%)"
+
+
+def test_logical_op_distribution():
+    """<logical_op> should produce ~50/50 AND/OR."""
+    random.seed(42)
+    and_count = 0
+    or_count = 0
+
+    for _ in range(5000):
+        genome = random_genome()
+        s = decode(genome)
+        if s is None or len(s.conditions) < 2:
+            continue
+        tokens = s.logic.split()
+        and_count += tokens.count('AND')
+        or_count += tokens.count('OR')
+
+    total = and_count + or_count
+    assert total > 0
+    and_pct = and_count / total * 100
+    assert 35 < and_pct < 65, f"AND: {and_pct:.1f}% — expected ~50% (±15%)"

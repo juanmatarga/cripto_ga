@@ -25,17 +25,16 @@ GRAMMAR = {
         "SHORT",
     ],
 
-    # Entry rules: biased toward multi-condition (more selective = less noise)
+    # Entry rules: balanced structure families (25% each)
     "<entry_rule>": [
-        "<condition>",
-        "<condition> AND <condition>",
-        "<condition> AND <condition>",
-        "<condition> AND <condition> AND <condition>",
-        "<condition> AND <condition> AND <condition>",
-        "<condition> OR <condition>",
-        "(<condition> AND <condition>) OR <condition>",
-        "<condition> AND (<condition> OR <condition>)",
+        "<condition>",                                                      # simple
+        "<condition> <logical_op> <condition>",                             # binary
+        "<condition> <logical_op> <condition> <logical_op> <condition>",    # ternary
+        "( <condition> <logical_op> <condition> ) <logical_op> <condition>",  # grouped
     ],
+
+    # Logical operator: evolves independently of structure
+    "<logical_op>": ["AND", "OR"],
 
     # Conditions: TYPE-SAFE comparisons
     "<condition>": [
