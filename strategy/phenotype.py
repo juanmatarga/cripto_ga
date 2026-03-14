@@ -38,6 +38,14 @@ class Strategy:
 
     # Filled post-evaluation
     fitness: Tuple[float, float] = (-999.0, -999.0)  # (sortino, calmar)
+
+    # NSGA-II fields (filled during evaluation/selection)
+    objectives: Tuple[float, float] = (-999.0, -999.0)  # (median_sortino, median_return)
+    stability: float = -999.0                             # -std(sortino across windows)
+    constraint_violation: float = 0.0                      # 0.0 = feasible, >0 = infeasible
+    rank: int = 999                                        # Pareto front rank (1 = best)
+    window_metrics: Optional[List[Dict]] = None            # Per-window metrics for analysis
+
     metrics: Optional[Dict] = None
     n_trades: int = 0
 
@@ -65,6 +73,9 @@ class Strategy:
             'codons_used': self.codons_used,
             'wrapping_count': self.wrapping_count,
             'fitness': list(self.fitness),
+            'objectives': list(self.objectives),
+            'rank': self.rank,
+            'stability': self.stability,
             'n_trades': self.n_trades,
             'expression_raw': self.expression_raw,
             'metrics': self.metrics,
