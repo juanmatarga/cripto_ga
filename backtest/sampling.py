@@ -66,3 +66,59 @@ def sample_evolution_windows(data: pd.DataFrame,
 
     logger.debug(f"Sampled {len(windows)} windows of {window_bars} bars each")
     return windows
+
+
+def sample_windows_with_rotation(data: pd.DataFrame,
+                                  n_windows: int = 5,
+                                  window_bars: int = 8640,
+                                  previous_windows: List[Tuple[pd.DataFrame, str]] = None,
+                                  keep_ratio: float = 0.6,
+                                  ) -> List[Tuple[pd.DataFrame, str]]:
+    """
+    Sample windows with partial rotation for NSGA-II evaluation.
+
+    Returns list of (DataFrame, window_id) tuples.
+    window_id is "w_{start}_{bars}" — used as cache key.
+
+    Args:
+        data: Full training OHLCV
+        n_windows: Total windows per generation
+        window_bars: Bars per window (8640 = ~3 months at 15m)
+        previous_windows: [(df, window_id), ...] from previous generation
+        keep_ratio: Fraction of windows to keep from previous gen
+    """
+    total_bars = len(data)
+    if total_bars < window_bars:
+        logger.warning(f"Data ({total_bars}) shorter than window ({window_bars})")
+        wid = f"w_0_{window_bars}"
+        return [(data, wid)]
+
+    max_start = total_bars - window_bars
+
+    # Build pool of all valid start positions (non-overlapping grid)
+    all_starts = list(range(0, max_start + 1, window_bars))
+    if not all_starts:
+        all_starts = [0]
+
+    # Determine which windows to keep from previous generation
+    kept = []
+    if previous_windows:
+        n_keep = int(n_windows * keep_ratio)
+        kept = random.sample(previous_windows, min(n_keep, len(previous_windows)))
+
+    # Sample fresh windows for remaining slots
+    kept_ids = {wid for _, wid in kept}
+    n_fresh = n_windows - len(kept)
+
+    available = [s for s in all_starts if f"w_{s}_{window_bars}" not in kept_ids]
+    if len(available) < n_fresh:
+        fresh_starts = [random.randint(0, max_start) for _ in range(n_fresh)]
+    else:
+        fresh_starts = random.sample(available, n_fresh)
+
+    fresh = [(data.iloc[s:s + window_bars].copy(), f"w_{s}_{window_bars}")
+             for s in fresh_starts]
+
+    result = kept + fresh
+    logger.debug(f"Windows: {len(kept)} kept + {len(fresh)} fresh = {len(result)} total")
+    return result

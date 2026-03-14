@@ -77,7 +77,7 @@ class MAPElitesArchive:
         Returns:
             True if strategy was added (cell was empty or strategy beat resident)
         """
-        if strategy.fitness[0] <= -999.0:
+        if strategy.objectives[0] <= -999.0:
             return False
 
         cell = (
@@ -86,7 +86,7 @@ class MAPElitesArchive:
             _regime_bin(regime_sortinos),
         )
 
-        if cell not in self.grid or strategy.fitness[0] > self.grid[cell].fitness[0]:
+        if cell not in self.grid or strategy.objectives[0] > self.grid[cell].objectives[0]:
             self.grid[cell] = strategy
             return True
         return False
@@ -113,7 +113,7 @@ class MAPElitesArchive:
         for regime in REGIME_BINS:
             cells = [(k, v) for k, v in self.grid.items() if k[2] == regime]
             if cells:
-                result[regime] = max(cells, key=lambda x: x[1].fitness[0])[1]
+                result[regime] = max(cells, key=lambda x: x[1].objectives[0])[1]
             else:
                 result[regime] = None
         return result
@@ -127,7 +127,7 @@ class MAPElitesArchive:
         if not self.grid:
             return {'n_occupied': 0, 'coverage': 0.0, 'best_fitness': -999.0}
 
-        fitnesses = [s.fitness[0] for s in self.grid.values()]
+        fitnesses = [s.objectives[0] for s in self.grid.values()]
         return {
             'n_occupied': self.n_occupied,
             'coverage': self.coverage,

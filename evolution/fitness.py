@@ -422,3 +422,135 @@ def _compute_regime_profit_factors(trades: List[dict], windows: List[pd.DataFram
             result[regime] = 1.0
 
     return result
+
+
+def evaluate_single_window(strategy: Strategy, window_df: pd.DataFrame,
+                           config: dict, tf_data=None) -> Optional[dict]:
+    """
+    Evaluate strategy on a single window. Returns metrics dict or None on error.
+
+    This is the atomic building block for NSGA-II evaluation.
+    """
+    costs_config = config.get('costs', {
+        'fees_bps_long': 1.0, 'fees_bps_short': 1.0,
+        'slippage_bps_long': 1.0, 'slippage_bps_short': 1.0,
+    })
+    atr_period = config.get('exits', {}).get('atr_period', 14)
+
+    try:
+        equity, trades = _run_single_window(
+            strategy, window_df, costs_config, atr_period, tf_data=tf_data
+        )
+    except Exception:
+        return None
+
+    if not trades:
+        return {'sortino': 0.0, 'return_pct': 0.0, 'max_dd': 0.0, 'n_trades': 0,
+                'win_rate': 0.0, 'profit_factor': 0.0, 'expectancy': 0.0}
+
+    n_trades = len(trades)
+    returns = calculate_returns(equity).dropna()
+
+    if len(returns) < 5:
+        return None
+
+    sortino = calculate_sortino_ratio(returns, BARS_PER_YEAR_15M)
+    sortino = max(min(sortino, 10.0), -10.0)
+
+    start_eq = equity.iloc[0]
+    end_eq = equity.iloc[-1]
+    return_pct = (end_eq - start_eq) / start_eq * 100.0
+
+    dd = max_drawdown(equity)
+
+    winning = sum(1 for t in trades if t['pnl_pct'] > 0)
+    win_rate = winning / n_trades
+    winning_pnl = sum(t['pnl_pct'] for t in trades if t['pnl_pct'] > 0)
+    losing_pnl = abs(sum(t['pnl_pct'] for t in trades if t['pnl_pct'] < 0))
+    pf = winning_pnl / max(losing_pnl, 1e-10)
+    avg_win = winning_pnl / max(winning, 1)
+    avg_loss = losing_pnl / max(n_trades - winning, 1)
+    expectancy = (win_rate * avg_win) - ((1 - win_rate) * avg_loss)
+
+    return {
+        'sortino': sortino,
+        'return_pct': return_pct,
+        'max_dd': dd,
+        'n_trades': n_trades,
+        'win_rate': win_rate,
+        'profit_factor': pf,
+        'expectancy': expectancy,
+    }
+
+
+def compute_objectives(strategy: Strategy, window_metrics: List[dict],
+                       parsimony_coeff: float = 0.02) -> None:
+    """
+    Compute NSGA-II objectives from per-window metrics. Sets fields in-place.
+
+    Objectives:
+      - obj1: median(sortino) - parsimony * n_nodes
+      - obj2: median(return_pct)
+
+    Constraints (violation > 0 means infeasible):
+      - MaxDD > 40% in any window
+      - n_trades < 10 in any window
+    """
+    if not window_metrics:
+        strategy.objectives = (-999.0, -999.0)
+        strategy.stability = -999.0
+        strategy.constraint_violation = 100.0
+        return
+
+    sortinos = [m['sortino'] for m in window_metrics]
+    returns = [m['return_pct'] for m in window_metrics]
+    max_dds = [abs(m['max_dd']) for m in window_metrics]
+    trade_counts = [m['n_trades'] for m in window_metrics]
+
+    # Objectives: median across windows
+    sortinos_sorted = sorted(sortinos)
+    returns_sorted = sorted(returns)
+    mid = len(sortinos_sorted) // 2
+
+    median_sortino = sortinos_sorted[mid]
+    median_return = returns_sorted[mid]
+
+    # Parsimony on sortino objective
+    obj1 = median_sortino - parsimony_coeff * strategy.n_nodes
+    obj2 = median_return
+
+    strategy.objectives = (obj1, obj2)
+
+    # Stability = -std(sortino)
+    if len(sortinos) > 1:
+        mean_s = sum(sortinos) / len(sortinos)
+        var_s = sum((s - mean_s) ** 2 for s in sortinos) / (len(sortinos) - 1)
+        strategy.stability = -(var_s ** 0.5)
+    else:
+        strategy.stability = 0.0
+
+    # Constraint violations
+    cv = 0.0
+    for dd in max_dds:
+        if dd > 0.40:
+            cv += (dd - 0.40)
+    for tc in trade_counts:
+        if tc < 10:
+            cv += (10 - tc) * 0.1
+    strategy.constraint_violation = cv
+
+    # Store per-window metrics for analysis
+    strategy.window_metrics = window_metrics
+    strategy.n_trades = sum(trade_counts)
+
+    # Keep legacy fitness tuple for backward compat (archive etc.)
+    strategy.fitness = strategy.objectives
+    strategy.metrics = {
+        'sortino': median_sortino,
+        'return_pct': median_return,
+        'max_dd': max(max_dds) if max_dds else 0.0,
+        'n_trades': sum(trade_counts),
+        'stability': strategy.stability,
+        'window_sortinos': sortinos,
+        'window_returns': returns,
+    }
