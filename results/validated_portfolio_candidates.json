@@ -1,0 +1,85 @@
+{
+  "eth_strategies_validated": [
+    {
+      "name": "S1_MFI_ATR_SHORT",
+      "symbol": "ETH",
+      "direction": "SHORT",
+      "conditions": [
+        "MFI(14, 1h) < 30",
+        "ATR_PCT(10, 4h) CROSSES_ABOVE 2.0"
+      ],
+      "logic": "c0 AND c1",
+      "tp_atr_mult": 3.0,
+      "sl_atr_mult": 2.0,
+      "trail_atr_mult": 0.0,
+      "full_cagr": 0.167,
+      "full_trades": 96,
+      "full_wr": 0.552,
+      "full_pf": 1.92,
+      "full_dd": -0.136,
+      "signal_perm_p": {
+        "ots": 0.0,
+        "bear": 0.003,
+        "bull": 0.0
+      },
+      "cross_regime": true,
+      "note": "Best cross-regime SHORT. MFI<30 + volatility expansion."
+    },
+    {
+      "name": "S2_ATR_RSI_SHORT",
+      "symbol": "ETH",
+      "direction": "SHORT",
+      "conditions": [
+        "ATR_PCT(10) CROSSES_BELOW 1.5",
+        "RSI(close, 14, 15m) > MFI(21)"
+      ],
+      "logic": "c0 AND c1",
+      "tp_atr_mult": 1.0,
+      "sl_atr_mult": 1.5,
+      "trail_atr_mult": 0.0,
+      "full_cagr": 0.053,
+      "full_trades": 156,
+      "full_wr": 0.647,
+      "full_pf": 1.19,
+      "full_dd": -0.226,
+      "signal_perm_p": {
+        "ots": 0.0,
+        "bear": 0.003,
+        "bull": 0.0
+      },
+      "cross_regime": true,
+      "note": "Highest frequency. Scalping SHORT. DD is high (-22.6%)."
+    },
+    {
+      "name": "S3_BBWIDTH_ROC_LONG",
+      "symbol": "ETH",
+      "direction": "LONG",
+      "conditions": [
+        "BBWIDTH(14, 3.0, 1h) CROSSES_BELOW ROC(8)"
+      ],
+      "logic": "c0",
+      "tp_atr_mult": 1.0,
+      "sl_atr_mult": 2.5,
+      "trail_atr_mult": 0.0,
+      "full_cagr": 0.113,
+      "full_trades": 139,
+      "full_wr": 0.82,
+      "full_pf": 2.2,
+      "full_dd": -0.048,
+      "signal_perm_p": {
+        "ots": 0.0,
+        "bear": 0.007,
+        "side": 0.0
+      },
+      "cross_regime": true,
+      "note": "Most consistent. 82% WR, low DD. Active 92% of months."
+    }
+  ],
+  "portfolio_correlation": {
+    "S1_S2": 0.031,
+    "S1_S3": 0.003,
+    "S2_S3": -0.063
+  },
+  "engine_version": "v8_signal_persistence",
+  "validation_date": "2026-03-15"
+}

@@ -1,0 +1,1202 @@
+{
+  "BTC": {
+    "symbol": "BTC/USDT",
+    "ots_period": "2025-06-01 to 2025-11-21",
+    "n_runs": 5,
+    "run_dirs": [
+      "nsga2_BTC_seed123_20260314_192327",
+      "nsga2_BTC_seed42_20260314_182133",
+      "nsga2_BTC_seed42_20260314_183558",
+      "nsga2_BTC_seed42_20260314_185800",
+      "nsga2_BTC_seed777_20260314_192328"
+    ],
+    "n_total_pareto": 264,
+    "n_unique": 29,
+    "n_positive": 0,
+    "n_pass": 0,
+    "bh_return": -0.16457255033396367,
+    "results": [
+      {
+        "direction": "LONG",
+        "conditions": [
+          "BBWIDTH(20, 2.0, 15m) CROSSES_ABOVE 1.5"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.75,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN BBWIDTH(20, 2.0, 15m) CROSSES_ABOVE 1.5 EXIT TP=6.0 SL=0.75",
+        "n_nodes": 1,
+        "evo_objectives": [
+          1.4717745944130585,
+          4.840396990028836
+        ],
+        "evo_stability": -3.0510370241562392,
+        "evo_n_trades": 1774,
+        "ots_cagr": -0.3582841436806282,
+        "ots_sortino": -2.723731508034616,
+        "ots_max_dd": -0.2002120476427106,
+        "ots_n_trades": 202,
+        "ots_win_rate": 0.07920792079207921,
+        "ots_profit_factor": 0.6199798240829758,
+        "ots_equity_final": 81.0364212384804
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "STOCH_K(21, 4h) > 30"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 1.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN STOCH_K(21, 4h) _GT_ 30 EXIT TP=5.0 SL=1.0",
+        "n_nodes": 1,
+        "evo_objectives": [
+          1.3843168610231122,
+          9.64048728723057
+        ],
+        "evo_stability": -2.386973814447405,
+        "evo_n_trades": 4187,
+        "ots_cagr": -0.7619662708852915,
+        "ots_sortino": -5.3634501404697765,
+        "ots_max_dd": -0.5163496384720979,
+        "ots_n_trades": 754,
+        "ots_win_rate": 0.13395225464190982,
+        "ots_profit_factor": 0.6743522966131965,
+        "ots_equity_final": 50.64375948844209
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "BBWIDTH(20, 2.0, 15m) CROSSES_ABOVE 1.5"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 1.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN BBWIDTH(20, 2.0, 15m) CROSSES_ABOVE 1.5 EXIT TP=6.0 SL=1.5",
+        "n_nodes": 1,
+        "evo_objectives": [
+          1.2122493150531497,
+          10.412942349320687
+        ],
+        "evo_stability": -2.0469673116801967,
+        "evo_n_trades": 1492,
+        "ots_cagr": -0.5642086989151602,
+        "ots_sortino": -2.4849086075810787,
+        "ots_max_dd": -0.3259192161247589,
+        "ots_n_trades": 181,
+        "ots_win_rate": 0.13812154696132597,
+        "ots_profit_factor": 0.5662927013211928,
+        "ots_equity_final": 67.45554014494306
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "STOCH_D(21, 4h) > 20"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 8.0,
+        "sl_atr_mult": 1.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN STOCH_D(21, 4h) _GT_ 20 EXIT TP=8.0 SL=1.0",
+        "n_nodes": 1,
+        "evo_objectives": [
+          1.127904336149782,
+          10.674369870299515
+        ],
+        "evo_stability": -2.277040397038072,
+        "evo_n_trades": 2775,
+        "ots_cagr": -0.7423960162059365,
+        "ots_sortino": -4.432228139448947,
+        "ots_max_dd": -0.49878517364022007,
+        "ots_n_trades": 551,
+        "ots_win_rate": 0.09437386569872959,
+        "ots_profit_factor": 0.6556465653981818,
+        "ots_equity_final": 52.576400273581925
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "STOCH_K(14, 4h) CROSSES_BELOW ADX(10)"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 8.0,
+        "sl_atr_mult": 1.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN STOCH_K(14, 4h) CROSSES_BELOW ADX(10) EXIT TP=8.0 SL=1.5",
+        "n_nodes": 1,
+        "evo_objectives": [
+          1.046927272876801,
+          12.68544420811942
+        ],
+        "evo_stability": -1.3731310727603074,
+        "evo_n_trades": 1240,
+        "ots_cagr": -0.3174387370878191,
+        "ots_sortino": -0.8472967179329512,
+        "ots_max_dd": -0.19572326242736968,
+        "ots_n_trades": 181,
+        "ots_win_rate": 0.1270718232044199,
+        "ots_profit_factor": 0.7524656668876172,
+        "ots_equity_final": 83.44166217818534
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "ROC(5, 15m) CROSSES_ABOVE 1.0"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 8.0,
+        "sl_atr_mult": 1.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ROC(5, 15m) CROSSES_ABOVE 1.0 EXIT TP=8.0 SL=1.5",
+        "n_nodes": 1,
+        "evo_objectives": [
+          0.8563151506531086,
+          12.733588467858043
+        ],
+        "evo_stability": -1.0615550504510667,
+        "evo_n_trades": 811,
+        "ots_cagr": -0.3864457585429737,
+        "ots_sortino": -0.6521399413783624,
+        "ots_max_dd": -0.2500056900609614,
+        "ots_n_trades": 80,
+        "ots_win_rate": 0.1125,
+        "ots_profit_factor": 0.567863997741848,
+        "ots_equity_final": 79.33084169446337
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "ROC(3, 15m) CROSSES_ABOVE 1.0"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 8.0,
+        "sl_atr_mult": 2.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ROC(3, 15m) CROSSES_ABOVE 1.0 EXIT TP=8.0 SL=2.0",
+        "n_nodes": 1,
+        "evo_objectives": [
+          0.8020554078919224,
+          19.567968668574267
+        ],
+        "evo_stability": -1.101268415703237,
+        "evo_n_trades": 578,
+        "ots_cagr": -0.3300113540321622,
+        "ots_sortino": -0.2844851230900593,
+        "ots_max_dd": -0.23763956640809597,
+        "ots_n_trades": 52,
+        "ots_win_rate": 0.15384615384615385,
+        "ots_profit_factor": 0.6264184697121744,
+        "ots_equity_final": 82.70957122499136
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "PRICE_POS(34, 1h) CROSSES_ABOVE -1.5"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 4.0,
+        "sl_atr_mult": 2.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN PRICE_POS(34, 1h) CROSSES_ABOVE -1.5 EXIT TP=4.0 SL=2.0",
+        "n_nodes": 1,
+        "evo_objectives": [
+          0.7031271634979867,
+          6.824188823109053
+        ],
+        "evo_stability": -0.6822281776984299,
+        "evo_n_trades": 298,
+        "ots_cagr": -0.1440827018579781,
+        "ots_sortino": -0.24127591668361206,
+        "ots_max_dd": -0.10740156364256247,
+        "ots_n_trades": 115,
+        "ots_win_rate": 0.3130434782608696,
+        "ots_profit_factor": 0.8621805126091606,
+        "ots_equity_final": 92.8907774589039
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "RSI(open, 14, 4h) CROSSES_ABOVE STOCH_K(21, 4h)",
+          "ATR_PCT(7) < 1.0",
+          "VOL_RATIO(50, 4h) CROSSES_BELOW 2.0"
+        ],
+        "logic": "( c0 AND c1 ) OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 1.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( RSI(open, 14, 4h) CROSSES_ABOVE STOCH_K(21, 4h) AND ATR_PCT(7) _LT_ 1.0 ) OR VOL_RATIO(50, 4h) CROSSES_BELOW 2.0 EXIT TP=6.0 SL=1.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          0.8380141540656572,
+          7.230237840163824
+        ],
+        "evo_stability": -1.2961278441510036,
+        "evo_n_trades": 1007,
+        "ots_cagr": -0.05834660898419197,
+        "ots_sortino": -0.2237775143577746,
+        "ots_max_dd": -0.14862995596857048,
+        "ots_n_trades": 131,
+        "ots_win_rate": 0.13740458015267176,
+        "ots_profit_factor": 0.9346212837918149,
+        "ots_equity_final": 97.19061709231896
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "STOCH_D(14, 15m) > 60",
+          "ROC(21, 4h) > MACD_NORM(16, 34, 13)"
+        ],
+        "logic": "c0 AND c1",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 2.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN STOCH_D(14, 15m) _GT_ 60 AND ROC(21, 4h) _GT_ MACD_NORM(16, 34, 13) EXIT TP=5.0 SL=2.0",
+        "n_nodes": 2,
+        "evo_objectives": [
+          0.8237403670514338,
+          11.503211251584602
+        ],
+        "evo_stability": -0.9216675694924958,
+        "evo_n_trades": 1295,
+        "ots_cagr": -0.12355206816161379,
+        "ots_sortino": -0.24634581928966254,
+        "ots_max_dd": -0.09660044124011317,
+        "ots_n_trades": 186,
+        "ots_win_rate": 0.2903225806451613,
+        "ots_profit_factor": 0.9310548485759298,
+        "ots_equity_final": 93.94033741809938
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "STOCH_D(14, 15m) > 60",
+          "ROC(21, 1h) > MACD_NORM(16, 21, 9)"
+        ],
+        "logic": "c0 AND c1",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 2.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN STOCH_D(14, 15m) _GT_ 60 AND ROC(21, 1h) _GT_ MACD_NORM(16, 21, 9) EXIT TP=5.0 SL=2.0",
+        "n_nodes": 2,
+        "evo_objectives": [
+          0.7761301660515281,
+          14.052838132214532
+        ],
+        "evo_stability": -0.9598388567352104,
+        "evo_n_trades": 1643,
+        "ots_cagr": -0.3102795136680684,
+        "ots_sortino": -0.7107395271508479,
+        "ots_max_dd": -0.21824724410015392,
+        "ots_n_trades": 237,
+        "ots_win_rate": 0.25316455696202533,
+        "ots_profit_factor": 0.8327990761507148,
+        "ots_equity_final": 83.85536959463668
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "STOCH_D(14, 15m) > 60",
+          "ROC(21, 1h) > MACD_NORM(16, 34, 9)"
+        ],
+        "logic": "c0 AND c1",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 2.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN STOCH_D(14, 15m) _GT_ 60 AND ROC(21, 1h) _GT_ MACD_NORM(16, 34, 9) EXIT TP=5.0 SL=2.0",
+        "n_nodes": 2,
+        "evo_objectives": [
+          0.6848841071105186,
+          14.151118386425068
+        ],
+        "evo_stability": -0.9222364189497225,
+        "evo_n_trades": 1610,
+        "ots_cagr": -0.30221955095899156,
+        "ots_sortino": -0.6905897301397557,
+        "ots_max_dd": -0.21654286129047537,
+        "ots_n_trades": 234,
+        "ots_win_rate": 0.2564102564102564,
+        "ots_profit_factor": 0.8364755004248385,
+        "ots_equity_final": 84.31843386166354
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "STOCH_D(14, 4h) CROSSES_ABOVE RSI(close, 7, 15m)",
+          "BBWIDTH(30, 2.5, 15m) < ROC(13)",
+          "BBWIDTH(30, 2.0, 15m) CROSSES_ABOVE -2.0"
+        ],
+        "logic": "( c0 OR c1 ) OR c2",
+        "tp_atr_mult": 3.0,
+        "sl_atr_mult": 3.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( STOCH_D(14, 4h) CROSSES_ABOVE RSI(close, 7, 15m) OR BBWIDTH(30, 2.5, 15m) _LT_ ROC(13) ) OR BBWIDTH(30, 2.0, 15m) CROSSES_ABOVE -2.0 EXIT TP=3.0 SL=3.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          0.6670283381631191,
+          17.511106655948865
+        ],
+        "evo_stability": -0.543682729035686,
+        "evo_n_trades": 1948,
+        "ots_cagr": -0.16570363054740467,
+        "ots_sortino": -0.1984649686423278,
+        "ots_max_dd": -0.19119743163412808,
+        "ots_n_trades": 256,
+        "ots_win_rate": 0.515625,
+        "ots_profit_factor": 0.9369959418791753,
+        "ots_equity_final": 91.77106206932292
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "ROC(3, 4h) > VOL_RATIO(10)"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.75,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ROC(3, 4h) _GT_ VOL_RATIO(10) EXIT TP=6.0 SL=0.75",
+        "n_nodes": 1,
+        "evo_objectives": [
+          1.4147801786386067,
+          12.793957156487009
+        ],
+        "evo_stability": -2.319939731027471,
+        "evo_n_trades": 3146,
+        "ots_cagr": -0.6024910796787475,
+        "ots_sortino": -5.161577230369566,
+        "ots_max_dd": -0.3671655836540004,
+        "ots_n_trades": 483,
+        "ots_win_rate": 0.07867494824016563,
+        "ots_profit_factor": 0.5808186145910923,
+        "ots_equity_final": 64.57879888766449
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "ROC(13, 1h) > 1.5"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 2.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ROC(13, 1h) _GT_ 1.5 EXIT TP=6.0 SL=2.0",
+        "n_nodes": 1,
+        "evo_objectives": [
+          0.6262783061347227,
+          14.47057165014401
+        ],
+        "evo_stability": -0.7153085898652313,
+        "evo_n_trades": 819,
+        "ots_cagr": -0.26995670708065156,
+        "ots_sortino": -0.5724984275355123,
+        "ots_max_dd": -0.20219985209652724,
+        "ots_n_trades": 101,
+        "ots_win_rate": 0.21782178217821782,
+        "ots_profit_factor": 0.7453148901428177,
+        "ots_equity_final": 86.14440738214925
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "ROC(13, 1h) > 1.5",
+          "PRICE_POS(21) CROSSES_BELOW PRICE_POS(21, 1h)",
+          "RSI(open, 9) CROSSES_ABOVE STOCH_K(21, 4h)"
+        ],
+        "logic": "c0 OR c1 AND c2",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 3.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ROC(13, 1h) _GT_ 1.5 OR PRICE_POS(21) CROSSES_BELOW PRICE_POS(21, 1h) AND RSI(open, 9) CROSSES_ABOVE STOCH_K(21, 4h) EXIT TP=5.0 SL=3.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          0.4881675558494367,
+          15.617471400895994
+        ],
+        "evo_stability": -0.6034776793921248,
+        "evo_n_trades": 831,
+        "ots_cagr": -0.5030988453825999,
+        "ots_sortino": -0.813851233962081,
+        "ots_max_dd": -0.31512777764738115,
+        "ots_n_trades": 99,
+        "ots_win_rate": 0.2828282828282828,
+        "ots_profit_factor": 0.5704503057188812,
+        "ots_equity_final": 71.78465807127539
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "BBWIDTH(30, 2.5) CROSSES_BELOW -0.5",
+          "MFI(21) CROSSES_BELOW STOCH_K(5, 15m)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "c0 AND c1 OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN BBWIDTH(30, 2.5) CROSSES_BELOW -0.5 AND MFI(21) CROSSES_BELOW STOCH_K(5, 15m) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=0.5",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.873626856398809,
+          13.12357865310142
+        ],
+        "evo_stability": -4.885941929192394,
+        "evo_n_trades": 5513,
+        "ots_cagr": -0.597417819212392,
+        "ots_sortino": -7.454219270611055,
+        "ots_max_dd": -0.39482087723121684,
+        "ots_n_trades": 885,
+        "ots_win_rate": 0.059887005649717516,
+        "ots_profit_factor": 0.6833329916540495,
+        "ots_equity_final": 64.9681656372083
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "VOL_RATIO(5, 15m) CROSSES_BELOW -1.0",
+          "RSI(open, 14) CROSSES_BELOW STOCH_K(21)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "( c0 AND c1 ) OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( VOL_RATIO(5, 15m) CROSSES_BELOW -1.0 AND RSI(open, 14) CROSSES_BELOW STOCH_K(21) ) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=0.5",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.873626856398809,
+          13.12357865310142
+        ],
+        "evo_stability": -4.885941929192394,
+        "evo_n_trades": 5513,
+        "ots_cagr": -0.597417819212392,
+        "ots_sortino": -7.454219270611055,
+        "ots_max_dd": -0.39482087723121684,
+        "ots_n_trades": 885,
+        "ots_win_rate": 0.059887005649717516,
+        "ots_profit_factor": 0.6833329916540495,
+        "ots_equity_final": 64.9681656372083
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "BBWIDTH(30, 2.5) CROSSES_BELOW -0.5",
+          "RSI(high, 9) CROSSES_BELOW STOCH_D(5)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "( c0 AND c1 ) OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( BBWIDTH(30, 2.5) CROSSES_BELOW -0.5 AND RSI(high, 9) CROSSES_BELOW STOCH_D(5) ) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=0.5",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.873626856398809,
+          13.12357865310142
+        ],
+        "evo_stability": -4.885941929192394,
+        "evo_n_trades": 5513,
+        "ots_cagr": -0.597417819212392,
+        "ots_sortino": -7.454219270611055,
+        "ots_max_dd": -0.39482087723121684,
+        "ots_n_trades": 885,
+        "ots_win_rate": 0.059887005649717516,
+        "ots_profit_factor": 0.6833329916540495,
+        "ots_equity_final": 64.9681656372083
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "BBWIDTH(30, 2.0) CROSSES_BELOW 0.0",
+          "MFI(21) CROSSES_BELOW STOCH_K(5, 15m)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "c0 AND c1 OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN BBWIDTH(30, 2.0) CROSSES_BELOW 0.0 AND MFI(21) CROSSES_BELOW STOCH_K(5, 15m) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=0.5",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.873626856398809,
+          13.12357865310142
+        ],
+        "evo_stability": -4.885941929192394,
+        "evo_n_trades": 5513,
+        "ots_cagr": -0.597417819212392,
+        "ots_sortino": -7.454219270611055,
+        "ots_max_dd": -0.39482087723121684,
+        "ots_n_trades": 885,
+        "ots_win_rate": 0.059887005649717516,
+        "ots_profit_factor": 0.6833329916540495,
+        "ots_equity_final": 64.9681656372083
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "BBWIDTH(30, 2.5) CROSSES_BELOW -0.5",
+          "RSI(open, 14) CROSSES_BELOW MFI(21)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "( c0 AND c1 ) OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( BBWIDTH(30, 2.5) CROSSES_BELOW -0.5 AND RSI(open, 14) CROSSES_BELOW MFI(21) ) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=0.5",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.873626856398809,
+          13.12357865310142
+        ],
+        "evo_stability": -4.885941929192394,
+        "evo_n_trades": 5513,
+        "ots_cagr": -0.597417819212392,
+        "ots_sortino": -7.454219270611055,
+        "ots_max_dd": -0.39482087723121684,
+        "ots_n_trades": 885,
+        "ots_win_rate": 0.059887005649717516,
+        "ots_profit_factor": 0.6833329916540495,
+        "ots_equity_final": 64.9681656372083
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "VOL_RATIO(10, 1h) CROSSES_BELOW -1.0",
+          "RSI(low, 14) CROSSES_BELOW STOCH_K(5)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "( c0 AND c1 ) OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( VOL_RATIO(10, 1h) CROSSES_BELOW -1.0 AND RSI(low, 14) CROSSES_BELOW STOCH_K(5) ) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=0.5",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.873626856398809,
+          13.12357865310142
+        ],
+        "evo_stability": -4.885941929192394,
+        "evo_n_trades": 5513,
+        "ots_cagr": -0.597417819212392,
+        "ots_sortino": -7.454219270611055,
+        "ots_max_dd": -0.39482087723121684,
+        "ots_n_trades": 885,
+        "ots_win_rate": 0.059887005649717516,
+        "ots_profit_factor": 0.6833329916540495,
+        "ots_equity_final": 64.9681656372083
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "VOL_RATIO(5, 1h) CROSSES_BELOW -1.0",
+          "RSI(open, 9) CROSSES_BELOW STOCH_K(21)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "c0 AND c1 OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN VOL_RATIO(5, 1h) CROSSES_BELOW -1.0 AND RSI(open, 9) CROSSES_BELOW STOCH_K(21) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=0.5",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.873626856398809,
+          13.12357865310142
+        ],
+        "evo_stability": -4.885941929192394,
+        "evo_n_trades": 5513,
+        "ots_cagr": -0.597417819212392,
+        "ots_sortino": -7.454219270611055,
+        "ots_max_dd": -0.39482087723121684,
+        "ots_n_trades": 885,
+        "ots_win_rate": 0.059887005649717516,
+        "ots_profit_factor": 0.6833329916540495,
+        "ots_equity_final": 64.9681656372083
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "BBWIDTH(30, 2.5) CROSSES_BELOW 0.0",
+          "MFI(21) CROSSES_BELOW STOCH_K(5, 15m)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "c0 AND c1 OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN BBWIDTH(30, 2.5) CROSSES_BELOW 0.0 AND MFI(21) CROSSES_BELOW STOCH_K(5, 15m) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=0.5",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.873626856398809,
+          13.12357865310142
+        ],
+        "evo_stability": -4.885941929192394,
+        "evo_n_trades": 5513,
+        "ots_cagr": -0.597417819212392,
+        "ots_sortino": -7.454219270611055,
+        "ots_max_dd": -0.39482087723121684,
+        "ots_n_trades": 885,
+        "ots_win_rate": 0.059887005649717516,
+        "ots_profit_factor": 0.6833329916540495,
+        "ots_equity_final": 64.9681656372083
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "BBWIDTH(30, 2.5) CROSSES_BELOW -0.5",
+          "MFI(21) CROSSES_BELOW STOCH_K(21, 15m)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "c0 AND c1 OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN BBWIDTH(30, 2.5) CROSSES_BELOW -0.5 AND MFI(21) CROSSES_BELOW STOCH_K(21, 15m) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=0.5",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.873626856398809,
+          13.12357865310142
+        ],
+        "evo_stability": -4.885941929192394,
+        "evo_n_trades": 5513,
+        "ots_cagr": -0.597417819212392,
+        "ots_sortino": -7.454219270611055,
+        "ots_max_dd": -0.39482087723121684,
+        "ots_n_trades": 885,
+        "ots_win_rate": 0.059887005649717516,
+        "ots_profit_factor": 0.6833329916540495,
+        "ots_equity_final": 64.9681656372083
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "VOL_RATIO(5, 4h) CROSSES_BELOW 1.5",
+          "RSI(open, 14) CROSSES_BELOW STOCH_K(21)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "( c0 AND c1 ) OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 1.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( VOL_RATIO(5, 4h) CROSSES_BELOW 1.5 AND RSI(open, 14) CROSSES_BELOW STOCH_K(21) ) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=1.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.0583586693970277,
+          22.633099997976316
+        ],
+        "evo_stability": -2.068866821545379,
+        "evo_n_trades": 2832,
+        "ots_cagr": -0.4070660360022784,
+        "ots_sortino": -1.9668434110026753,
+        "ots_max_dd": -0.2701267090407929,
+        "ots_n_trades": 495,
+        "ots_win_rate": 0.12727272727272726,
+        "ots_profit_factor": 0.8293692542195876,
+        "ots_equity_final": 78.05572112316472
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "ROC(13, 1h) CROSSES_BELOW 1.5",
+          "RSI(open, 9) CROSSES_BELOW STOCH_K(21)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "( c0 AND c1 ) OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 1.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( ROC(13, 1h) CROSSES_BELOW 1.5 AND RSI(open, 9) CROSSES_BELOW STOCH_K(21) ) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=1.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.0095816110653404,
+          24.35058874940951
+        ],
+        "evo_stability": -2.1311587359258612,
+        "evo_n_trades": 2836,
+        "ots_cagr": -0.46495891746053153,
+        "ots_sortino": -2.3898336371368902,
+        "ots_max_dd": -0.30359042125902935,
+        "ots_n_trades": 494,
+        "ots_win_rate": 0.12550607287449392,
+        "ots_profit_factor": 0.7947077352390589,
+        "ots_equity_final": 74.34558611259388
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "VOL_RATIO(5, 1h) CROSSES_BELOW 1.5",
+          "RSI(open, 9) CROSSES_BELOW STOCH_K(21)",
+          "RSI(close, 14, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "( c0 AND c1 ) OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 1.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( VOL_RATIO(5, 1h) CROSSES_BELOW 1.5 AND RSI(open, 9) CROSSES_BELOW STOCH_K(21) ) OR RSI(close, 14, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=1.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          1.9024334045039222,
+          25.201578080278235
+        ],
+        "evo_stability": -2.6143436654967593,
+        "evo_n_trades": 3002,
+        "ots_cagr": -0.48549074987192065,
+        "ots_sortino": -2.530814810088918,
+        "ots_max_dd": -0.3036438959085441,
+        "ots_n_trades": 524,
+        "ots_win_rate": 0.12404580152671756,
+        "ots_profit_factor": 0.7962726418725403,
+        "ots_equity_final": 72.97935845316701
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "VOL_RATIO(5, 1h) CROSSES_BELOW 1.5",
+          "RSI(open, 9) CROSSES_BELOW STOCH_K(21)",
+          "RSI(close, 21, 4h) < MFI(10, 4h)"
+        ],
+        "logic": "( c0 AND c1 ) OR c2",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 1.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( VOL_RATIO(5, 1h) CROSSES_BELOW 1.5 AND RSI(open, 9) CROSSES_BELOW STOCH_K(21) ) OR RSI(close, 21, 4h) _LT_ MFI(10, 4h) EXIT TP=6.0 SL=1.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          1.8244221742115403,
+          26.415517919075114
+        ],
+        "evo_stability": -2.2896985587643353,
+        "evo_n_trades": 2892,
+        "ots_cagr": -0.5060223280307489,
+        "ots_sortino": -2.68758552672079,
+        "ots_max_dd": -0.330907852853823,
+        "ots_n_trades": 504,
+        "ots_win_rate": 0.12301587301587301,
+        "ots_profit_factor": 0.7754369596772913,
+        "ots_equity_final": 71.58415776750535
+      }
+    ]
+  },
+  "ETH": {
+    "symbol": "ETH/USDT",
+    "ots_period": "2025-06-01 to 2025-11-21",
+    "n_runs": 1,
+    "run_dirs": [
+      "nsga2_ETH_seed42_20260314_195730"
+    ],
+    "n_total_pareto": 31,
+    "n_unique": 7,
+    "n_positive": 0,
+    "n_pass": 0,
+    "bh_return": 0.1337683005718866,
+    "results": [
+      {
+        "direction": "SHORT",
+        "conditions": [
+          "VOL_RATIO(20, 1h) CROSSES_BELOW ATR_PCT(10, 4h)"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 5.0,
+        "expression_raw": "SHORT WHEN VOL_RATIO(20, 1h) CROSSES_BELOW ATR_PCT(10, 4h) EXIT TP=5.0 SL=0.5 TRAIL=5.0",
+        "n_nodes": 1,
+        "evo_objectives": [
+          1.5311720344101483,
+          7.010058740592953
+        ],
+        "evo_stability": -2.3022873449101815,
+        "evo_n_trades": 2083,
+        "ots_cagr": -0.31480090167436336,
+        "ots_sortino": -1.180638719390309,
+        "ots_max_dd": -0.2500134993593449,
+        "ots_n_trades": 261,
+        "ots_win_rate": 0.07279693486590039,
+        "ots_profit_factor": 0.7728673653836052,
+        "ots_equity_final": 83.5943581641034
+      },
+      {
+        "direction": "SHORT",
+        "conditions": [
+          "VOL_RATIO(20, 1h) CROSSES_BELOW ATR_PCT(10, 4h)"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 6.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "SHORT WHEN VOL_RATIO(20, 1h) CROSSES_BELOW ATR_PCT(10, 4h) EXIT TP=6.0 SL=0.5",
+        "n_nodes": 1,
+        "evo_objectives": [
+          1.2354687632949137,
+          7.46976171259935
+        ],
+        "evo_stability": -2.823513813539621,
+        "evo_n_trades": 1991,
+        "ots_cagr": -0.37390994760558594,
+        "ots_sortino": -1.472218989049776,
+        "ots_max_dd": -0.2914688967818298,
+        "ots_n_trades": 252,
+        "ots_win_rate": 0.05555555555555555,
+        "ots_profit_factor": 0.7112365429147623,
+        "ots_equity_final": 80.09503818027754
+      },
+      {
+        "direction": "SHORT",
+        "conditions": [
+          "VOL_RATIO(20, 1h) CROSSES_BELOW ATR_PCT(21, 4h)"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "SHORT WHEN VOL_RATIO(20, 1h) CROSSES_BELOW ATR_PCT(21, 4h) EXIT TP=5.0 SL=0.5",
+        "n_nodes": 1,
+        "evo_objectives": [
+          1.2224851159990593,
+          7.890362209320018
+        ],
+        "evo_stability": -2.134928839559349,
+        "evo_n_trades": 2046,
+        "ots_cagr": -0.38546197397622806,
+        "ots_sortino": -1.6637990388635588,
+        "ots_max_dd": -0.2520000474106212,
+        "ots_n_trades": 248,
+        "ots_win_rate": 0.07258064516129033,
+        "ots_profit_factor": 0.6906848976358226,
+        "ots_equity_final": 79.39110951157305
+      },
+      {
+        "direction": "SHORT",
+        "conditions": [
+          "VOL_RATIO(50, 1h) CROSSES_BELOW ATR_PCT(14, 4h)"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 0.75,
+        "trail_atr_mult": 5.0,
+        "expression_raw": "SHORT WHEN VOL_RATIO(50, 1h) CROSSES_BELOW ATR_PCT(14, 4h) EXIT TP=5.0 SL=0.75 TRAIL=5.0",
+        "n_nodes": 1,
+        "evo_objectives": [
+          1.1417249803721072,
+          8.644845719408536
+        ],
+        "evo_stability": -1.8737816660611442,
+        "evo_n_trades": 1850,
+        "ots_cagr": -0.110467391390763,
+        "ots_sortino": -0.19627535496610268,
+        "ots_max_dd": -0.176907842504669,
+        "ots_n_trades": 227,
+        "ots_win_rate": 0.1277533039647577,
+        "ots_profit_factor": 0.9565011670992712,
+        "ots_equity_final": 94.60251229791307
+      },
+      {
+        "direction": "SHORT",
+        "conditions": [
+          "VOL_RATIO(50, 1h) CROSSES_BELOW ATR_PCT(14, 4h)"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 0.75,
+        "trail_atr_mult": 4.0,
+        "expression_raw": "SHORT WHEN VOL_RATIO(50, 1h) CROSSES_BELOW ATR_PCT(14, 4h) EXIT TP=5.0 SL=0.75 TRAIL=4.0",
+        "n_nodes": 1,
+        "evo_objectives": [
+          0.9953081320670062,
+          9.350800389682234
+        ],
+        "evo_stability": -1.8484213841595953,
+        "evo_n_trades": 1874,
+        "ots_cagr": -0.1982872303005957,
+        "ots_sortino": -0.46212650393070726,
+        "ots_max_dd": -0.23621826897706777,
+        "ots_n_trades": 229,
+        "ots_win_rate": 0.1572052401746725,
+        "ots_profit_factor": 0.8942840372344799,
+        "ots_equity_final": 90.05437203436088
+      },
+      {
+        "direction": "SHORT",
+        "conditions": [
+          "VOL_RATIO(20, 1h) CROSSES_BELOW ATR_PCT(14, 4h)",
+          "PCT_B(20, 2.5) CROSSES_BELOW VOL_RATIO(20)",
+          "RSI(close, 14) CROSSES_ABOVE ADX(14)"
+        ],
+        "logic": "c0 OR c1 AND c2",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 1.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "SHORT WHEN VOL_RATIO(20, 1h) CROSSES_BELOW ATR_PCT(14, 4h) OR PCT_B(20, 2.5) CROSSES_BELOW VOL_RATIO(20) AND RSI(close, 14) CROSSES_ABOVE ADX(14) EXIT TP=5.0 SL=1.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          0.8645245877745933,
+          13.01099337573838
+        ],
+        "evo_stability": -1.4552262548226367,
+        "evo_n_trades": 1933,
+        "ots_cagr": -0.15477771641771765,
+        "ots_sortino": -0.18837582698301925,
+        "ots_max_dd": -0.24149978464694496,
+        "ots_n_trades": 251,
+        "ots_win_rate": 0.16334661354581673,
+        "ots_profit_factor": 0.9564613805643633,
+        "ots_equity_final": 92.33878194511595
+      },
+      {
+        "direction": "SHORT",
+        "conditions": [
+          "VOL_RATIO(20, 1h) CROSSES_BELOW ATR_PCT(14, 4h)"
+        ],
+        "logic": "c0",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 1.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "SHORT WHEN VOL_RATIO(20, 1h) CROSSES_BELOW ATR_PCT(14, 4h) EXIT TP=5.0 SL=1.0",
+        "n_nodes": 1,
+        "evo_objectives": [
+          0.8314948359277996,
+          15.031074476582349
+        ],
+        "evo_stability": -1.5188562029801296,
+        "evo_n_trades": 1876,
+        "ots_cagr": -0.13629429849628283,
+        "ots_sortino": -0.1531805375668529,
+        "ots_max_dd": -0.23368226401998027,
+        "ots_n_trades": 245,
+        "ots_win_rate": 0.16326530612244897,
+        "ots_profit_factor": 0.9634435619860697,
+        "ots_equity_final": 93.29047624646667
+      }
+    ]
+  },
+  "BNB": {
+    "symbol": "BNB/USDT",
+    "ots_period": "2025-06-01 to 2025-11-21",
+    "n_runs": 1,
+    "run_dirs": [
+      "nsga2_BNB_seed42_20260314_195731"
+    ],
+    "n_total_pareto": 35,
+    "n_unique": 8,
+    "n_positive": 8,
+    "n_pass": 8,
+    "bh_return": 0.32617065635890485,
+    "results": [
+      {
+        "direction": "LONG",
+        "conditions": [
+          "MFI(10, 1h) < 40",
+          "ROC(5) CROSSES_BELOW -1.0",
+          "PCT_B(30, 3.0) CROSSES_BELOW 0.0"
+        ],
+        "logic": "c0 AND c1 OR c2",
+        "tp_atr_mult": 0.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 5.0,
+        "expression_raw": "LONG WHEN MFI(10, 1h) _LT_ 40 AND ROC(5) CROSSES_BELOW -1.0 OR PCT_B(30, 3.0) CROSSES_BELOW 0.0 EXIT SL=0.5 TRAIL=5.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.1520414119434146,
+          8.991070080458286
+        ],
+        "evo_stability": -2.5358860258203504,
+        "evo_n_trades": 1217,
+        "ots_cagr": 0.0367741227127103,
+        "ots_sortino": 0.1568728897854354,
+        "ots_max_dd": -0.16342171127074878,
+        "ots_n_trades": 146,
+        "ots_win_rate": 0.10273972602739725,
+        "ots_profit_factor": 1.06434882440428,
+        "ots_equity_final": 101.72654733059865
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "RSI(open, 21) < 40",
+          "ROC(5) CROSSES_BELOW -1.0",
+          "PCT_B(30, 3.0) CROSSES_BELOW 0.0"
+        ],
+        "logic": "c0 AND c1 OR c2",
+        "tp_atr_mult": 0.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 5.0,
+        "expression_raw": "LONG WHEN RSI(open, 21) _LT_ 40 AND ROC(5) CROSSES_BELOW -1.0 OR PCT_B(30, 3.0) CROSSES_BELOW 0.0 EXIT SL=0.5 TRAIL=5.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          2.1344591082063054,
+          9.903837200469724
+        ],
+        "evo_stability": -2.3324581671505173,
+        "evo_n_trades": 1130,
+        "ots_cagr": 0.09299994249672494,
+        "ots_sortino": 0.3443047330660983,
+        "ots_max_dd": -0.12783449658069374,
+        "ots_n_trades": 126,
+        "ots_win_rate": 0.1111111111111111,
+        "ots_profit_factor": 1.1470916389093555,
+        "ots_equity_final": 104.30520717355962
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "RSI(open, 21) < 40",
+          "ROC(5) CROSSES_BELOW -1.0"
+        ],
+        "logic": "c0 AND c1",
+        "tp_atr_mult": 0.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 5.0,
+        "expression_raw": "LONG WHEN RSI(open, 21) _LT_ 40 AND ROC(5) CROSSES_BELOW -1.0 EXIT SL=0.5 TRAIL=5.0",
+        "n_nodes": 2,
+        "evo_objectives": [
+          2.123108060834908,
+          11.282251272774786
+        ],
+        "evo_stability": -2.430543104147996,
+        "evo_n_trades": 722,
+        "ots_cagr": 0.24253391101857757,
+        "ots_sortino": 1.1216269811346868,
+        "ots_max_dd": -0.06902045437522036,
+        "ots_n_trades": 82,
+        "ots_win_rate": 0.12195121951219512,
+        "ots_profit_factor": 1.4932455775945348,
+        "ots_equity_final": 110.84145505355961
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "RSI(open, 21) < 40",
+          "ROC(5) CROSSES_BELOW -1.0",
+          "PCT_B(20, 3.0) CROSSES_BELOW 0.0"
+        ],
+        "logic": "c0 AND c1 OR c2",
+        "tp_atr_mult": 0.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 5.0,
+        "expression_raw": "LONG WHEN RSI(open, 21) _LT_ 40 AND ROC(5) CROSSES_BELOW -1.0 OR PCT_B(20, 3.0) CROSSES_BELOW 0.0 EXIT SL=0.5 TRAIL=5.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          1.5544051302128574,
+          11.731531070762443
+        ],
+        "evo_stability": -2.35916107343364,
+        "evo_n_trades": 1055,
+        "ots_cagr": 0.11021614871203722,
+        "ots_sortino": 0.5322800127502606,
+        "ots_max_dd": -0.0851236007179782,
+        "ots_n_trades": 115,
+        "ots_win_rate": 0.10434782608695652,
+        "ots_profit_factor": 1.1923766088939214,
+        "ots_equity_final": 105.08076500045924
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "RSI(open, 21) < 40",
+          "ROC(5) CROSSES_BELOW -1.0",
+          "PCT_B(20, 1.5) CROSSES_BELOW -0.5"
+        ],
+        "logic": "c0 AND c1 OR c2",
+        "tp_atr_mult": 0.0,
+        "sl_atr_mult": 0.5,
+        "trail_atr_mult": 5.0,
+        "expression_raw": "LONG WHEN RSI(open, 21) _LT_ 40 AND ROC(5) CROSSES_BELOW -1.0 OR PCT_B(20, 1.5) CROSSES_BELOW -0.5 EXIT SL=0.5 TRAIL=5.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          1.5544051302128574,
+          11.731531070762443
+        ],
+        "evo_stability": -2.35916107343364,
+        "evo_n_trades": 1055,
+        "ots_cagr": 0.11021614871203722,
+        "ots_sortino": 0.5322800127502606,
+        "ots_max_dd": -0.0851236007179782,
+        "ots_n_trades": 115,
+        "ots_win_rate": 0.10434782608695652,
+        "ots_profit_factor": 1.1923766088939214,
+        "ots_equity_final": 105.08076500045924
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "RSI(open, 21) < 40",
+          "ROC(5) CROSSES_BELOW -1.0"
+        ],
+        "logic": "c0 AND c1",
+        "tp_atr_mult": 0.0,
+        "sl_atr_mult": 0.75,
+        "trail_atr_mult": 5.0,
+        "expression_raw": "LONG WHEN RSI(open, 21) _LT_ 40 AND ROC(5) CROSSES_BELOW -1.0 EXIT SL=0.75 TRAIL=5.0",
+        "n_nodes": 2,
+        "evo_objectives": [
+          1.4795618008751983,
+          12.562992242115826
+        ],
+        "evo_stability": -1.549298396214807,
+        "evo_n_trades": 664,
+        "ots_cagr": 0.12278340781099817,
+        "ots_sortino": 0.4064103364954006,
+        "ots_max_dd": -0.08687692545509862,
+        "ots_n_trades": 76,
+        "ots_win_rate": 0.15789473684210525,
+        "ots_profit_factor": 1.2177714966004036,
+        "ots_equity_final": 105.64290981158932
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "RSI(open, 21) < 40",
+          "ROC(5, 15m) CROSSES_BELOW -1.0",
+          "STOCH_D(9, 15m) < 10"
+        ],
+        "logic": "c0 AND c1 OR c2",
+        "tp_atr_mult": 5.0,
+        "sl_atr_mult": 0.75,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN RSI(open, 21) _LT_ 40 AND ROC(5, 15m) CROSSES_BELOW -1.0 OR STOCH_D(9, 15m) _LT_ 10 EXIT TP=5.0 SL=0.75",
+        "n_nodes": 3,
+        "evo_objectives": [
+          1.236503680901463,
+          13.290376482092798
+        ],
+        "evo_stability": -1.5909446567212517,
+        "evo_n_trades": 2299,
+        "ots_cagr": 0.14287845402984312,
+        "ots_sortino": 0.46373998640507275,
+        "ots_max_dd": -0.15242719918218645,
+        "ots_n_trades": 348,
+        "ots_win_rate": 0.14080459770114942,
+        "ots_profit_factor": 1.0790188134700316,
+        "ots_equity_final": 106.53494541314589
+      },
+      {
+        "direction": "LONG",
+        "conditions": [
+          "RSI(open, 21) < 40",
+          "ROC(5) CROSSES_BELOW -1.0",
+          "PCT_B(30, 3.0) CROSSES_BELOW 0.0"
+        ],
+        "logic": "( c0 AND c1 ) OR c2",
+        "tp_atr_mult": 8.0,
+        "sl_atr_mult": 3.0,
+        "trail_atr_mult": 0.0,
+        "expression_raw": "LONG WHEN ( RSI(open, 21) _LT_ 40 AND ROC(5) CROSSES_BELOW -1.0 ) OR PCT_B(30, 3.0) CROSSES_BELOW 0.0 EXIT TP=8.0 SL=3.0",
+        "n_nodes": 3,
+        "evo_objectives": [
+          0.38036237296078024,
+          14.636866073560425
+        ],
+        "evo_stability": -0.6441432336725631,
+        "evo_n_trades": 598,
+        "ots_cagr": 0.561454286337185,
+        "ots_sortino": 0.4017389358225235,
+        "ots_max_dd": -0.16260350073428997,
+        "ots_n_trades": 71,
+        "ots_win_rate": 0.30985915492957744,
+        "ots_profit_factor": 1.3229694207482405,
+        "ots_equity_final": 123.51880941571297
+      }
+    ]
+  }
+}

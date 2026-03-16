@@ -1,4 +1,4 @@
-\begin{thebibliography}{20}
+\begin{thebibliography}{21}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -46,6 +46,14 @@ Eugene~F. Fama.
 David~E. Goldberg.
 \newblock Genetic algorithms in search, optimization, and machine learning.
 \newblock 1989.
+
+\bibitem[Hansen et~al.(2003)Hansen, M{\"u}ller, and
+  Koumoutsakos]{hansen2003reducing}
+Nikolaus Hansen, Sibylle~D. M{\"u}ller, and Petros Koumoutsakos.
+\newblock Reducing the time complexity of the derandomized evolution strategy
+  with covariance matrix adaptation ({CMA-ES}).
+\newblock \emph{Evolutionary Computation}, 11\penalty0 (1):\penalty0 1--18,
+  2003.
 
 \bibitem[Holland(1975)]{holland1975adaptation}
 John~H. Holland.

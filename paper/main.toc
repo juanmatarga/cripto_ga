@@ -6,46 +6,51 @@
 \contentsline {subsection}{\numberline {2.2}De los Algoritmos Genéticos a la Programación Genética}{5}{subsection.2.2}%
 \contentsline {subsection}{\numberline {2.3}Evolución Gramatical: la solución elegante}{6}{subsection.2.3}%
 \contentsline {paragraph}{¿Por qué esto es elegante?}{6}{section*.2}%
-\contentsline {paragraph}{Ejemplo concreto.}{6}{section*.3}%
-\contentsline {subsection}{\numberline {2.4}MAP-Elites: diversidad como objetivo}{7}{subsection.2.4}%
-\contentsline {subsection}{\numberline {2.5}Métricas de evaluación}{8}{subsection.2.5}%
-\contentsline {paragraph}{Ratio de Sortino.}{8}{section*.4}%
-\contentsline {paragraph}{Ratio de Calmar.}{8}{section*.5}%
-\contentsline {paragraph}{CAGR (Tasa de Crecimiento Anual Compuesta).}{8}{section*.6}%
-\contentsline {paragraph}{Drawdown máximo.}{9}{section*.7}%
-\contentsline {paragraph}{Factor de beneficio.}{9}{section*.8}%
-\contentsline {subsection}{\numberline {2.6}Validación estadística}{9}{subsection.2.6}%
-\contentsline {subsubsection}{\numberline {2.6.1}Validación Cruzada Combinatoria Purgada (CPCV)}{9}{subsubsection.2.6.1}%
-\contentsline {subsubsection}{\numberline {2.6.2}Probabilidad de Sobreajuste de Backtest (PBO)}{10}{subsubsection.2.6.2}%
-\contentsline {subsubsection}{\numberline {2.6.3}Ratio de Sharpe Deflactado (DSR)}{10}{subsubsection.2.6.3}%
-\contentsline {subsubsection}{\numberline {2.6.4}Test de permutación de señales}{10}{subsubsection.2.6.4}%
-\contentsline {section}{\numberline {3}Trabajos Relacionados}{11}{section.3}%
-\contentsline {section}{\numberline {4}Metodología}{11}{section.4}%
-\contentsline {subsection}{\numberline {4.1}La gramática de estrategias}{11}{subsection.4.1}%
-\contentsline {subsubsection}{\numberline {4.1.1}Indicadores: dos familias tipadas}{12}{subsubsection.4.1.1}%
+\contentsline {paragraph}{Ejemplo concreto.}{7}{section*.3}%
+\contentsline {subsection}{\numberline {2.4}¿Por qué no fuerza bruta?}{7}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}MAP-Elites: diversidad como objetivo}{8}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Métricas de evaluación}{9}{subsection.2.6}%
+\contentsline {paragraph}{Ratio de Sortino.}{9}{section*.4}%
+\contentsline {paragraph}{Ratio de Calmar.}{9}{section*.5}%
+\contentsline {paragraph}{CAGR (Tasa de Crecimiento Anual Compuesta).}{9}{section*.6}%
+\contentsline {paragraph}{Drawdown máximo.}{10}{section*.7}%
+\contentsline {paragraph}{Factor de beneficio.}{10}{section*.8}%
+\contentsline {subsection}{\numberline {2.7}¿Cómo sabemos que no es suerte?}{10}{subsection.2.7}%
+\contentsline {subsubsection}{\numberline {2.7.1}Validación cruzada adaptada a finanzas (CPCV)}{10}{subsubsection.2.7.1}%
+\contentsline {subsubsection}{\numberline {2.7.2}Probabilidad de sobreajuste (PBO)}{10}{subsubsection.2.7.2}%
+\contentsline {subsubsection}{\numberline {2.7.3}Test de permutación de señales}{11}{subsubsection.2.7.3}%
+\contentsline {section}{\numberline {3}Metodología}{11}{section.3}%
+\contentsline {subsection}{\numberline {3.1}La gramática de estrategias}{11}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Indicadores: dos familias tipadas}{12}{subsubsection.3.1.1}%
 \contentsline {paragraph}{Osciladores}{12}{section*.9}%
 \contentsline {paragraph}{Indicadores normalizados}{12}{section*.10}%
-\contentsline {subsubsection}{\numberline {4.1.2}Parámetros de salida}{12}{subsubsection.4.1.2}%
-\contentsline {subsection}{\numberline {4.2}Evaluación vectorizada}{13}{subsection.4.2}%
-\contentsline {subsection}{\numberline {4.3}Motor evolutivo}{13}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {3.1.2}Parámetros de salida}{12}{subsubsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.2}Evaluación vectorizada}{13}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Motor evolutivo}{13}{subsection.3.3}%
 \contentsline {paragraph}{Operadores genéticos.}{13}{section*.11}%
-\contentsline {paragraph}{Función de aptitud.}{14}{section*.12}%
+\contentsline {paragraph}{Función de aptitud.}{13}{section*.12}%
 \contentsline {paragraph}{Rotación de ventanas temporales.}{14}{section*.13}%
-\contentsline {subsection}{\numberline {4.4}Pipeline de validación}{14}{subsection.4.4}%
-\contentsline {subsection}{\numberline {4.5}Evaluación final sobre datos reservados}{14}{subsection.4.5}%
-\contentsline {section}{\numberline {5}Configuración Experimental}{15}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Datos}{15}{subsection.5.1}%
-\contentsline {subsection}{\numberline {5.2}Parámetros de evolución}{15}{subsection.5.2}%
-\contentsline {subsection}{\numberline {5.3}Ejecuciones}{15}{subsection.5.3}%
-\contentsline {section}{\numberline {6}Resultados}{15}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Evolución}{15}{subsection.6.1}%
-\contentsline {subsection}{\numberline {6.2}Estrategias descubiertas}{16}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}Validación estadística}{17}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}Construcción de portafolios}{18}{subsection.6.4}%
-\contentsline {section}{\numberline {7}Discusión}{20}{section.7}%
-\contentsline {subsection}{\numberline {7.1}El rol de la diversificación}{20}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}Interpretabilidad}{20}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}Limitaciones}{21}{subsection.7.3}%
-\contentsline {section}{\numberline {8}Conclusiones y Trabajo Futuro}{21}{section.8}%
-\contentsline {subsection}{\numberline {8.1}Conclusiones}{21}{subsection.8.1}%
-\contentsline {subsection}{\numberline {8.2}Trabajo futuro}{22}{subsection.8.2}%
+\contentsline {subsection}{\numberline {3.4}Ajuste fino de parámetros (CMA-ES)}{14}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Pipeline de validación}{14}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Validación walk-forward}{15}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}Evaluación final sobre datos reservados}{15}{subsection.3.7}%
+\contentsline {section}{\numberline {4}Configuración Experimental}{16}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Datos}{16}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Parámetros de evolución}{16}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Ejecuciones}{16}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Resultados}{17}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Proceso evolutivo}{17}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Estrategias descubiertas}{17}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Validación estadística}{18}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Optimización CMA-ES}{18}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Portafolio multi-activo}{19}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}Portafolio combinado}{19}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}Estabilidad walk-forward}{21}{subsection.5.7}%
+\contentsline {section}{\numberline {6}Discusión}{22}{section.6}%
+\contentsline {subsection}{\numberline {6.1}El rol de la diversificación}{22}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Interpretabilidad}{22}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}El ajuste fino funciona distinto según el activo}{22}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Limitaciones}{23}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Conclusiones y Trabajo Futuro}{23}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Conclusiones}{23}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Trabajo futuro}{24}{subsection.7.2}%

@@ -12,6 +12,7 @@ def _make_strategy(obj1, obj2, stability=0.0, cv=0.0):
     s.stability = stability
     s.constraint_violation = cv
     s.rank = 999
+    s.crowding_distance = 0.0
     return s
 
 
@@ -98,12 +99,14 @@ class TestBinaryTournament:
         s2.rank = 2
         assert binary_tournament(s1, s2) is s1
 
-    def test_same_rank_stability_wins(self):
+    def test_same_rank_crowding_distance_wins(self):
         from evolution.nsga2 import binary_tournament
-        s1 = _make_strategy(1.0, 1.0, stability=-0.1)
+        s1 = _make_strategy(1.0, 1.0)
         s1.rank = 1
-        s2 = _make_strategy(1.0, 1.0, stability=-2.0)
+        s1.crowding_distance = 5.0
+        s2 = _make_strategy(1.0, 1.0)
         s2.rank = 1
+        s2.crowding_distance = 1.0
         assert binary_tournament(s1, s2) is s1
 
 

@@ -3,8 +3,8 @@ NSGA-II Multi-Objective Selection for Grammatical Evolution.
 
 Implements:
 - Non-dominated sorting with constrained domination (Deb 2002)
-- Stability-based secondary sort (replaces standard crowding distance)
-- Binary tournament on (rank, stability)
+- Crowding distance for diversity maintenance
+- Binary tournament on (rank, crowding_distance)
 """
 
 import random
@@ -98,21 +98,61 @@ def non_dominated_sort(population: List[Strategy]) -> List[List[Strategy]]:
     return fronts
 
 
-def select_by_stability(front: List[Strategy], n: int) -> List[Strategy]:
+def compute_crowding_distance(front: List[Strategy]) -> None:
     """
-    Select top n from a front by stability (highest = least negative std).
+    Compute crowding distance for each individual in a front (in-place).
+    Boundary individuals get infinite distance.
     """
-    sorted_front = sorted(front, key=lambda s: s.stability, reverse=True)
+    n = len(front)
+    for s in front:
+        s.crowding_distance = 0.0
+
+    if n <= 2:
+        for s in front:
+            s.crowding_distance = float('inf')
+        return
+
+    n_obj = len(front[0].objectives)
+
+    for m in range(n_obj):
+        sorted_indices = sorted(range(n), key=lambda i: front[i].objectives[m])
+
+        # Boundary points get infinity
+        front[sorted_indices[0]].crowding_distance = float('inf')
+        front[sorted_indices[-1]].crowding_distance = float('inf')
+
+        obj_range = (front[sorted_indices[-1]].objectives[m] -
+                     front[sorted_indices[0]].objectives[m])
+        if obj_range == 0:
+            continue
+
+        for i in range(1, n - 1):
+            front[sorted_indices[i]].crowding_distance += (
+                front[sorted_indices[i + 1]].objectives[m] -
+                front[sorted_indices[i - 1]].objectives[m]
+            ) / obj_range
+
+
+def select_by_crowding(front: List[Strategy], n: int) -> List[Strategy]:
+    """
+    Select top n from a front by crowding distance (highest = most diverse).
+    """
+    compute_crowding_distance(front)
+    sorted_front = sorted(front, key=lambda s: s.crowding_distance, reverse=True)
     return sorted_front[:n]
 
 
+# Keep old name for backward compatibility
+select_by_stability = select_by_crowding
+
+
 def binary_tournament(a: Strategy, b: Strategy) -> Strategy:
-    """Binary tournament: lower rank wins; ties broken by stability."""
+    """Binary tournament: lower rank wins; ties broken by crowding distance."""
     if a.rank < b.rank:
         return a
     if b.rank < a.rank:
         return b
-    if a.stability > b.stability:
+    if a.crowding_distance > b.crowding_distance:
         return a
     return b
 

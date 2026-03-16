@@ -129,9 +129,9 @@ def evaluate_strategy(strategy: Strategy, windows: List[pd.DataFrame],
         strategy.fitness = FAIL_FITNESS
         return strategy
 
-    # Cap extreme values
-    sortino = max(min(sortino, 10.0), -10.0)
-    calmar = min(calmar, 10.0)
+    # Cap extreme values (wider cap to preserve gradient)
+    sortino = max(min(sortino, 50.0), -50.0)
+    calmar = min(calmar, 50.0)
 
     # Trade-level metrics
     winning_pnl = sum(t['pnl_pct'] for t in all_trades if t['pnl_pct'] > 0)
@@ -455,7 +455,7 @@ def evaluate_single_window(strategy: Strategy, window_df: pd.DataFrame,
         return None
 
     sortino = calculate_sortino_ratio(returns, BARS_PER_YEAR_15M)
-    sortino = max(min(sortino, 10.0), -10.0)
+    sortino = max(min(sortino, 50.0), -50.0)  # Wider cap to preserve gradient
 
     start_eq = equity.iloc[0]
     end_eq = equity.iloc[-1]
@@ -484,17 +484,18 @@ def evaluate_single_window(strategy: Strategy, window_df: pd.DataFrame,
 
 
 def compute_objectives(strategy: Strategy, window_metrics: List[dict],
-                       parsimony_coeff: float = 0.02) -> None:
+                       parsimony_coeff: float = 0.0) -> None:
     """
     Compute NSGA-II objectives from per-window metrics. Sets fields in-place.
 
-    Objectives:
-      - obj1: median(sortino) - parsimony * n_nodes
-      - obj2: median(return_pct)
+    Objectives (rich composite fitness — proven formula from old system):
+      - obj1: composite fitness = median(sortino + cagr*10 + calmar*0.3 + PF_bonus + WL_bonus)
+      - obj2: consistency = fraction of windows with positive sortino
 
-    Constraints (violation > 0 means infeasible):
-      - MaxDD > 40% in any window
-      - n_trades < 10 in any window
+    Constraints (relaxed for window rotation — strict enough to filter junk):
+      - MaxDD > 35% in any window
+      - Total trades < 30 across all windows
+      - Global win_rate < 15%
     """
     if not window_metrics:
         strategy.objectives = (-999.0, -999.0)
@@ -506,18 +507,38 @@ def compute_objectives(strategy: Strategy, window_metrics: List[dict],
     returns = [m['return_pct'] for m in window_metrics]
     max_dds = [abs(m['max_dd']) for m in window_metrics]
     trade_counts = [m['n_trades'] for m in window_metrics]
+    win_rates = [m.get('win_rate', 0.0) for m in window_metrics]
+    expectancies = [m.get('expectancy', 0.0) for m in window_metrics]
+    profit_factors = [m.get('profit_factor', 0.0) for m in window_metrics]
 
-    # Objectives: median across windows
-    sortinos_sorted = sorted(sortinos)
-    returns_sorted = sorted(returns)
-    mid = len(sortinos_sorted) // 2
+    # Per-window composite fitness (rich gradient from old system)
+    # NO trade volume bonus — complex AND strategies naturally have fewer trades
+    window_composites = []
+    for m in window_metrics:
+        s = min(m['sortino'], 5.0)  # Cap at 5 to force differentiation via CAGR/PF/calmar
+        ret = m['return_pct']
+        cagr_bonus = max(ret / 100.0, 0) * 10.0
+        pf = m.get('profit_factor', 0.0)
+        pf_bonus = min(pf - 1.0, 3.0) if pf > 1.0 else 0.0
+        dd = abs(m.get('max_dd', 0.01))
+        calmar = (ret / 100.0) / max(dd, 0.01) if ret > 0 else 0.0
+        calmar_bonus = max(min(calmar, 5.0), 0) * 0.3
+        avg_win = m.get('expectancy', 0.0) + 0.5
+        wl_bonus = min(max(avg_win - 1.0, 0), 3.0) if m.get('expectancy', 0) > 0 else 0.0
 
-    median_sortino = sortinos_sorted[mid]
-    median_return = returns_sorted[mid]
+        composite = s + cagr_bonus + calmar_bonus + pf_bonus + wl_bonus
+        window_composites.append(composite)
 
-    # Parsimony on sortino objective
-    obj1 = median_sortino - parsimony_coeff * strategy.n_nodes
-    obj2 = median_return
+    # Median composite fitness (robust to outlier windows)
+    composites_sorted = sorted(window_composites)
+    mid = len(composites_sorted) // 2
+    median_composite = composites_sorted[mid]
+
+    # Consistency: fraction of windows with positive sortino
+    pos_sortino_pct = sum(1 for s in sortinos if s > 0) / max(len(sortinos), 1)
+
+    obj1 = median_composite
+    obj2 = pos_sortino_pct  # higher = more consistent across windows
 
     strategy.objectives = (obj1, obj2)
 
@@ -529,28 +550,51 @@ def compute_objectives(strategy: Strategy, window_metrics: List[dict],
     else:
         strategy.stability = 0.0
 
-    # Constraint violations
+    # Constraint violations — minimal, let fitness do the work
+    # Complex AND strategies naturally trade less — don't penalize them for it
     cv = 0.0
+    total_trades = sum(trade_counts)
+
+    # 1. Max DD > 35% in any window
     for dd in max_dds:
-        if dd > 0.40:
-            cv += (dd - 0.40)
-    for tc in trade_counts:
-        if tc < 10:
-            cv += (10 - tc) * 0.1
+        if dd > 0.35:
+            cv += (dd - 0.35) * 2.0
+
+    # 2. Total trades across all windows (minimum 20 — lenient for complex AND)
+    if total_trades < 20:
+        cv += (20 - total_trades) * 0.1
+
+    # 3. Global win rate floor (10%, very lenient)
+    all_wins = sum(m.get('win_rate', 0) * m['n_trades'] for m in window_metrics)
+    global_wr = all_wins / max(total_trades, 1)
+    if global_wr < 0.10:
+        cv += (0.10 - global_wr) * 5.0
+
     strategy.constraint_violation = cv
 
     # Store per-window metrics for analysis
     strategy.window_metrics = window_metrics
-    strategy.n_trades = sum(trade_counts)
+    strategy.n_trades = total_trades
+
+    # Median individual metrics for reporting
+    sortinos_sorted = sorted(sortinos)
+    returns_sorted = sorted(returns)
+    median_sortino = sortinos_sorted[mid]
+    median_return = returns_sorted[mid]
 
     # Keep legacy fitness tuple for backward compat (archive etc.)
     strategy.fitness = strategy.objectives
     strategy.metrics = {
         'sortino': median_sortino,
         'return_pct': median_return,
+        'composite_fitness': median_composite,
+        'consistency': pos_sortino_pct,
         'max_dd': max(max_dds) if max_dds else 0.0,
-        'n_trades': sum(trade_counts),
+        'n_trades': total_trades,
         'stability': strategy.stability,
         'window_sortinos': sortinos,
         'window_returns': returns,
+        'window_composites': window_composites,
+        'window_win_rates': win_rates,
+        'window_expectancies': expectancies,
     }

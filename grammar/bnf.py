@@ -37,18 +37,26 @@ GRAMMAR = {
     "<logical_op>": ["AND", "OR"],
 
     # Conditions: TYPE-SAFE comparisons
+    # Balance: 8 persistent (> / <) + 6 crossovers = 57% persistent
+    # Persistent fire 5-30% of bars → enough trades for AND logic
+    # Crossovers fire <0.5% → too rare for AND, but good for precision
     "<condition>": [
-        # Oscillator comparisons
+        # Oscillator persistent (fire while condition holds)
         "<osc> <comparator> <osc>",
         "<osc> <comparator> <osc_thresh>",
-        "<osc> CROSSES_ABOVE <osc>",
-        "<osc> CROSSES_BELOW <osc>",
-        # Normalized comparisons
+        "<osc> <comparator> <osc>",           # weighted: osc vs osc is very useful
+        "<osc> <comparator> <osc_thresh>",    # weighted: osc vs threshold is core
+        # Normalized persistent
         "<norm> <comparator> <norm>",
         "<norm> <comparator> <norm_thresh>",
+        "<norm> <comparator> <norm>",          # weighted
+        "<norm> <comparator> <norm_thresh>",   # weighted
+        # Oscillator crossovers (one-bar events, with persistence window)
+        "<osc> CROSSES_ABOVE <osc>",
+        "<osc> CROSSES_BELOW <osc>",
+        # Normalized crossovers
         "<norm> CROSSES_ABOVE <norm>",
         "<norm> CROSSES_BELOW <norm>",
-        # Normalized crossing a threshold (e.g., MACD_NORM crossing 0)
         "<norm> CROSSES_ABOVE <norm_thresh>",
         "<norm> CROSSES_BELOW <norm_thresh>",
     ],

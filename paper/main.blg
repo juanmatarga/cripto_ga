@@ -7,45 +7,45 @@ Warning--empty journal in goldberg1989genetic
 Warning--empty journal in holland1975adaptation
 Warning--empty journal in lopez2018advances
 Warning--empty journal in nakamoto2008bitcoin
-You've used 20 entries,
+You've used 21 entries,
             2773 wiz_defined-function locations,
-            707 strings with 7587 characters,
-and the built_in function-call counts, 7820 in all, are:
-= -- 695
-> -- 373
+            713 strings with 7816 characters,
+and the built_in function-call counts, 8299 in all, are:
+= -- 738
+> -- 403
 < -- 15
-+ -- 131
-- -- 111
-* -- 572
-:= -- 1228
-add.period$ -- 61
-call.type$ -- 20
-change.case$ -- 94
-chr.to.int$ -- 20
-cite$ -- 44
-duplicate$ -- 400
-empty$ -- 706
-format.name$ -- 142
-if$ -- 1623
++ -- 141
+- -- 120
+* -- 617
+:= -- 1302
+add.period$ -- 64
+call.type$ -- 21
+change.case$ -- 100
+chr.to.int$ -- 21
+cite$ -- 46
+duplicate$ -- 421
+empty$ -- 744
+format.name$ -- 152
+if$ -- 1721
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 21
-newline$ -- 108
-num.names$ -- 80
-pop$ -- 194
+missing$ -- 22
+newline$ -- 113
+num.names$ -- 84
+pop$ -- 204
 preamble$ -- 1
-purify$ -- 75
+purify$ -- 80
 quote$ -- 0
-skip$ -- 287
+skip$ -- 302
 stack$ -- 0
-substring$ -- 249
-swap$ -- 17
+substring$ -- 267
+swap$ -- 18
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 215
+type$ -- 226
 warning$ -- 4
-while$ -- 78
+while$ -- 83
 width$ -- 0
-write$ -- 254
+write$ -- 267
 (There were 4 warnings)

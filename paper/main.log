@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.7)  7 MAR 2026 17:17
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.7)  10 MAR 2026 00:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -310,13 +310,6 @@ Package: relsize 2013/03/29 ver 4.1
 \algocf@algoframe=\box65
 \algocf@algobox=\box66
 )
-(/usr/local/texlive/2026/texmf-dist/tex/latex/natbib/natbib.sty
-Package: natbib 2010/09/13 8.31b (PWD, AO)
-\bibhang=\skip78
-\bibsep=\skip79
-LaTeX Info: Redefining \cite on input line 694.
-\c@NAT@ctr=\count317
-)
 (/usr/local/texlive/2026/texmf-dist/tex/latex/hyperref/hyperref.sty
 Package: hyperref 2026-01-29 v7.01p Hypertext links for LaTeX
 
@@ -361,19 +354,19 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
  (/usr/local/texlive/2026/texmf-dist/tex/latex/kvoptions/kvoptions.sty
 Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
 ))
-\c@section@level=\count318
+\c@section@level=\count317
 )
 (/usr/local/texlive/2026/texmf-dist/tex/latex/etoolbox/etoolbox.sty
 Package: etoolbox 2025/10/02 v2.5m e-TeX tools for LaTeX (JAW)
-\etb@tempcnta=\count319
+\etb@tempcnta=\count318
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/stringenc/stringenc.sty
 Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
 )
 )
 \@linkdim=\dimen185
-\Hy@linkcounter=\count320
-\Hy@pagecounter=\count321
+\Hy@linkcounter=\count319
+\Hy@pagecounter=\count320
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/hyperref/pd1enc.def
 File: pd1enc.def 2026-01-29 v7.01p Hyperref: PDFDocEncoding definition (HO)
@@ -383,7 +376,7 @@ Now handling font encoding PD1 ...
 (/usr/local/texlive/2026/texmf-dist/tex/generic/intcalc/intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
-\Hy@SavedSpaceFactor=\count322
+\Hy@SavedSpaceFactor=\count321
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/hyperref/puenc.def
 File: puenc.def 2026-01-29 v7.01p Hyperref: PDF Unicode definition (HO)
@@ -398,7 +391,7 @@ Package hyperref Info: Plain pages OFF on input line 4216.
 Package hyperref Info: Backreferencing OFF on input line 4221.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4468.
-\c@Hy@tempcnt=\count323
+\c@Hy@tempcnt=\count322
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/url/url.sty
 \Urlmuskip=\muskip18
@@ -414,7 +407,7 @@ Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
 )
 ))
-\Fld@menulength=\count324
+\Fld@menulength=\count323
 \Field@Width=\dimen187
 \Fld@charsize=\dimen188
 Package hyperref Info: Hyper figures OFF on input line 6084.
@@ -424,16 +417,16 @@ Package hyperref Info: backreferencing OFF on input line 6099.
 Package hyperref Info: Link coloring ON on input line 6102.
 Package hyperref Info: Link coloring with OCG OFF on input line 6109.
 Package hyperref Info: PDF/A mode OFF on input line 6114.
-\Hy@abspage=\count325
-\c@Item=\count326
-\c@Hfootnote=\count327
+\Hy@abspage=\count324
+\c@Item=\count325
+\c@Hfootnote=\count326
 )
 Package hyperref Info: Driver (autodetected): hpdftex.
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/hyperref/hpdftex.def
 File: hpdftex.def 2026-01-29 v7.01p Hyperref driver for pdfTeX
-\Fld@listcount=\count328
-\c@bookmark@seq@number=\count329
+\Fld@listcount=\count327
+\c@bookmark@seq@number=\count328
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty
 Package: rerunfilecheck 2025-06-21 v1.11 Rerun checks for auxiliary files (HO)
@@ -444,16 +437,16 @@ Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
 Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 84.
 )
-\Hy@SectionHShift=\skip80
+\Hy@SectionHShift=\skip78
 ) (/usr/local/texlive/2026/texmf-dist/tex/latex/geometry/geometry.sty
 Package: geometry 2020/01/02 v5.9 Page Geometry
 
 (/usr/local/texlive/2026/texmf-dist/tex/generic/iftex/ifvtex.sty
 Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 )
-\Gm@cnth=\count330
-\Gm@cntv=\count331
-\c@Gm@tempcnt=\count332
+\Gm@cnth=\count329
+\Gm@cntv=\count330
+\c@Gm@tempcnt=\count331
 \Gm@bindingoffset=\dimen189
 \Gm@wd@mp=\dimen190
 \Gm@odd@mp=\dimen191
@@ -491,7 +484,7 @@ Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
 )
 (/usr/local/texlive/2026/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count333
+\l__color_backend_stack_int=\count332
 )
 (./main.aux
 LaTeX Info: Redefining \. on input line 9.
@@ -524,16 +517,16 @@ LaTeX Info: Redefining \% on input line 54.
 
 (/usr/local/texlive/2026/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count334
+\scratchcounter=\count333
 \scratchdimen=\dimen197
 \scratchbox=\box67
-\nofMPsegments=\count335
-\nofMParguments=\count336
+\nofMPsegments=\count334
+\nofMParguments=\count335
 \everyMPshowfont=\toks36
-\MPscratchCnt=\count337
+\MPscratchCnt=\count336
 \MPscratchDim=\dimen198
-\MPnumerator=\count338
-\makeMPintoPDFobject=\count339
+\MPnumerator=\count337
+\makeMPintoPDFobject=\count338
 \everyMPtoPDFconversion=\toks37
 ) (/usr/local/texlive/2026/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
@@ -544,7 +537,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-\c@lstlisting=\count340
+\c@lstlisting=\count339
 Package hyperref Info: Link coloring ON on input line 54.
 
 (./main.out) (./main.out)
@@ -587,7 +580,7 @@ Package hyperref Info: Link coloring ON on input line 54.
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 Couldn't patch \deferred@thm@head!
-<ucema.png, id=156, 513.92pt x 513.92pt>
+<ucema.png, id=176, 513.92pt x 513.92pt>
 File: ucema.png Graphic file (type png)
 <use ucema.png>
 Package pdftex.def Info: ucema.png  used on input line 61.
@@ -613,50 +606,46 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.48 ...ine {7.3}Limitaciones}{21}{subsection.7.3}
+l.49 ...{\numberline {6}DiscusiÃ³n}{22}{section.6}
                                                   % [1])
 \tf@toc=\write4
 \openout4 = `main.toc'.
 
- [2] [3]
-Overfull \hbox (13.74506pt too wide) in paragraph at lines 157--160
-[]\T1/cmr/bx/n/12 Un pi-pe-li-ne de va-li-da-ción es-ta-dís-ti-ca en tres ca-pa
-s\T1/cmr/m/n/12 : pro-tec-cio-nes anti-sobreajuste
+ [2] [3] [4] [5]
+[6] [7] [8] [9] [10] [11] [12] [13] [14]
+Overfull \hbox (64.99985pt too wide) in paragraph at lines 723--735
+ [][] 
  []
 
-[4] [5] [6] [7] [8] [9] [10] [11] [12] [13] [14]
-<figures/fig3_evolution.png, id=395, 858.5676pt x 353.6412pt>
+[15] [16]
+<figures/fig3_evolution.png, id=393, 722.7pt x 361.35pt>
 File: figures/fig3_evolution.png Graphic file (type png)
 <use figures/fig3_evolution.png>
-Package pdftex.def Info: figures/fig3_evolution.png  used on input line 741.
-(pdftex.def)             Requested size: 386.96027pt x 159.38528pt.
- [15] [16 <./figures/fig3_evolution.png>] [17]
-<figures/fig1_ensemble_equity.png, id=420, 867.24pt x 433.62pt>
-File: figures/fig1_ensemble_equity.png Graphic file (type png)
-<use figures/fig1_ensemble_equity.png>
-Package pdftex.def Info: figures/fig1_ensemble_equity.png  used on input line 8
-75.
-(pdftex.def)             Requested size: 386.96027pt x 193.47969pt.
-<figures/fig3_correlation.png, id=422, 722.7pt x 578.16pt>
-File: figures/fig3_correlation.png Graphic file (type png)
-<use figures/fig3_correlation.png>
-Package pdftex.def Info: figures/fig3_correlation.png  used on input line 889.
-(pdftex.def)             Requested size: 341.43307pt x 273.14676pt.
- [18 <./figures/fig1_ensemble_equity.png>]
-<figures/fig5_ensemble_comparison.png, id=432, 1156.32pt x 867.24pt>
-File: figures/fig5_ensemble_comparison.png Graphic file (type png)
-<use figures/fig5_ensemble_comparison.png>
-Package pdftex.def Info: figures/fig5_ensemble_comparison.png  used on input li
-ne 898.
-(pdftex.def)             Requested size: 386.96027pt x 290.21292pt.
- [19 <./figures/fig3_correlation.png>] [20 <./figures/fig5_ensemble_comparison.
-png>]
-Overfull \hbox (14.70598pt too wide) in paragraph at lines 945--948
-[]\T1/cmr/bx/n/12 Un so-lo ins-tru-men-to\T1/cmr/m/n/12 : los re-sul-ta-dos se 
-ob-tu-vie-ron ex-clu-si-va-men-te so-bre BTC/USDT.
+Package pdftex.def Info: figures/fig3_evolution.png  used on input line 797.
+(pdftex.def)             Requested size: 386.96027pt x 193.483pt.
+ [17 <./figures/fig3_evolution.png>] [18]
+Overfull \hbox (13.47987pt too wide) in paragraph at lines 930--945
+ [][] 
  []
 
-[21] (./main.bbl [22] [23]) [24] (./main.aux
+[19]
+<figures/fig1_ensemble_equity.png, id=419, 858.5676pt x 425.4294pt>
+File: figures/fig1_ensemble_equity.png Graphic file (type png)
+<use figures/fig1_ensemble_equity.png>
+Package pdftex.def Info: figures/fig1_ensemble_equity.png  used on input line 9
+57.
+(pdftex.def)             Requested size: 386.96027pt x 191.74007pt.
+<figures/fig3_correlation.png, id=421, 688.0104pt x 570.4512pt>
+File: figures/fig3_correlation.png Graphic file (type png)
+<use figures/fig3_correlation.png>
+Package pdftex.def Info: figures/fig3_correlation.png  used on input line 971.
+(pdftex.def)             Requested size: 341.43307pt x 283.09232pt.
+ [20 <./figures/fig1_ensemble_equity.png>]
+Overfull \hbox (2.85861pt too wide) in paragraph at lines 989--998
+ [][] 
+ []
+
+[21 <./figures/fig3_correlation.png>] [22] [23] [24] (./main.aux
 LaTeX Info: Redefining \. on input line 9.
 LaTeX Info: Redefining \% on input line 9.
 )
@@ -664,17 +653,21 @@ LaTeX Info: Redefining \% on input line 9.
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 9EE727C7B6DEC51A73FF7A6FA888C68A;6924.
+(rerunfilecheck)             Checksum: F78695F0157BC036D82971F9AD209FE3;7981.
  ) 
 Here is how much of TeX's memory you used:
- 15989 strings out of 467525
- 242818 string characters out of 5418983
- 743952 words of memory out of 5000000
- 44516 multiletter control sequences out of 15000+600000
- 645172 words of font info for 80 fonts, out of 8000000 for 9000
+ 15564 strings out of 467525
+ 236204 string characters out of 5418983
+ 766275 words of memory out of 5000000
+ 44109 multiletter control sequences out of 15000+600000
+ 645861 words of font info for 81 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,11n,79p,541b,2033s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,541b,2040s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
 ></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb>
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></
@@ -682,25 +675,25 @@ usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></us
 r/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/l
 ocal/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/lo
 cal/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/loca
-l/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/
-local/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/lo
-cal/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/loca
-l/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/
-texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/te
-xlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx2074.pfb></usr/local/texl
-ive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texliv
-e/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/
-2026/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/20
-26/texmf-dist/fonts/type1/public/cm-super/sfrm1440.pfb></usr/local/texlive/2026
-/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2026/t
-exmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2026/tex
-mf-dist/fonts/type1/public/cm-super/sfti1440.pfb></usr/local/texlive/2026/texmf
--dist/fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2026/texmf-d
-ist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on main.pdf (25 pages, 1371545 bytes).
+l/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/
+texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/te
+xlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texl
+ive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texliv
+e/2026/texmf-dist/fonts/type1/public/cm-super/sfbx2074.pfb></usr/local/texlive/
+2026/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/20
+26/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2026
+/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2026/t
+exmf-dist/fonts/type1/public/cm-super/sfrm1440.pfb></usr/local/texlive/2026/tex
+mf-dist/fonts/type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2026/texmf
+-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2026/texmf-d
+ist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2026/texmf-dis
+t/fonts/type1/public/cm-super/sfti1440.pfb></usr/local/texlive/2026/texmf-dist/
+fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2026/texmf-dist/fo
+nts/type1/public/cm-super/sftt1200.pfb>
+Output written on main.pdf (25 pages, 906047 bytes).
 PDF statistics:
- 603 PDF objects out of 1000 (max. 8388607)
- 516 compressed objects within 6 object streams
- 173 named destinations out of 1000 (max. 500000)
- 330 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 587 PDF objects out of 1000 (max. 8388607)
+ 502 compressed objects within 6 object streams
+ 161 named destinations out of 1000 (max. 500000)
+ 365 words of extra memory for PDF output out of 10000 (max. 10000000)
 

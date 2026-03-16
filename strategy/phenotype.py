@@ -44,6 +44,7 @@ class Strategy:
     stability: float = -999.0                             # -std(sortino across windows)
     constraint_violation: float = 0.0                      # 0.0 = feasible, >0 = infeasible
     rank: int = 999                                        # Pareto front rank (1 = best)
+    crowding_distance: float = 0.0                          # NSGA-II crowding distance
     window_metrics: Optional[List[Dict]] = None            # Per-window metrics for analysis
 
     metrics: Optional[Dict] = None

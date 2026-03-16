@@ -18,7 +18,10 @@
       "Bash(timeout 60 sleep:*)",
       "Bash(tee:*)",
       "Bash(if not exist backtest mkdir backtest)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(for f:*)",
+      "Bash(ls:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

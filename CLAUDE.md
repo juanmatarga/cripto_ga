@@ -12,6 +12,13 @@ the paper becomes "a rigorous framework for searching + evidence that alpha is a
 this market/timeframe" — which is still a publishable and honest result. We must NOT fall
 into the bias of searching until we force-fit alpha that doesn't exist.
 
+## ULTIMATE OBJECTIVE
+**Find statistically verified profitable patterns.** Every decision, every sprint, every
+line of code must serve this goal. If a pattern doesn't survive rigorous out-of-sample
+validation with Monte Carlo, CPCV, signal permutation, and walk-forward testing, it is
+NOT a real pattern — no matter how good it looks in-sample. Alpha is rare and fragile.
+Our job is to find it honestly or prove it doesn't exist.
+
 ## Core Principles
 - **Simple and robust over complex and fragile**
 - **No curve fitting** — all strategies must pass out-of-sample validation
@@ -20,6 +27,7 @@ into the bias of searching until we force-fit alpha that doesn't exist.
 - **Statistical rigor** — DSR > 0.95, PBO < 0.50, Hansen SPA p < 0.05
 - **Honest results** — a negative result (no alpha found) is still a valid result
 - **Real data ONLY** — ALL testing, validation, and experiments use real BTC/USDT data from Binance. NEVER use synthetic/random data for results. Synthetic data is only acceptable in unit tests.
+- **Beware CMA-ES overfitting** — CMA-ES parameter tuning can overfit to specific market regimes. Always validate CMA-ES results on extended OTS periods.
 
 ## Current State: v1 (Legacy — Being Redesigned)
 
@@ -355,7 +363,9 @@ python3 main.py report --results results.json
 - Config-driven behavior (no hardcoded magic numbers)
 - Spanish comments are OK (bilingual project)
 
-## Lessons from v1
+## Lessons Learned
+
+### From v1
 1. Don't normalize fitness to [0,1] — it destroys the gradient
 2. Don't hardcode indicator parameters — they must evolve
 3. Don't use eval() on strings — vectorize everything
@@ -371,14 +381,58 @@ python3 main.py report --results results.json
 13. Bootstrap results can be silently corrupt — always sanity-check metric values
 14. `warnings.filterwarnings('ignore')` hides real problems — never suppress globally
 
+### From v2 (Sprints 6-9)
+15. **CMA-ES overfitting is real**: BNB L2* went from +64.6% (6mo OTS) to +0.3% (9mo OTS).
+    CMA-ES tuning overfits to the specific regime. Always validate on extended holdout.
+16. **Original GE params are more robust than CMA-ES tuned**: Strategies without CMA-ES
+    degrade gracefully; CMA-ES strategies can collapse entirely in a new regime.
+17. **SHORT strategies are more robust in volatile crypto**: They profit from mean-reversion
+    and panic selling. LONG strategies need bull regimes to work.
+18. **Evolve once, deploy with regime filter**: Walk-forward re-evolution performs WORSE than
+    fixed strategies + SMA regime gate. Re-evolution introduces new overfitting each time.
+19. **HMM captures volatility, not direction**: Use SMA for direction, HMM for volatility.
+    Don't conflate the two.
+20. **Monte Carlo P(profitable)=100% doesn't mean strong alpha**: All trade orderings are
+    profitable, but the specific ordering matters (MC percentile varies widely).
+21. **9-month OTS is more revealing than 6-month**: Additional 3 months exposed CMA-ES
+    overfitting that was invisible in the original 6-month window.
+
+## Current State (as of 2026-03-14)
+
+### Sprints Complete
+- **Sprints 1-5**: v2 architecture (GE + MAP-Elites + CPCV). All DONE.
+- **Sprint 6B**: Multi-timeframe (15m/1h/4h) in grammar v5b. DONE.
+- **Sprint 6A**: Alt data (funding, OI, L/S ratio). DEFERRED — data quality.
+- **Sprint 7**: Multi-asset (BTC/ETH/BNB). DONE. Live on Hetzner.
+- **Sprint 8**: CMA-ES + Walk-forward validation. DONE.
+- **Sprint 9**: HMM volatility detector + adaptive sizing. DONE.
+- **Sprint 10**: RL hybrid. NOT STARTED — conditional on alpha evidence.
+
+### Extended OTS Results (Jun 2025 – Feb 2026, 9 months)
+- 10/10 strategies positive (100% survival rate)
+- Average return: +8.7%, Average Sortino: 0.18
+- **CMA-ES overfitting exposed**: BNB L2*/L3* collapsed from 50-64% to <1%
+- Best: BNB L1* (+21.6%, Calmar 2.80), ETH S2* (+17.1%, CAGR +23.7%)
+- Weakest: BNB L2* (+0.3%), BNB L3* (+0.5%) — candidates for removal
+
+### Key Scripts
+- `generate_strategy_analysis.py`: 4-panel analysis per strategy (equity+MC, dist, PnL, metrics)
+- `generate_paper_figures.py`: Portfolio-level figures for the paper
+- `compute_multi_asset_portfolio.py`: Portfolio metrics computation
+
 ## Future Work (deferred — material for paper's Future Work section)
-- **CMA-ES as local optimizer**: After GE discovers good strategy structure, use CMA-ES
-  to fine-tune continuous parameters (periods, thresholds). Two-phase optimization.
+- **CMA-ES with CPCV validation**: Instead of optimizing on full training set, apply CPCV
+  to CMA-ES parameters. This prevents regime-specific overfitting.
 - **Reinforcement Learning hybrid**: Use GE-discovered strategies as initial policy for
   RL fine-tuning. Combines interpretability of GE with adaptability of RL.
-- **Co-evolution**: Evolve competing strategy populations. Interesting but adds complexity.
-- **Multi-asset expansion**: Apply framework to ETH, SOL, other liquid crypto pairs.
-- **Multi-timeframe**: Combine signals from 15m, 1h, 4h for hierarchical strategies.
-- **Adaptive position sizing**: Include sizing as part of the evolved genome (kelly
-  fraction, volatility scaling, regime-dependent sizing).
-- **Intra-window timing**: Add grammar rules for entry timing within signal windows.
+- **Alpha decay analysis**: Monthly sub-period performance breakdown to detect when
+  strategies start degrading. Informs retraining frequency.
+- **Portfolio optimization**: Replace equal-weight with mean-variance or risk parity.
+  Remove weak strategies, increase weight on robust ones.
+- **Regime-adaptive portfolio rotation**: Dynamically adjust weights based on detected
+  regime (more SHORT in bear, more LONG in bull).
+- **Walk-forward with ensemble rebalancing**: Periodic re-evaluation of which strategies
+  get capital based on rolling 3-month performance.
+- **Signal confirmation across timeframes**: Require multi-TF agreement before entry.
+- **Adaptive position sizing**: Kelly fraction, volatility scaling, regime-dependent sizing.
+- **Live performance tracking**: Structured comparison of live P&L vs OTS expectations.

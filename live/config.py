@@ -343,6 +343,52 @@ def load_strategies_from_results() -> List[StrategyConfig]:
     return strategies
 
 
+def load_strategies_from_portfolio_json() -> List[StrategyConfig]:
+    """
+    Load strategies from results/final_portfolio.json (v6-v9 engine).
+
+    This is the new portfolio format: genome + conditions stored directly in JSON,
+    no dependency on experiment result directories.
+    """
+    portfolio_path = Path(__file__).parent.parent / 'results' / 'final_portfolio.json'
+    if not portfolio_path.exists():
+        raise FileNotFoundError(f"Portfolio file not found: {portfolio_path}")
+
+    with open(portfolio_path) as f:
+        portfolio = json.load(f)
+
+    n = len(portfolio)
+    strategies = []
+
+    for i, entry in enumerate(portfolio):
+        sym = entry['symbol']
+        symbol_ccxt = f"{sym}/USDT:USDT"
+        direction = entry['direction']
+        conditions = entry.get('conditions', [])
+        conds_str = '; '.join(conditions) if isinstance(conditions, list) else str(conditions)
+
+        strategies.append(StrategyConfig(
+            key=f"v9_{sym.lower()}_{direction.lower()}_{i+1}",
+            symbol=symbol_ccxt,
+            genome=entry['genome'],
+            direction=direction,
+            tp_atr_mult=entry.get('tp_atr_mult', 0),
+            sl_atr_mult=entry.get('sl_atr_mult', 1.0),
+            trail_atr_mult=entry.get('trail_atr_mult', 0),
+            expression=conds_str,
+            weight=1.0 / n,
+        ))
+
+    logger.info(f"Loaded {len(strategies)} strategies from {portfolio_path.name}")
+    return strategies
+
+
+# Toggle between portfolio versions:
+# "v2"  = old 10-strategy portfolio (experiment results dirs)
+# "v3"  = new 18-strategy portfolio (final_portfolio.json, v6-v9 engine)
+ACTIVE_PORTFOLIO = "v3"
+
+
 def load_config() -> LiveConfig:
     """Load complete live trading configuration."""
     load_env()
@@ -355,8 +401,14 @@ def load_config() -> LiveConfig:
         testnet_api_secret=os.environ.get('BINANCE_TESTNET_API_SECRET', ''),
     )
 
-    # Load strategies from experiment results
-    config.strategies = load_strategies_from_results()
+    # Load strategies based on active portfolio version
+    if ACTIVE_PORTFOLIO == "v3":
+        config.strategies = load_strategies_from_portfolio_json()
+    else:
+        config.strategies = load_strategies_from_results()
+
+    # Update risk: raise circuit breaker for 10x leverage on 18 strategies
+    config.risk.max_portfolio_dd_pct = 30.0
 
     # Validate
     if not config.active_api_key or config.active_api_key.startswith('your_'):
@@ -366,6 +418,6 @@ def load_config() -> LiveConfig:
         )
 
     if not config.strategies:
-        raise ValueError("No strategies loaded. Check experiment results.")
+        raise ValueError("No strategies loaded. Check portfolio configuration.")
 
     return config

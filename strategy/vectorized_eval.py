@@ -487,6 +487,15 @@ def _split_args(args_str: str) -> list:
 # SIGNAL GENERATION
 # ============================================================================
 
+# Crossover persistence: a CROSSES event stays "warm" for N bars after it fires.
+# This is critical for AND logic — two crossover events rarely coincide on the
+# exact same bar, but a trader would consider "MACD crossed above zero recently
+# AND RSI was recently oversold" as valid for a window after each event.
+# 4 bars = 1 hour at 15m — conservative enough to avoid noise, long enough
+# to let AND conditions overlap.
+CROSS_PERSISTENCE_BARS = 4
+
+
 def evaluate_condition(cond: Condition, cache: IndicatorCache) -> pd.Series:
     left = cache.get(cond.left)
     right = cache.get(cond.right)
@@ -496,9 +505,17 @@ def evaluate_condition(cond: Condition, cache: IndicatorCache) -> pd.Series:
     elif cond.comparator == '<':
         return left < right
     elif cond.comparator == 'CROSSES_ABOVE':
-        return (left > right) & (left.shift(1) <= right.shift(1))
+        crossed = (left > right) & (left.shift(1) <= right.shift(1))
+        if CROSS_PERSISTENCE_BARS > 1:
+            persistent = crossed.rolling(CROSS_PERSISTENCE_BARS, min_periods=1).max().fillna(0).astype(bool)
+            return persistent & (left > right)  # must still hold
+        return crossed
     elif cond.comparator == 'CROSSES_BELOW':
-        return (left < right) & (left.shift(1) >= right.shift(1))
+        crossed = (left < right) & (left.shift(1) >= right.shift(1))
+        if CROSS_PERSISTENCE_BARS > 1:
+            persistent = crossed.rolling(CROSS_PERSISTENCE_BARS, min_periods=1).max().fillna(0).astype(bool)
+            return persistent & (left < right)  # must still hold
+        return crossed
     else:
         logger.warning(f"Unknown comparator: {cond.comparator}")
         return pd.Series(False, index=cache.df.index)
