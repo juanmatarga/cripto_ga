@@ -58,7 +58,7 @@ class LiveConfig:
     # Trading
     timeframe: str = "15m"
     atr_period: int = 14
-    lookback_bars: int = 200             # Bars of history to fetch for indicators
+    lookback_bars: int = 672              # 7 days of 15m bars — enough for 4h indicators (need ≥480 for BBWIDTH(30, 4h))
     poll_interval_seconds: int = 60
 
     # Costs (for internal tracking, exchange applies real fees)

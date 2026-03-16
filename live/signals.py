@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Tuple
 
 from grammar.mapper import decode
 from strategy.vectorized_eval import generate_signals, IndicatorCache, compute_atr
+from data.multi_timeframe import prepare_multi_tf_data
 from evolution.param_extractor import extract_params, rebuild_strategy
 from live.config import StrategyConfig
 
@@ -80,8 +81,13 @@ class LiveSignalEngine:
             strategy = self.decoded_strategies[sc.key]
 
             try:
-                # Generate signals on full history
-                signals = generate_signals(strategy, df)
+                # Prepare multi-timeframe data (1h, 4h from 15m)
+                # CRITICAL: strategies use indicators on 1h/4h timeframes.
+                # Without this, all HTF indicators silently fall back to 15m.
+                tf_data = prepare_multi_tf_data(df)
+
+                # Generate signals on full history with proper TF data
+                signals = generate_signals(strategy, df, tf_data=tf_data)
 
                 # Get ATR for exit calculation
                 atr = compute_atr(df, 14)
