@@ -114,11 +114,24 @@ class StateManager:
         return BotState()
 
     def save(self):
-        """Persist state to disk."""
+        """Persist state to disk (atomic write to prevent corruption)."""
+        import tempfile, os
         self.state.last_update = datetime.now(timezone.utc).isoformat()
-        with open(self.state_file, 'w') as f:
-            json.dump(asdict(self.state), f, indent=2, default=str)
-        logger.debug("State saved")
+        try:
+            tmp_fd, tmp_path = tempfile.mkstemp(
+                dir=self.state_file.parent, suffix='.tmp'
+            )
+            with os.fdopen(tmp_fd, 'w') as f:
+                json.dump(asdict(self.state), f, indent=2, default=str)
+            os.replace(tmp_path, str(self.state_file))
+            logger.debug("State saved")
+        except Exception as e:
+            logger.error(f"State save failed: {e}")
+            # Clean up temp file if it exists
+            try:
+                os.unlink(tmp_path)
+            except (OSError, UnboundLocalError):
+                pass
 
     def initialize(self, capital: float, trading_mode: str):
         """Initialize state for a new session."""

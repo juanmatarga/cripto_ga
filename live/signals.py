@@ -77,14 +77,13 @@ class LiveSignalEngine:
         if symbol:
             configs = [sc for sc in configs if sc.symbol == symbol]
 
+        # Compute multi-TF data ONCE per call (all strategies share same df)
+        tf_data = prepare_multi_tf_data(df)
+
         for sc in configs:
             strategy = self.decoded_strategies[sc.key]
 
             try:
-                # Prepare multi-timeframe data (1h, 4h from 15m)
-                # CRITICAL: strategies use indicators on 1h/4h timeframes.
-                # Without this, all HTF indicators silently fall back to 15m.
-                tf_data = prepare_multi_tf_data(df)
 
                 # Generate signals on full history with proper TF data
                 signals = generate_signals(strategy, df, tf_data=tf_data)

@@ -191,11 +191,15 @@ class TradingBot:
             signals = self.signal_engine.evaluate(df, symbol=symbol)
 
             for strategy_key, sig_data in signals.items():
-                if sig_data.get('new_signal', False):
+                # Enter on ANY active signal if no position (not just new_signal).
+                # has_position check is sufficient to prevent duplicates.
+                # new_signal gate was dropping entries after bot restarts.
+                if sig_data.get('signal', False):
                     if not self.state.has_position(strategy_key):
                         direction = sig_data.get('direction', 'LONG')
+                        is_new = sig_data.get('new_signal', False)
                         self.logger.info(
-                            f"NEW SIGNAL: {strategy_key} ({symbol}) "
+                            f"{'NEW ' if is_new else ''}SIGNAL: {strategy_key} ({symbol}) "
                             f"{direction} → executing entry"
                         )
                         self.executor.execute_entry(strategy_key, sig_data)

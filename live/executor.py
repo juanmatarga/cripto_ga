@@ -122,16 +122,33 @@ class Executor:
                 sc.tp_atr_mult, sc.sl_atr_mult
             )
 
-            # Place SL order on exchange
+            # Place SL order on exchange — CRITICAL for risk management
             sl_side = 'sell' if direction == 'LONG' else 'buy'
-            sl_order = self.connector.place_stop_loss(symbol, sl_side, quantity, sl)
+            sl_order_id = None
+            tp_order_id = None
+            try:
+                sl_order = self.connector.place_stop_loss(symbol, sl_side, quantity, sl)
+                sl_order_id = sl_order.get('id')
+            except Exception as sl_err:
+                logger.error(f"SL placement failed for {strategy_key}: {sl_err}")
+                # SAFETY: close position immediately — never leave unprotected
+                try:
+                    logger.warning(f"Emergency close {strategy_key}: no SL protection")
+                    close_side = 'sell' if direction == 'LONG' else 'buy'
+                    self.connector.place_market_order(symbol, close_side, quantity * actual_price)
+                except Exception as close_err:
+                    logger.critical(f"CRITICAL: Cannot close unprotected position {strategy_key}: {close_err}")
+                return False
 
-            # Place TP order if applicable
-            tp_order = None
+            # Place TP order if applicable (non-critical — position is SL-protected)
             if tp is not None:
-                tp_order = self.connector.place_take_profit(
-                    symbol, sl_side, quantity, tp
-                )
+                try:
+                    tp_order = self.connector.place_take_profit(
+                        symbol, sl_side, quantity, tp
+                    )
+                    tp_order_id = tp_order.get('id')
+                except Exception as tp_err:
+                    logger.warning(f"TP placement failed for {strategy_key}: {tp_err} (position is SL-protected)")
 
             # Record position in state
             now = datetime.now(timezone.utc).isoformat()
@@ -149,8 +166,8 @@ class Executor:
                 trail_atr_mult=sc.trail_atr_mult,
                 initial_stop=sl,
                 best_price=actual_price,
-                sl_order_id=sl_order.get('id'),
-                tp_order_id=tp_order.get('id') if tp_order else None,
+                sl_order_id=sl_order_id,
+                tp_order_id=tp_order_id,
                 notional_usdt=notional,
             )
             self.state.open_position(pos)

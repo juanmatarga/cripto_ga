@@ -14,13 +14,10 @@ from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
-N_STRATEGIES = 10
-
-
 @dataclass
 class StrategyConfig:
     """Configuration for a single strategy to trade live."""
-    key: str                    # e.g. "btc_seed123_s19"
+    key: str                    # e.g. "v9_eth_short_1"
     symbol: str                 # e.g. "BTC/USDT:USDT"
     genome: List[int]           # Integer genome for decode()
     direction: str              # "LONG" or "SHORT"
@@ -28,7 +25,7 @@ class StrategyConfig:
     sl_atr_mult: float          # Stop loss in ATR multiples
     trail_atr_mult: float       # Trailing stop (0 = no trail)
     expression: str             # Human-readable expression
-    weight: float = 1.0 / N_STRATEGIES  # Portfolio weight (equal across strategies)
+    weight: float = 0.25        # Default; overridden by loader to 1/N
     # CMA-ES parameter overrides: {param_name: optimized_value}
     # Applied via rebuild_strategy() after genome decode. Empty = use original params.
     cmaes_params: Dict[str, float] = field(default_factory=dict)
