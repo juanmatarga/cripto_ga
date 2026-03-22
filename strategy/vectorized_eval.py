@@ -176,6 +176,85 @@ def compute_mfi(df: pd.DataFrame, period: int) -> pd.Series:
 
 
 # ============================================================================
+# PATTERN-BASED INDICATORS (higher-level concepts)
+# ============================================================================
+
+def compute_breakout(df: pd.DataFrame, period: int, direction: str) -> pd.Series:
+    """Breakout detection: 1.0 when price breaks N-bar high/low channel.
+    BREAKOUT_UP: close > rolling max(high, N). BREAKOUT_DOWN: close < rolling min(low, N).
+    Returns 100 on breakout bar, decays linearly to 0 over `period` bars."""
+    if direction == 'up':
+        channel = df['High'].rolling(window=period, min_periods=period).max().shift(1)
+        raw = (df['Close'] > channel).astype(float) * 100
+    else:
+        channel = df['Low'].rolling(window=period, min_periods=period).min().shift(1)
+        raw = (df['Close'] < channel).astype(float) * 100
+    # Keep signal warm for a few bars (rolling max)
+    return raw.rolling(window=min(period // 2, 8), min_periods=1).max()
+
+
+def compute_squeeze(df: pd.DataFrame, bb_period: int, bb_std: float) -> pd.Series:
+    """Bollinger Band squeeze detector (0-100 scale).
+    100 = BBWIDTH at its lowest in `bb_period` bars (max squeeze).
+    0 = BBWIDTH at its highest. Squeeze precedes explosive moves."""
+    close = df['Close']
+    mid = close.rolling(window=bb_period, min_periods=bb_period).mean()
+    std = close.rolling(window=bb_period, min_periods=bb_period).std()
+    width = ((mid + bb_std * std) - (mid - bb_std * std)) / mid.replace(0, np.nan)
+    # Percentile rank: 0 = widest, 100 = tightest (most squeezed)
+    rank = width.rolling(window=bb_period * 2, min_periods=bb_period).rank(pct=True)
+    return (1 - rank) * 100  # Invert so 100 = squeeze
+
+
+def compute_trending(df: pd.DataFrame, indicator_series: pd.Series, period: int) -> pd.Series:
+    """Trend strength: how consistently indicator has been rising/falling.
+    Returns normalized slope (-100 to +100) of indicator over N bars.
+    Positive = trending up, negative = trending down, near 0 = choppy.
+    Vectorized implementation using rolling covariance (no .apply())."""
+    y = indicator_series.astype(float)
+    # Create integer index series for slope calculation
+    x = pd.Series(np.arange(len(y), dtype=float), index=y.index)
+
+    # Rolling means
+    x_mean = x.rolling(window=period, min_periods=period).mean()
+    y_mean = y.rolling(window=period, min_periods=period).mean()
+
+    # Rolling covariance and variance
+    xy_cov = (x * y).rolling(window=period, min_periods=period).mean() - x_mean * y_mean
+    x_var = (x * x).rolling(window=period, min_periods=period).mean() - x_mean * x_mean
+    y_std = y.rolling(window=period, min_periods=period).std()
+
+    # Slope normalized by std
+    slope = xy_cov / x_var.replace(0, np.nan)
+    normalized = slope / y_std.replace(0, np.nan) * 50
+
+    return normalized.clip(-100, 100)
+
+
+def compute_divergence(df: pd.DataFrame, osc_series: pd.Series,
+                       period: int, direction: str) -> pd.Series:
+    """Price-oscillator divergence detector (0-100 scale).
+    BULL divergence: price makes lower low but oscillator makes higher low.
+    BEAR divergence: price makes higher high but oscillator makes lower high.
+    Returns 100 on detection, 0 otherwise."""
+    close = df['Close']
+
+    if direction == 'bull':
+        # Price lower low vs N bars ago, but oscillator higher low
+        price_ll = close < close.rolling(window=period, min_periods=period).min().shift(1)
+        osc_hl = osc_series > osc_series.rolling(window=period, min_periods=period).min().shift(1)
+        signal = (price_ll & osc_hl).astype(float) * 100
+    else:  # bear
+        # Price higher high vs N bars ago, but oscillator lower high
+        price_hh = close > close.rolling(window=period, min_periods=period).max().shift(1)
+        osc_lh = osc_series < osc_series.rolling(window=period, min_periods=period).max().shift(1)
+        signal = (price_hh & osc_lh).astype(float) * 100
+
+    # Keep warm for a few bars
+    return signal.rolling(window=min(period // 2, 8), min_periods=1).max()
+
+
+# ============================================================================
 # ALTERNATIVE DATA INDICATORS (normalized, scale-invariant)
 # ============================================================================
 
@@ -366,6 +445,68 @@ class IndicatorCache:
         elif func == 'ATR_PCT':
             period = int(args[0])
             return self._align_to_15m(compute_atr_pct(df, period), tf)
+
+        # Pattern-based indicators (higher-level concepts)
+        elif func == 'BREAKOUT_UP':
+            period = int(args[0])
+            return self._align_to_15m(compute_breakout(df, period, 'up'), tf)
+
+        elif func == 'BREAKOUT_DOWN':
+            period = int(args[0])
+            return self._align_to_15m(compute_breakout(df, period, 'down'), tf)
+
+        elif func == 'SQUEEZE':
+            bb_period = int(args[0])
+            bb_std = float(args[1])
+            return self._align_to_15m(compute_squeeze(df, bb_period, bb_std), tf)
+
+        elif func == 'DIVERGENCE_BULL':
+            # DIVERGENCE_BULL(RSI, 14, 20) → bull divergence of RSI(close,14) over 20 bars
+            osc_name = args[0]  # 'RSI'
+            osc_period = int(args[1])
+            div_period = int(args[2])
+            # Compute the oscillator directly on the resolved df
+            if osc_name == 'RSI':
+                osc = compute_rsi(df['Close'], osc_period)
+            elif osc_name == 'MFI':
+                osc = compute_mfi(df, osc_period)
+            elif osc_name == 'STOCH_K':
+                osc = compute_stoch(df, osc_period, 'k')
+            else:
+                osc = compute_rsi(df['Close'], osc_period)
+            result = compute_divergence(df, osc, div_period, 'bull')
+            return self._align_to_15m(result, tf)
+
+        elif func == 'DIVERGENCE_BEAR':
+            osc_name = args[0]
+            osc_period = int(args[1])
+            div_period = int(args[2])
+            if osc_name == 'RSI':
+                osc = compute_rsi(df['Close'], osc_period)
+            elif osc_name == 'MFI':
+                osc = compute_mfi(df, osc_period)
+            elif osc_name == 'STOCH_K':
+                osc = compute_stoch(df, osc_period, 'k')
+            else:
+                osc = compute_rsi(df['Close'], osc_period)
+            result = compute_divergence(df, osc, div_period, 'bear')
+            return self._align_to_15m(result, tf)
+
+        elif func == 'TRENDING':
+            # TRENDING(RSI, 14, 10) → trend strength of RSI(close,14) over 10 bars
+            ind_name = args[0]
+            ind_period = int(args[1])
+            trend_period = int(args[2])
+            if ind_name == 'RSI':
+                series = compute_rsi(df['Close'], ind_period)
+            elif ind_name == 'MFI':
+                series = compute_mfi(df, ind_period)
+            elif ind_name == 'STOCH_K':
+                series = compute_stoch(df, ind_period, 'k')
+            else:
+                series = compute_rsi(df['Close'], ind_period)
+            result = compute_trending(df, series, trend_period)
+            return self._align_to_15m(result, tf)
 
         # Alternative data indicators (always on 15m — data is already at 15m)
         elif func == 'FUNDING_ZSCORE':

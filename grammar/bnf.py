@@ -66,6 +66,7 @@ GRAMMAR = {
     # Optionally on higher timeframes
     # ================================================================
     "<osc>": [
+        # Classic oscillators
         "RSI(<rsi_source>, <rsi_period>)",
         "RSI(<rsi_source>, <rsi_period>, <timeframe>)",
         "STOCH_K(<stoch_period>)",
@@ -76,12 +77,22 @@ GRAMMAR = {
         "ADX(<adx_period>, <timeframe>)",
         "MFI(<mfi_period>)",
         "MFI(<mfi_period>, <timeframe>)",
+        # Pattern-based (0-100 scale, same as oscillators)
+        "BREAKOUT_UP(<breakout_period>)",
+        "BREAKOUT_UP(<breakout_period>, <timeframe>)",
+        "BREAKOUT_DOWN(<breakout_period>)",
+        "BREAKOUT_DOWN(<breakout_period>, <timeframe>)",
+        "SQUEEZE(<bb_period>, <bb_std>)",
+        "SQUEEZE(<bb_period>, <bb_std>, <timeframe>)",
+        "DIVERGENCE_BULL(RSI, <rsi_period>, <div_period>)",
+        "DIVERGENCE_BEAR(RSI, <rsi_period>, <div_period>)",
     ],
 
     # ================================================================
     # NORMALIZED INDICATORS (dimensionless ratios, scale-invariant)
     # ================================================================
     "<norm>": [
+        # Classic normalized
         "PCT_B(<bb_period>, <bb_std>)",
         "PCT_B(<bb_period>, <bb_std>, <timeframe>)",
         "MACD_NORM(<macd_fast>, <macd_slow>, <macd_signal>)",
@@ -96,6 +107,11 @@ GRAMMAR = {
         "BBWIDTH(<bb_period>, <bb_std>, <timeframe>)",
         "ATR_PCT(<atr_period>)",
         "ATR_PCT(<atr_period>, <timeframe>)",
+        # Trend-based (-100 to +100, normalized)
+        "TRENDING(RSI, <rsi_period>, <trend_period>)",
+        "TRENDING(RSI, <rsi_period>, <trend_period>, <timeframe>)",
+        "TRENDING(MFI, <mfi_period>, <trend_period>)",
+        "TRENDING(STOCH_K, <stoch_period>, <trend_period>)",
     ],
 
     # ================================================================
@@ -133,6 +149,12 @@ GRAMMAR = {
     "<vol_period>": ["5", "10", "20", "50"],
 
     "<atr_period>": ["7", "10", "14", "21"],
+
+    "<breakout_period>": ["10", "20", "30", "50"],
+
+    "<div_period>": ["10", "14", "20", "30"],
+
+    "<trend_period>": ["5", "8", "13", "21"],
 
     # ================================================================
     # THRESHOLDS (type-safe: separate for osc and norm)
