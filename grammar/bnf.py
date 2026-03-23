@@ -185,14 +185,15 @@ GRAMMAR = {
         "TP=<tp_mult> SL=<sl_mult> TRAIL=<trail_mult>",
     ],
 
-    # Wider TP range for trend-following
+    # TP range — minimum 1.5 to prevent tiny-win strategies
+    # Removed 1.0 — forces strategies to aim for meaningful upside
     "<tp_mult>": [
-        "1.0", "1.5", "2.0", "3.0", "4.0", "5.0", "6.0", "8.0",
+        "1.5", "2.0", "2.5", "3.0", "4.0", "5.0", "6.0", "8.0",
     ],
 
-    # Wider SL range (trend-following needs wider stops)
+    # SL range — max 2.5 to prevent SL >> TP
     "<sl_mult>": [
-        "0.5", "0.75", "1.0", "1.5", "2.0", "2.5", "3.0",
+        "0.75", "1.0", "1.5", "2.0", "2.5",
     ],
 
     # Trailing stop distance in ATR multiples

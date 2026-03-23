@@ -634,7 +634,7 @@ def _split_args(args_str: str) -> list:
 # AND RSI was recently oversold" as valid for a window after each event.
 # 4 bars = 1 hour at 15m — conservative enough to avoid noise, long enough
 # to let AND conditions overlap.
-CROSS_PERSISTENCE_BARS = 4
+CROSS_PERSISTENCE_BARS = 6
 
 
 def evaluate_condition(cond: Condition, cache: IndicatorCache) -> pd.Series:

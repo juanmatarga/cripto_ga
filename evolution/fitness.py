@@ -537,7 +537,12 @@ def compute_objectives(strategy: Strategy, window_metrics: List[dict],
     # Consistency: fraction of windows with positive sortino
     pos_sortino_pct = sum(1 for s in sortinos if s > 0) / max(len(sortinos), 1)
 
-    obj1 = median_composite
+    # Cross-regime robustness: penalize strategies where worst window is terrible
+    # This pushes evolution toward strategies that work in ALL market conditions
+    min_composite = min(window_composites) if window_composites else -999
+    worst_penalty = max(0, -min_composite) * 0.3  # penalty only if worst window is negative
+
+    obj1 = median_composite - worst_penalty
     obj2 = pos_sortino_pct  # higher = more consistent across windows
 
     strategy.objectives = (obj1, obj2)
@@ -550,15 +555,36 @@ def compute_objectives(strategy: Strategy, window_metrics: List[dict],
     else:
         strategy.stability = 0.0
 
-    # Constraint violations — minimal, let fitness do the work
-    # Complex AND strategies naturally trade less — don't penalize them for it
+    # Signal quality proxy: if shifting signals 1-3 bars gives similar returns,
+    # the signal timing has no edge. Penalize strategies where timing doesn't matter.
+    # This is a fast proxy for signal permutation (avoids 300x backtest cost).
+    if len(returns) >= 3:
+        orig_mean_ret = np.mean(returns)
+        shifted_rets = []
+        for shift in [1, 2, 3]:
+            shifted = [returns[(i + shift) % len(returns)] for i in range(len(returns))]
+            shifted_rets.append(np.mean(shifted))
+        avg_shifted = np.mean(shifted_rets)
+        # If original barely beats shifted, signal timing adds little value
+        signal_edge = orig_mean_ret - avg_shifted
+        if signal_edge < 0:
+            obj1 -= abs(signal_edge) * 50  # penalize poor timing
+
+    # Trade frequency bonus: reward strategies that trade more often
+    # 2 trades/window = 0 bonus, 5 = +0.5, 10+ = +1.0
+    n_windows = max(len(window_metrics), 1)
+    avg_trades_per_window = total_trades / n_windows
+    freq_bonus = min(max(0, (avg_trades_per_window - 2) / 8.0), 1.0)
+    obj1 += freq_bonus
+
+    # Constraint violations
     cv = 0.0
     total_trades = sum(trade_counts)
 
-    # 1. Max DD > 35% in any window
+    # 1. Max DD > 15% in any window (strict — forces low-DD strategies)
     for dd in max_dds:
-        if dd > 0.35:
-            cv += (dd - 0.35) * 2.0
+        if dd > 0.15:
+            cv += (dd - 0.15) * 3.0
 
     # 2. Total trades across all windows (minimum 20 — lenient for complex AND)
     if total_trades < 20:

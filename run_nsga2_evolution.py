@@ -63,7 +63,7 @@ def main():
         'mutation_rate': 0.15,
         'crossover_rate': 0.8,
         'genome_length': 50,
-        'window_bars': 5760,       # ~2 months (matches old system)
+        'window_bars': 11520,      # ~4 months — more trades per window for better stats
         'max_generations': args.gen,
         'archive_parent_pct': 0.10,
         'use_fixed_windows': False,  # WINDOW ROTATION — forces generalization
